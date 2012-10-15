@@ -1,4 +1,5 @@
 - Data Structures
+    - HashMap : playerID -> PlayerName
     - HashMap : gameID -> Game
     - HashMap Games : gameID ->
         - Board state
@@ -14,24 +15,30 @@
 - Code outline
     - StatusCode Constants
         - illegalRequest
-        -
-    - GameRunner
-        - .saveGames(fileName)
-            - Pickle game state to file
-        - .loadGames(fileName)
-            - Loads in game state from file
-        - .newGame()
-            - Adds a new game to the map
-        - .haltGame(gameID)
-            - Deletes game
+        - TODO….
+    - TournamentSystem
+        - saveGames(fileName)
+            - Pickle game state to ~/.maverickChess_history
+        - loadGames(fileName)
+            - Loads in game state from ~/.maverickChess_history
+        - register(Name) => playerID
+            - player 'signs up' for an account
+        - joinGame(playerID) => gameID
+            - if there is a game waiting for players, join it
+            - if not, create a new game and join it
+        - _newGame() => gameID
+            - Adds a new game to the map (private)
+        - _cancelGame(gameID) => None
+            - Marks game cancelled
     - Game
         - Constants:
             - MOVE_SUCCESS
             - MOVE_ILLEGAL
-            - GAME_WAITING_FOR_PLAYERS
-            - GAME_IN_PROGRESS
-            - GAME_OVER_BLACK_WON
-            - GAME_OVER_WHITE_WON
+            - GAME_PENDING_AWAITING_PLAYERS
+            - GAME_ONGOING
+            - GAME_FINISHED_CANCELLED
+            - GAME_FINISHED_BLACK_WON
+            - GAME_FINISHED_WHITE_WON
         - .getStatus()
             - waitingForPlayers, inProgress, blackWon, whiteWon
         - .getBlack()
