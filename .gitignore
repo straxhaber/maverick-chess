@@ -1,1 +1,12 @@
-.DS_Store
+## Generic files to ignore
+*.DS_Store
+*.out
+*~
+*.lock
+*.swp
+
+## Java files to ignore
+*.class
+
+## Python files to ignore
+*.pyc
