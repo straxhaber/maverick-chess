@@ -8,7 +8,8 @@ from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.protocols.basic import LineOnlyReceiver
 from twisted.internet import reactor
 
-from core import TournamentSystem
+#from maverick.server.TournamentSystem import TournamentSystem
+from TournamentSystem import TournamentSystem
 
 ################################################################################
 # Code written by Matthew Strax-Haber and James Magnarelli. All Rights Reserved.
@@ -28,7 +29,6 @@ class MaverickProt(LineOnlyReceiver):
     __tournSys = None
 
     def __init__(self, tournamentSystem):
-        super.__init__(self)
         MaverickProt.__tournSys = tournamentSystem
 
     def connectionMade(self):
@@ -76,7 +76,7 @@ class MaverickProt(LineOnlyReceiver):
                 (errCode, result) = self.__tournSys.register(reqArgs["name"])
                 if errCode == 0:
                     fStr = "SUCCESS \"{0}\""
-                    response = fStr.format(str(result["playerID"))
+                    response = fStr.format(str(result["playerID"]))
                 elif errCode == -1:
                     errorMsg = "Unknown error"
                 elif errCode == -2:
@@ -203,11 +203,10 @@ class ChessServerFactory(ServerFactory):
         """
         Store a reference to the TournamentSystem backing up this server
         """
-        super.__init__()
         self._tournamentSystem = tournamentSystem
         
     def buildProtocol(self, addr):
-        return ChessServerProtocol(self._tournamentSystem)
+        return MaverickProt(self._tournamentSystem)
 
 def _main(port):
     """

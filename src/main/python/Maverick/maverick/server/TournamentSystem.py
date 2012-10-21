@@ -6,6 +6,10 @@ import os,sys
 # Code written by Matthew Strax-Haber and James Magnarelli. All Rights Reserved.
 ################################################################################
 
+"""
+A chess server that administers games
+"""
+
 class Game:
     """Represents a chess game in Maverick"""
     __version = "1.0a1" ## TODO: check to make sure that this matches when un-pickling
