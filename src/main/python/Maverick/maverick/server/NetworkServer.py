@@ -2,11 +2,8 @@
 
 import os, sys, string, socket, time, datetime
 
-from twisted.internet.protocol import Protocol
-from twisted.internet.protocol import ServerFactory
-from twisted.internet.endpoints import TCP4ServerEndpoint
-from twisted.protocols.basic import LineOnlyReceiver
-from twisted.internet import reactor
+from twisted.internet import protocol, endpoints, reactor
+from twisted.protocols import basic as basicProtocols
 
 #from maverick.server.TournamentSystem import TournamentSystem
 from TournamentSystem import TournamentSystem
@@ -18,7 +15,7 @@ from TournamentSystem import TournamentSystem
 ## Port 7782 is not registered for use with the IANA as of December 17th, 2002
 defaultPort = 7782
 
-class MaverickProt(LineOnlyReceiver):
+class MaverickProt(basicProtocols.LineOnlyReceiver):
     """
     Protocol for an asynchronous server that administers chess games to clients
     """
@@ -29,6 +26,9 @@ class MaverickProt(LineOnlyReceiver):
     __tournSys = None
 
     def __init__(self, tournamentSystem):
+        """
+        Store a reference to the TournamentSystem backing up this server
+        """
         MaverickProt.__tournSys = tournamentSystem
 
     def connectionMade(self):
@@ -40,12 +40,12 @@ class MaverickProt(LineOnlyReceiver):
 
         ## Print out the server name and version
         ##  (e.g., "MaverickChessServer/1.0a1")
-        fStr = "{0}/{1} WaitingForRequest\n" ## Template for welcome message
+        fStr = "{0}/{1} WaitingForRequest" ## Template for welcome message
         welcomeMsg = fStr.format(MaverickProt._name, MaverickProt._version)
-        self.transport.write(welcomeMsg)
+        self.sendLine(welcomeMsg)
 
 
-    def connectionLost(self):
+    def connectionLost(self, reason=None):
         """
         When a client disconnects, log it
         """
@@ -63,13 +63,13 @@ class MaverickProt(LineOnlyReceiver):
 
         ### TODO: get request name and arguments
         requestName = "REGISTER"
-        reqArgs = ["Matthew Strax-Haber"]
+        reqArgs = {"name":"Matthew Strax-Haber"}
 
         errorMsg = None
 
         if requestName == "REGISTER":
             expectedArguments={"name"}
-            if expectedArguments != set(arguments):
+            if expectedArguments != set(reqArgs):
                 fStr = "Invalid arguments, expected: {0}"
                 errorMsg = fStr.format(str(list(expectedArguments)))
             else:
@@ -84,7 +84,7 @@ class MaverickProt(LineOnlyReceiver):
 
         elif requestName == "PLAY_GAME":
             expectedArguments={"playerID"}
-            if expectedArguments != set(arguments):
+            if expectedArguments != set(reqArgs):
                 fStr = "Invalid arguments, expected: {0}"
                 errorMsg = fStr.format(str(list(expectedArguments)))
             else:
@@ -98,7 +98,7 @@ class MaverickProt(LineOnlyReceiver):
 
         elif requestName == "GET_STATUS":
             expectedArguments={"playerID", "gameID"}
-            if expectedArguments != set(arguments):
+            if expectedArguments != set(reqArgs):
                 fStr = "Invalid arguments, expected: {0}"
                 errorMsg = fStr.format(str(list(expectedArguments)))
             else:
@@ -114,7 +114,7 @@ class MaverickProt(LineOnlyReceiver):
 
         elif requestName == "GET_STATE":
             expectedArguments={"playerID", "gameID"}
-            if expectedArguments != set(arguments):
+            if expectedArguments != set(reqArgs):
                 fStr = "Invalid arguments, expected: {0}"
                 errorMsg = fStr.format(str(list(expectedArguments)))
             else:
@@ -131,7 +131,7 @@ class MaverickProt(LineOnlyReceiver):
             expectedArguments={"playerID", "gameID",
                                "fromRank", "fromFile",
                                "toRank", "toFile"}
-            if expectedArguments != set(arguments):
+            if expectedArguments != set(reqArgs):
                 fStr = "Invalid arguments, expected: {0}"
                 errorMsg = fStr.format(str(list(expectedArguments)))
             else:
@@ -149,6 +149,7 @@ class MaverickProt(LineOnlyReceiver):
                 elif errCode == -1:
                     errorMsg = "Unknown error"
 
+        ## Template for new request types
         #elif requestName == "FIXME": ## FIXME
         #    expectedArguments={"fixme"} ## FIXME
         #    if expectedArguments != set(arguments):
@@ -163,34 +164,21 @@ class MaverickProt(LineOnlyReceiver):
         #            errorMsg = "Unknown error"
 
         if errorMsg == None:
-            self.transport.write(response)
+            """
+            Provide the user with the response
+            """
+            self.sendLine(response)
         else:
-            self._invalidRequest(line, errorMsg)
-            
-
-
-    def _invalidRequest(self, request, reason):
-        """
-        Notify the user if they make an invalid request
-        """
+            """
+            Notify the user if they make an invalid request
+            """
+            fStr = "INVALID_REQUEST {0}: \"{1}\""
+            errorMsg = fStr.format(reason, request)
+            self.sendLine(errorMsg)
+            ## TODO: log invalid request
         
-        ## TODO: log invalid request
 
-        fStr = "INVALID_REQUEST {0}: \"{1}\""
-        errorMsg = fStr.format(reason, request)
-        self.transport.write(errorMsg)
-            
-
-    #Deprecated code; kept for convenience
-    #def dataReceived(self, data):
-    #    """Run when data is received"""
-    #    
-    #    ### FIXME: Stub code: echos back any received strings
-    #    self.transport.write(data)
-    #    self.transport.loseConnection()
-
-
-class ChessServerFactory(ServerFactory):
+class ChessServerFactory(protocol.ServerFactory):
     """
     This is a simple factory that provides a ChessServerProtocol backed by a
     TournamentSystem instance
@@ -216,7 +204,7 @@ def _main(port):
     core = TournamentSystem()
 
     ## Run a server on the specified port
-    endpoint = TCP4ServerEndpoint(reactor, port)
+    endpoint = endpoints.TCP4ServerEndpoint(reactor, port)
     endpoint.listen(ChessServerFactory(core))
     reactor.run()
 
