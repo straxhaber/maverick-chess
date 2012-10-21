@@ -2,6 +2,9 @@
 
 import os,sys
 
+################################################################################
+# Code written by Matthew Strax-Haber and James Magnarelli. All Rights Reserved.
+################################################################################
 
 class Game:
     """Represents a chess game in Maverick"""
