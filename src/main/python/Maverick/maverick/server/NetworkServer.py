@@ -5,7 +5,6 @@ import os, sys, string, socket, time, datetime
 from twisted.internet import protocol, endpoints, reactor
 from twisted.protocols import basic as basicProtocols
 
-#from maverick.server.TournamentSystem import TournamentSystem
 from TournamentSystem import TournamentSystem
 
 ################################################################################
