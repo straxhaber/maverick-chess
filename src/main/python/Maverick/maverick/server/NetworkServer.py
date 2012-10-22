@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-import os, sys, string, socket, time, datetime
-
 from twisted.internet import protocol, endpoints, reactor
 from twisted.protocols import basic as basicProtocols
 
@@ -14,7 +12,7 @@ from TournamentSystem import TournamentSystem
 ## Port 7782 is not registered for use with the IANA as of December 17th, 2002
 defaultPort = 7782
 
-class MaverickProt(basicProtocols.LineOnlyReceiver):
+class MaverickProtocol(basicProtocols.LineOnlyReceiver):
     """
     Protocol for an asynchronous server that administers chess games to clients
     """
@@ -28,7 +26,7 @@ class MaverickProt(basicProtocols.LineOnlyReceiver):
         """
         Store a reference to the TournamentSystem backing up this server
         """
-        MaverickProt.__tournSys = tournamentSystem
+        MaverickProtocol.__tournSys = tournamentSystem
 
     def connectionMade(self):
         """
@@ -40,9 +38,9 @@ class MaverickProt(basicProtocols.LineOnlyReceiver):
         ## Print out the server name and version
         ##  (e.g., "MaverickChessServer/1.0a1")
         fStr = "{0}/{1} WaitingForRequest" ## Template for welcome message
-        welcomeMsg = fStr.format(MaverickProt._name, MaverickProt._version)
+        welcomeMsg = fStr.format(MaverickProtocol._name,
+                                 MaverickProtocol._version)
         self.sendLine(welcomeMsg)
-
 
     def connectionLost(self, reason=None):
         """
@@ -61,7 +59,7 @@ class MaverickProt(basicProtocols.LineOnlyReceiver):
         ### FIXME: finish writing this method
 
         ### TODO: get request name and arguments
-        requestName = "REGISTER"
+        requestName = line.split(" ")[0]
         reqArgs = {"name":"Matthew Strax-Haber"}
 
         errorMsg = None
@@ -158,7 +156,7 @@ class MaverickProt(basicProtocols.LineOnlyReceiver):
         #        (errCode, result) = self.__tournSys.fixme() ## FIXME
         #        if errCode == 0:
         #            fStr = "SUCCESS \"{0}\""
-        #            response = fStr.format(str(playerID))
+        #            response = fStr.format(str(playerID)) ## FIXME
         #        elif errCode == -1:
         #            errorMsg = "Unknown error"
 
@@ -177,9 +175,9 @@ class MaverickProt(basicProtocols.LineOnlyReceiver):
             ## TODO: log invalid request
         
 
-class ChessServerFactory(protocol.ServerFactory):
+class MaverickProtocolFactory(protocol.ServerFactory):
     """
-    This is a simple factory that provides a ChessServerProtocol backed by a
+    This is a simple factory that provides a MaverickProtocol backed by a
     TournamentSystem instance
 
     It does little more than build a protocol with a reference to the
@@ -193,7 +191,11 @@ class ChessServerFactory(protocol.ServerFactory):
         self._tournamentSystem = tournamentSystem
         
     def buildProtocol(self, addr):
-        return MaverickProt(self._tournamentSystem)
+        """
+        Create an instance of MaverickProtocol
+        @param addr: an object implementing L{twisted.internet.interfaces.IAddress}
+        """
+        return MaverickProtocol(self._tournamentSystem)
 
 def _main(port):
     """
@@ -204,7 +206,7 @@ def _main(port):
 
     ## Run a server on the specified port
     endpoint = endpoints.TCP4ServerEndpoint(reactor, port)
-    endpoint.listen(ChessServerFactory(core))
+    endpoint.listen(MaverickProtocolFactory(core))
     reactor.run()
 
 

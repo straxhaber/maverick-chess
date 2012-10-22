@@ -1,7 +1,5 @@
 #!/usr/bin/python
 
-import os,sys
-
 ################################################################################
 # Code written by Matthew Strax-Haber and James Magnarelli. All Rights Reserved.
 ################################################################################
@@ -159,7 +157,7 @@ class TournamentSystem:
         user to it. """
         
         for g_id, game in self._id_to_game.iteritems():
-            if game.getStatus() == Game._GAME_WAITING_FOR_PLAYERS:
+            if game.getStatus() == Game._GAME_PENDING_AWAITING_PLAYERS:
                 game.addPlayer(playerID)
                 return g_id
             
