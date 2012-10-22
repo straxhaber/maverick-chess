@@ -8,8 +8,10 @@
 A chess server that administers games
 """
 
-class Game:
-    """Represents a chess game in Maverick"""
+class ChessGame:
+    """
+    Represents a chess game in Maverick
+    """
     __version = "1.0a1" ## TODO: check to make sure that this matches when un-pickling
 
     _MOVE_SUCCESS = 34923498
@@ -128,36 +130,28 @@ class TournamentSystem:
     #Maps gameIDs to game objects.  Initially empty.
     _id_to_game = {}
     
-    
-    def saveGames(self, fileName):
-        """Pickles the current games' states to a file of the given filename."""
-        
-    def loadGames(self, fileName):
-        """Loads state from a file of the given fileName, previously created 
-        via the saveGames(fileName) method.
-        """
-        
-    def register(self, name):
-        """ Registers a player with the system, returning their playerID.  
-        This should be called before trying to join a player to a game. """    
-        
     def _newGame(self):
-        """Creates a new game, without players, and returns its gameID."""
-        g = Game()
+        """
+        TODO
+        
+        Creates a new game, without players, and returns its gameID.
+        """
+        g = ChessGame()
         self._id_to_game += {self._next_id: g}
         self._next_id += 1
         return self._next_id - 1
-    
-
-        
         
     def joinGame(self, playerID):
-        """Joins the player with the given playerID to a game with fewer than 
+        """
+        TODO
+        
+        Joins the player with the given playerID to a game with fewer than 
         2 players.  If there are no such games, this creates one and adds the
-        user to it. """
+        user to it.
+        """
         
         for g_id, game in self._id_to_game.iteritems():
-            if game.getStatus() == Game._GAME_PENDING_AWAITING_PLAYERS:
+            if game.getStatus() == ChessGame._GAME_PENDING_AWAITING_PLAYERS:
                 game.addPlayer(playerID)
                 return g_id
             
@@ -167,14 +161,101 @@ class TournamentSystem:
         return g_id
     
     def _cancelGame(self, gameID):
-        """Marks the game with the given gameID as canceled.
-        Future calls to getStatus() for the game in question will return 
-        Game._GAME_FINISHED_CANCELED"""
+        """
+        Marks the game with the given gameID as canceled.
+        
+        @postcondition: Future calls to getStatus() for the specified game will return
+        ChessGame._GAME_FINISHED_CANCELED
+        
+        @param gameID: TODO
+        """
         try:
-            self._id_to_game.get(gameID)._setStatus(Game._GAME_FINISHED_CANCELLED)
+            self._id_to_game.get(gameID)._setStatus(ChessGame._GAME_FINISHED_CANCELLED)
         except KeyError:
             print 'Could not find gameID'
+    
+    ## TODO: Rewrite code above
+    ## TODO: Fill in stubs below with logic
+    
+    def saveGames(self, fileName):
+        """
+        Pickles the current games' states to a file
         
+        @param fileName: The file to save state to
+        """
+        
+    def loadGames(self, fileName):
+        """
+        Load state from a file
+        
+        @param fileName: file created using TournamentSystem.saveGames 
+        """
+    
+    def register(self, name):
+        """
+        Registers a player with the system, returning their playerID.
+        
+        This should be called before trying to join a player to a game.
+        
+        @param name: TODO
+        
+        @return: TODO
+        """
+        return (-1, {"playerID" : "not yet implemented"})
+    
+    def playGame(self, playerID):
+        """
+        TODO
+        
+        @param playerID: TODO
+        
+        @return: TODO
+        """
+        return (-1, {"gameID" : "not yet implemented"})
+    
+    def getStatus(self, playerID, gameID):
+        """
+        TODO
+        
+        @param playerID: TODO
+        @param gameID: TODO
+        
+        @return: TODO
+        """
+        return (-1, {"status" : "not yet implemented"})
+    
+    def getState(self, playerID, gameID):
+        """
+        TODO
+        
+        @param playerID: TODO
+        @param gameID: TODO
+        
+        @return: TODO
+        """
+        return (-1,
+                { "youAre" : "not yet implemented",
+                    "turn" : "not yet implemented",
+                    "board" : "not yet implemented", # make this a JSON array
+                    "history" : "not yet implemented"
+                    } # make this a JSON array -- see spec
+                )
+        
+    def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
+        """
+        TODO
+        
+        @param playerID: TODO
+        @param gameID: TODO
+        @param fromRank: TODO
+        @param fromFile: TODO
+        @param toRank: TODO
+        @param toFile: TODO
+        
+        @return: TODO
+        """
+        return (-1, {"result" : "not yet implemented"})
+    
     
 def main():
     print "This class should not be run directly"
