@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from twisted.internet import protocol, endpoints, reactor
+from twisted.internet  import protocol, endpoints, reactor
 from twisted.protocols import basic as basicProtocols
 
 from TournamentSystem import TournamentSystem
@@ -57,6 +57,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
         ### TODO: log client requests
 
         ### FIXME: finish writing this method
+        ### TODO: Sanitize input
 
         ### TODO: get request name and arguments
         requestName = line.split(" ")[0]
@@ -145,6 +146,10 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                     response = fStr.format() ## FIXME
                 elif errCode == -1:
                     errorString = "Unknown error"
+                    
+        else:
+            fStr = "Unrecognized verb \"{0}\" in request"
+            errorString = fStr.format(requestName)
 
         ## Template for new request types
         #elif requestName == "FIXME": ## FIXME
@@ -173,6 +178,8 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
             errorMsg = fStr.format(errorString, line)
             self.sendLine(errorMsg)
             ## TODO: log invalid request
+            
+        self.transport.loseConnection()
         
 
 class MaverickProtocolFactory(protocol.ServerFactory):
@@ -199,7 +206,7 @@ class MaverickProtocolFactory(protocol.ServerFactory):
 
 def _main(port):
     """
-    Main method
+    Main method: called when the server code is run
     """
     ## Initialize a new instance of MaverickCore
     core = TournamentSystem()
