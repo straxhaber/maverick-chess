@@ -10,3 +10,7 @@
 
 ## Python files to ignore
 *.pyc
+
+## Eclipse files to ignore
+*.project
+*.pydevproject
