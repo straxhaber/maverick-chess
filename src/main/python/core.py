@@ -67,6 +67,10 @@ class Game:
     Remember, the board is [row][column]."""
     board = _initial_board
     
+    """The history of the game as a list of plies.  The first element in the list
+    is the first ply made. Plies are recorded as tuples of form (moveFrom, moveTo)"""
+    ply_history = []
+    
     """The current status of the game.  Initially, it is waiting for players."""
     status = _GAME_PENDING_AWAITING_PLAYERS
     
@@ -101,17 +105,28 @@ class Game:
         
     def getMoveHistory(self):
         """Returns a list of all plies made in the game."""
-        # TODO: record ply history and return it here
+        return self.ply_history
         
     def isWhiteTurn(self):
         """Returns true if it is currently the white player's turn, 
         false otherwise."""
-        # TODO: count number of plies and determine whose turn it is. For now, return true.
+        return self.ply_history.count(value)%2 == 0
         
     def makeMove(self, moveFrom, moveTo):
         """Moves the piece at location moveFrom to location moveTo.  Returns
         MOVE_SUCCESS on success, MOVE_ILLEGAL on failure."""
         
+        movedPiece = getPiece(moveFrom)
+        if (not(self._isValidMove(movedPiece, moveFrom, moveTo))):
+            return self.MOVE_ILLEGAL
+        else: #actually make the move
+            takenPiece = self._pieceTaken(moveTo)
+            self._doMove(movedPiece, moveTo, takenPiece)
+            self._updateFlags(movedPiece, moveFrom, moveTo, takenPiece)
+            #record the move
+            self.ply_history.append((moveFrom, moveTo))
+            return self.MOVE_SUCCESS
+                
         ## TODO: write a make move that modifies the state of the board noticeably
 
 
