@@ -66,7 +66,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
         errorString = None
 
         if requestName == "REGISTER":
-            expectedArguments={"name"}
+            expectedArguments = {"name"}
             if expectedArguments != set(reqArgs):
                 fStr = "Invalid arguments, expected: {0}"
                 errorString = fStr.format(str(list(expectedArguments)))
@@ -81,7 +81,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                     errorString = "Name already in use"
 
         elif requestName == "PLAY_GAME":
-            expectedArguments={"playerID"}
+            expectedArguments = {"playerID"}
             if expectedArguments != set(reqArgs):
                 fStr = "Invalid arguments, expected: {0}"
                 errorString = fStr.format(str(list(expectedArguments)))
@@ -95,7 +95,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                     errorString = "Unknown error"
 
         elif requestName == "GET_STATUS":
-            expectedArguments={"playerID", "gameID"}
+            expectedArguments = {"playerID", "gameID"}
             if expectedArguments != set(reqArgs):
                 fStr = "Invalid arguments, expected: {0}"
                 errorString = fStr.format(str(list(expectedArguments)))
@@ -111,7 +111,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                     errorString = "Unknown error"
 
         elif requestName == "GET_STATE":
-            expectedArguments={"playerID", "gameID"}
+            expectedArguments = {"playerID", "gameID"}
             if expectedArguments != set(reqArgs):
                 fStr = "Invalid arguments, expected: {0}"
                 errorString = fStr.format(str(list(expectedArguments)))
@@ -126,7 +126,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                     errorString = "Unknown error"
 
         elif requestName == "MAKE_PLY":
-            expectedArguments={"playerID", "gameID",
+            expectedArguments = {"playerID", "gameID",
                                "fromRank", "fromFile",
                                "toRank", "toFile"}
             if expectedArguments != set(reqArgs):
@@ -215,7 +215,6 @@ def _main(port):
     endpoint = endpoints.TCP4ServerEndpoint(reactor, port)
     endpoint.listen(MaverickProtocolFactory(core))
     reactor.run()
-
-
+    
 if __name__ == '__main__':
     _main(defaultPort)

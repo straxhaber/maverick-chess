@@ -1,135 +1,317 @@
 #!/usr/bin/python
 
-################################################################################
-# Code written by Matthew Strax-Haber and James Magnarelli. All Rights Reserved.
-################################################################################
+"""TournamentSystem.py: A chess server that administers games"""
 
-"""
-A chess server that administers games
-"""
+__author__ = "Matthew Strax-Haber and James Magnarelli"
+__version__ = "pre-alpha"  # Used in checks for version during un-pickling
+__status__ = "Development"
+__maintainer__ = "Matthew Strax-Haber and James Magnarelli"
 
-class ChessGame:
-    """
-    Represents a chess game in Maverick
-    """
-    __version = "1.0a1" ## TODO: check to make sure that this matches when un-pickling
+###############################################################################
+# Code written by Matthew Strax-Haber & James Magnarelli. All Rights Reserved.
+###############################################################################
 
-    _MOVE_SUCCESS = 34923498
-    _MOVE_ILLEGAL = 78996998
-    _GAME_PENDING_AWAITING_PLAYERS = 87685854 
-    _GAME_ONGOING = 23456342
-    _GAME_FINISHED_BLACK_WON = 78739482
-    _GAME_FINISHED_WHITE_WON = 14563324
-    _GAME_FINISHED_CANCELLED = 14563789
-    
-    _P_EMPTY_SPACE ="."
-    _P_BLACK_PAWN ="p"
-    _P_BLACK_ROOK ="r"
-    _P_BLACK_KNIGHT ="n"
-    _P_BLACK_BISHOP ="b"
-    _P_BLACK_QUEEN ="q"
-    _P_BLACK_KING ="k"
-    _P_WHITE_PAWN ="P"
-    _P_WHITE_ROOK ="R"
-    _P_WHITE_KNIGHT ="N"
-    _P_WHITE_BISHOP ="B"
-    _P_WHITE_QUEEN ="Q"
-    _P_WHITE_KING ="K"
-    #The width and height of a standard chess board.  Probably won't change.
-    _BOARD_WIDTH = 8
-    
-    
-    """The initial state of the board.
-    NOTE:  THIS IS INCONSISTENT WITH THE ORDERING IN ALGEBRAIC CHESS NOTATION.
-    Explanation:  Traditionally, the starting position of the white king
-    might be represented with a string like "d1", meaning column d row 1.
-    One might think of representing this in a 2-D array at location [4][1]  
-    HOWEVER, our representation is indexed as follows: [row][column],
-    SO THE POSITION "d1" IS REPRESENTED IN THE board ARRAY AT [1][4].
-     
-    The start state corresponds roughly to this:
-        [    ['R','N','B','Q','K','B','N','R'],
-             ['P','P','P','P','P','P','P','P'],       
-             ['.','.','.','.','.','.','.','.'],       
-             ['.','.','.','.','.','.','.','.'],       
-             ['.','.','.','.','.','.','.','.'],       
-             ['.','.','.','.','.','.','.','.'],       
+
+class ChessBoard:
+    """Represents a chess game in Maverick"""
+
+    # Constants for the pieces
+    PAWN = "P"
+    ROOK = "R"
+    KNGT = "N"
+    BISH = "B"
+    QUEN = "Q"
+    KING = "K"
+
+    # The width and height of a standard chess board.  Probably won't change.
+    BOARD_SIZE = 8
+
+    def __init__(self):
+        """Initialize a new Chess game according to normal Chess rules
+
+        NOTE: Board is represented as a list of rows; be careful dereferencing
+            i.e., "d1" is self.board[1][4]
+
+        The start state corresponds roughly to this:
+            [['R','N','B','Q','K','B','N','R'],
+             ['P','P','P','P','P','P','P','P'],
+             ['.','.','.','.','.','.','.','.'],
+             ['.','.','.','.','.','.','.','.'],
+             ['.','.','.','.','.','.','.','.'],
+             ['.','.','.','.','.','.','.','.'],
              ['p','p','p','p','p','p','p','p'],
              ['r','n','b','q','k','b','n','r']]
-    """
-    _initial_board = []
-    #Remember, the board is [row][column].  
-    #tack on the first row of pieces (white bishop at c1 should be at [0][2]
-    _initial_board.append([_P_WHITE_ROOK, _P_WHITE_KNIGHT, _P_WHITE_BISHOP,
-                       _P_WHITE_QUEEN, _P_WHITE_KING, _P_WHITE_BISHOP, 
-                       _P_WHITE_KNIGHT, _P_WHITE_ROOK])
-    _initial_board.append([_P_WHITE_PAWN for x in range(_BOARD_WIDTH)])
-    _initial_board += [[_P_EMPTY_SPACE] * 8] * 4
-    _initial_board.append([_P_BLACK_PAWN for x in range(_BOARD_WIDTH)])
-    _initial_board.append([_P_BLACK_ROOK, _P_BLACK_KNIGHT, _P_BLACK_BISHOP,
-                       _P_BLACK_QUEEN, _P_BLACK_KING, _P_BLACK_BISHOP, 
-                       _P_BLACK_KNIGHT, _P_BLACK_ROOK])
-    
-    """The current state of the board.  Initialized to _initial_board.
-    Remember, the board is [row][column]."""
-    board = _initial_board
-    
-    """Two arrays of integers, one for each player.  Each int represents the en-
-    passant status of a particular column.  1 means that en passant capture is 
-    possible for that column, 0 means it is not"""
-    passant_flags = {'white': [0 for x in range(_BOARD_WIDTH)],
-                     'black': [0 for x in range(_BOARD_WIDTH)]}
-    
-    """The history of the game as a list of plies.  The first element in the list
-    is the first ply made. Plies are recorded as tuples of form (moveFrom, moveTo)"""
-    ply_history = []
-    
-    """The current status of the game.  Initially, it is waiting for players."""
-    status = _GAME_PENDING_AWAITING_PLAYERS
-    
-    """A mapping of color to playerID.  When players have registered,
-    will look like: {"white": whiteplayerid, "black": blackplayerid}
-    """
-    color_to_playerID = {"white": None, "black": None}
-        
-    def getStatus(self):
-        """Returns a status code representing the current game state.  Possible
-        return values:  GAME_WAITING_FOR_PLAYERS, GAME_IN_PROGRESS, 
-        GAME_OVER_BLACK_WON, GAME_OVER_WHITE_WON
+             
+        There are special states that must be kept track of:
+            - En passant
+            - Castling
         """
-        return self.status
+
+        ## Initialize ply history -- a list of (moveFrom, moveTo) plies
+        self.history = []
         
-    def _setStatus(self, status):
-        """Sets the status of this game object to the given integer value.
-        Should be one of the constant status values defined in this class."""
-        self.status=status
+        # Initialize board to the basic chess starting position
+        # NOTE: the board is referenced as self.board[row][column].
+        self.board = []
+        self.board.append([
+                (ChessMatch.WHITE, ChessBoard.ROOK),
+                (ChessMatch.WHITE, ChessBoard.KNGT),
+                (ChessMatch.WHITE, ChessBoard.BISH),
+                (ChessMatch.WHITE, ChessBoard.QUEN),
+                (ChessMatch.WHITE, ChessBoard.KING),
+                (ChessMatch.WHITE, ChessBoard.BISH),
+                (ChessMatch.WHITE, ChessBoard.KNGT),
+                (ChessMatch.WHITE, ChessBoard.ROOK)])
+        self.board += [(ChessMatch.WHITE, ChessBoard.PAWN)] * 8
+        self.board += [[None] * 8] * 4
+        self.board += [(ChessMatch.BLACK, ChessBoard.PAWN)] * 8
+        self.board.append([
+                (ChessMatch.BLACK, ChessBoard.ROOK),
+                (ChessMatch.BLACK, ChessBoard.KNGT),
+                (ChessMatch.BLACK, ChessBoard.BISH),
+                (ChessMatch.BLACK, ChessBoard.QUEN),
+                (ChessMatch.BLACK, ChessBoard.KING),
+                (ChessMatch.BLACK, ChessBoard.BISH),
+                (ChessMatch.BLACK, ChessBoard.KNGT),
+                (ChessMatch.BLACK, ChessBoard.ROOK)])
+
+        ## Initialize en passant flags (True means en passant capture is
+        ## possible in the given column
+        self.flag_enpassant = {
+            ChessMatch.WHITE: [False] * ChessBoard.BOARD_SIZE,
+            ChessMatch.BLACK: [False] * ChessBoard.BOARD_SIZE}
+        
+        ## Initialize castle flags (queen-side ability, king-side ability)
+        ## Does not account for pieces blocking or checking the castle
+        self.flag_canCastle = {
+            ChessMatch.WHITE: (True, True),
+            ChessMatch.BLACK: (True, True)}
+        
+    def whoseTurn(self):
+        """Returns the player whose turn it is (even if game is over)"""
+        if len(self.ply_history) % 2:
+            return ChessMatch.WHITE
+        else:
+            return ChessMatch.BLACK
     
-    def getBlack(self):
-        """Returns the PlayerID of the black player. """
-        return self.color_to_playerID["black"]
+    def makeMove(self, player, fromRank, fromFile, toRank, toFile):
+        """Makes a move if legal
         
-    def getWhite(self):
-        """Returns the PlayerID of the white player. """
-        return self.color_to_playerID["white"]
+        @param player: the player making the move (BLACK or WHITE constant)
+        @param fromRank: the rank from which piece is moving (integer in [0,7])
+        @param fromFile: the file from which piece is moving (integer in [0,7])
+        @param toRank: the rank to which piece is moving (integer in [0,7])
+        @param toFile: the file to which piece is moving (integer in [0,7])
         
-    def getBoard(self):
-        """Returns the current board state - an 8x8 2D array of characters."""
-        return self.board
+        @return: true if the move was successful, false otherwise
         
-    def getMoveHistory(self):
-        """Returns a list of all plies made in the game."""
-        return self.ply_history
+        - Check if the move is legal
+        - Add move to game log
+        - Remove the moving piece from the starting position
+        - Update flags if necessary
+        - Add the moving piece to the starting position (possibly overwriting)
+        - Delete pawns in en passant state if relevant
         
-    def isWhiteTurn(self):
-        """Returns true if it is currently the white player's turn, 
-        false otherwise."""
-        return len(self.ply_history)%2 == 0
+        @todo: write the code for this class"""
+        
+        if not self.legalMoveP(player, fromRank, fromFile, toRank, toFile):
+            return False
+        else:
+            return False ## FIXME
+        
+    def legalMoveP(self, player, fromRank, fromFile, toRank, toFile):
+        """Returns true if the specified move is legal
+        
+        Arguments are the same as makeMove
+        
+        Checks if:
+         - There is a piece at the from position
+         - The to position doesn't contain a piece owned by the player
+         - The path to make the move is free (for bishops, rooks, queens, etc.)
+         - Flags don't preclude the move (i.e., castling)
+        
+        @todo: write the code for this class"""
+        
+        return False ## FIXME
     
-    def _stdLocToXY(self, loc):
+class ChessMatch:
+    # Constants for game status
+    STATUS_PENDING = 602   # Game is waiting for players
+    STATUS_ONGOING = 352   # Game is in progress
+    STATUS_BLACK_WON = 586   # Black won the game
+    STATUS_WHITE_WON = 756   # White won the game
+    STATUS_DRAWN = 586   # White won the game
+    STATUS_CANCELLED = 501   # Game was halted early
+    
+    # Constants for the players
+    BLACK = "X"
+    WHITE = "O"
+    
+    def __init__(self):
+        """Initialize a new chess match with initial state"""
+        
+        ## Initialize with a new chess board
+        self.board = ChessBoard()
+        
+        ## Initialize match without players (whose playerIDs can be added later)
+        self.players = { ChessMatch.WHITE : None, ChessMatch.BLACK : None}
+    
+        ## Initialize match status
+        self.status = ChessMatch.STATUS_PENDING
+    
+    def makeMove(self, player, fromRank, fromFile, toRank, toFile):
+        """Makes a move if legal
+        
+        @return: true if the move was successful, false otherwise"""
+        if self.status == ChessMatch.STATUS_ONGOING:
+            return self.board.makeMove(player,
+                                       fromRank, fromFile,
+                                       toRank, toFile)
+        else:
+            return False
+    
+    def joinMatch(self, playerID):
+        """Joins the match in an empty slot. If ready, game starts.
+        
+        @param playerID: ID of the player being added
+        @return: color constant if successful, None otherwise"""
+        
+        if self.status != ChessMatch.STATUS_PENDING:
+            return # Can only join a pending game (no mid-game replacements)
+        
+        if playerID in self.players.values():
+            return # Don't allow a player to play both sides
+        
+        for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+            if self.players[color] == None:
+                self.players[color] = playerID
+                if None not in self.players.values():
+                    self.status = ChessMatch.STATUS_ONGOING
+                return color
+
+
+class TournamentSystem:
+    
+    def __init__(self):
+        """Initializes a new tournament system with no games"""
+        self.nextID = 1 # Next GameID key for game map (to ensure uniqueness) 
+        self.games = {} # Dict from gameIDs to game objects. Initially empty.
+        
+    def joinGame(self, playerID):
+        """Adds the player to a new or pending game.
+        
+        @param playerID: playerID of the player joining a game
+        @return: TODO"""
+        
+        # Add the player to a pending game if one exists 
+        for (gameID, game) in self.games:
+            if game.getStatus() == ChessMatch.STATUS_PENDING:
+                color = game.joinMatch(playerID)
+                if color:
+                    return (0, {"gameID" : gameID})
+
+        # Add a player to a new game otherwise
+        newGame = ChessMatch()
+        self.games += {self.nextID : newGame}
+        self.nextID += 1
+        return (0, {"gameID" : self.nextID - 1})
+    
+    def cancelGame(self, gameID):
+        """Marks the given match as cancelled
+        
+        @return: True if successful, false otherwise
+        @precondition: game is ongoing or bending
+        @postcondition: game.getStatus() = ChessBoard.STATUS_CANCELED
+        
+        @todo: Check if the game ID exists and is ongoing or pending"""
+        try:
+            if (self.games[gameID].status in [ChessMatch.STATUS_ONGOING,
+                                              ChessMatch.STATUS_PENDING]):
+                self.games[gameID].status = ChessMatch.STATUS_CANCELLED
+            else:
+                return False
+        except KeyError:
+            return False
+
+    ## TODO: Fill in stubs below with code
+
+    def saveGames(self, fileName):
+        """Pickles the current games' states to a file
+
+        @param fileName: The file to save state to"""
+        pass # TODO: write this
+        
+    def loadGames(self, fileName):
+        """Load state from a file
+
+        @param fileName: file created using TournamentSystem.saveGames
+        @todo: check to make sure that the pickled data is the same version"""
+        pass # TODO: write this
+    
+    def register(self, name):
+        """Registers a player with the system, returning their playerID.
+        
+        This should be called before trying to join a player to a game.
+        
+        @param name: TODO
+        
+        @return: TODO"""
+        return (-1, {"playerID" : "not yet implemented"})
+    
+    def getStatus(self, playerID, gameID):
+        """TODO
+        
+        @param playerID: TODO
+        @param gameID: TODO
+        
+        @return: TODO"""
+        return (-1, {"status" : "not yet implemented"})
+    
+    def getState(self, playerID, gameID):
+        """TODO
+        
+        @param playerID: TODO
+        @param gameID: TODO
+        
+        @return: TODO"""
+        return (-1,
+                { "youAre" : "not yet implemented",
+                    "turn" : "not yet implemented",
+                    "board" : "not yet implemented", # make this a JSON array
+                    "history" : "not yet implemented"
+                    } # TODO: make this a JSON array -- see spec
+                )
+        
+    def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
+        """TODO
+        
+        @param playerID: TODO
+        @param gameID: TODO
+        @param fromRank: TODO
+        @param fromFile: TODO
+        @param toRank: TODO
+        @param toFile: TODO
+        
+        @return: TODO"""
+        return (-1, {"result" : "not yet implemented"})
+    
+    
+def main():
+    print "This class should not be run directly"
+
+if __name__ == '__main__':
+    main()
+    
+    
+## Orphaned code (kept for re-use)
+if False:
+    @staticmethod
+    def standardChessReferenceToArrayDereference(loc):
         """Converts a position given in standard chess notation to a tuple
         containing the y and x coordinates of the position in our board
         representation. Example: "d1" -> (1,4)"""
-        col = {
+        (columnLetter, rowNum) = loc
+        columnNum = {
                'a':1,
                'b':2,
                'c':3,
@@ -137,14 +319,8 @@ class ChessGame:
                'e':5,
                'f':6,
                'g':7,
-               'h':8 }[loc[0]]
-        return loc[2], col
-        
-    
-    def _getPiece(self, loc):
-        """Returns the piece at the given location, given in (y,x) form for our 
-        board represention"""
-        return self.board[loc[0]][loc[1]]
+               'h':8 }[columnLetter]
+        return (rowNum, columnNum)
     
     def _pieceTaken(self, loc):
         """Returns true if a move to the given location (given in (y,x) form)
@@ -156,8 +332,8 @@ class ChessGame:
         @return: A tuple containing the piece that would be taken (possibly None),
         and the loc from which it would be taken (in (y,x) form) (possibly None)
         """
-        #check for en passant
-        if(self.isWhiteTurn()):
+        # Check for en passant
+        if (self.isWhiteTurn()):
             passantRow = 2
             pawnRow = 3
             pawn = self._P_WHITE_PAWN
@@ -168,13 +344,13 @@ class ChessGame:
             pawn = self._P_BLACK_PAWN
             flags = self.passant_flags['black']
         
-        if((loc[1] == passantRow) and flags[loc[0]]):
+        if ((loc[1] == passantRow) and flags[loc[0]]):
             tLoc = loc[0], pawnRow
             return pawn, tLoc
         
         #no en-passant.  test for normal capture
         piece = self._getPiece(loc)
-        if(piece != None):
+        if (piece != None):
             return piece, loc
         else:
             return None, None
@@ -211,143 +387,3 @@ class ChessGame:
             #record the move
             self.ply_history.append((moveFromYX, moveToYX))
             return self.MOVE_SUCCESS
-                
-
-
-class TournamentSystem:
-    
-    #the next gameID we'll add to the id_to_game map
-    _next_id = 0
-    
-    #Maps gameIDs to game objects.  Initially empty.
-    _id_to_game = {}
-    
-    def _newGame(self):
-        """
-        Creates a new game, without players, and returns its gameID.
-        """
-        g = ChessGame()
-        self._id_to_game += {self._next_id: g}
-        self._next_id += 1
-        return self._next_id - 1
-        
-    def joinGame(self, playerID):
-        """
-        Joins the player with the given playerID to a game with fewer than 
-        2 players.  If there are no such games, this creates one and adds the
-        user to it.
-        """
-        
-        for g_id, game in self._id_to_game.iteritems():
-            if game.getStatus() == ChessGame._GAME_PENDING_AWAITING_PLAYERS:
-                game.addPlayer(playerID)
-                return g_id
-            
-        #If we didn't find any open games, add them to a new one.
-        g_id = self._newGame()
-        self._id_to_game.get(g_id).addPlayer(playerID)
-        return g_id
-    
-    def _cancelGame(self, gameID):
-        """
-        Marks the game with the given gameID as canceled.
-        
-        @postcondition: Future calls to getStatus() for the specified game will return
-        ChessGame._GAME_FINISHED_CANCELED
-        
-        @param gameID: TODO
-        """
-        try:
-            self._id_to_game.get(gameID)._setStatus(ChessGame._GAME_FINISHED_CANCELLED)
-        except KeyError:
-            print 'Could not find gameID'
-    
-    ## TODO: Rewrite code above
-    ## TODO: Fill in stubs below with logic
-    
-    def saveGames(self, fileName):
-        """
-        Pickles the current games' states to a file
-        
-        @param fileName: The file to save state to
-        """
-        
-    def loadGames(self, fileName):
-        """
-        Load state from a file
-        
-        @param fileName: file created using TournamentSystem.saveGames 
-        """
-    
-    def register(self, name):
-        """
-        Registers a player with the system, returning their playerID.
-        
-        This should be called before trying to join a player to a game.
-        
-        @param name: TODO
-        
-        @return: TODO
-        """
-        return (-1, {"playerID" : "not yet implemented"})
-    
-    def playGame(self, playerID):
-        """
-        TODO
-        
-        @param playerID: TODO
-        
-        @return: TODO
-        """
-        return (-1, {"gameID" : "not yet implemented"})
-    
-    def getStatus(self, playerID, gameID):
-        """
-        TODO
-        
-        @param playerID: TODO
-        @param gameID: TODO
-        
-        @return: TODO
-        """
-        return (-1, {"status" : "not yet implemented"})
-    
-    def getState(self, playerID, gameID):
-        """
-        TODO
-        
-        @param playerID: TODO
-        @param gameID: TODO
-        
-        @return: TODO
-        """
-        return (-1,
-                { "youAre" : "not yet implemented",
-                    "turn" : "not yet implemented",
-                    "board" : "not yet implemented", # make this a JSON array
-                    "history" : "not yet implemented"
-                    } # make this a JSON array -- see spec
-                )
-        
-    def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
-        """
-        TODO
-        
-        @param playerID: TODO
-        @param gameID: TODO
-        @param fromRank: TODO
-        @param fromFile: TODO
-        @param toRank: TODO
-        @param toFile: TODO
-        
-        @return: TODO
-        """
-        return (-1, {"result" : "not yet implemented"})
-    
-    
-def main():
-    print "This class should not be run directly"
-
-if __name__ == '__main__':
-    main()
-
