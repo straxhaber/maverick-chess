@@ -74,6 +74,12 @@ class ChessGame:
     Remember, the board is [row][column]."""
     board = _initial_board
     
+    """Two arrays of integers, one for each player.  Each int represents the en-
+    passant status of a particular column.  1 means that en passant capture is 
+    possible for that column, 0 means it is not"""
+    passant_flags = {'white': [0 for x in range(_BOARD_WIDTH)],
+                     'black': [0 for x in range(_BOARD_WIDTH)]}
+    
     """The history of the game as a list of plies.  The first element in the list
     is the first ply made. Plies are recorded as tuples of form (moveFrom, moveTo)"""
     ply_history = []
@@ -117,21 +123,81 @@ class ChessGame:
     def isWhiteTurn(self):
         """Returns true if it is currently the white player's turn, 
         false otherwise."""
-        return self.ply_history.count(value)%2 == 0
+        return len(self.ply_history)%2 == 0
+    
+    def _stdLocToXY(self, loc):
+        """Converts a position given in standard chess notation to a tuple
+        containing the y and x coordinates of the position in our board
+        representation. Example: "d1" -> (1,4)"""
+        col = {
+               'a':1,
+               'b':2,
+               'c':3,
+               'd':4,
+               'e':5,
+               'f':6,
+               'g':7,
+               'h':8 }[loc[0]]
+        return loc[2], col
+        
+    
+    def _getPiece(self, loc):
+        """Returns the piece at the given location, given in (y,x) form for our 
+        board represention"""
+        return self.board[loc[0]][loc[1]]
+    
+    def _pieceTaken(self, loc):
+        """Returns true if a move to the given location (given in (y,x) form)
+        would capture a piece.
+        
+        @param loc: The location to be evaluated for piece capture, given in x-y 
+        form for our board representation
+        
+        @return: A tuple containing the piece that would be taken (possibly None),
+        and the loc from which it would be taken (in (y,x) form) (possibly None)
+        """
+        #check for en passant
+        if(self.isWhiteTurn()):
+            passantRow = 2
+            pawnRow = 3
+            pawn = self._P_WHITE_PAWN
+            flags = self.passant_flags['white'] 
+        else:
+            passantRow = 7
+            pawnRow = 6
+            pawn = self._P_BLACK_PAWN
+            flags = self.passant_flags['black']
+        
+        if((loc[1] == passantRow) and flags[loc[0]]):
+            tLoc = loc[0], pawnRow
+            return pawn, tLoc
+        
+        #no en-passant.  test for normal capture
+        piece = self._getPiece(loc)
+        if(piece != None):
+            return piece, loc
+        else:
+            return None, None
+        
+        
         
     def makeMove(self, moveFrom, moveTo):
         """Moves the piece at location moveFrom to location moveTo.  Returns
         MOVE_SUCCESS on success, MOVE_ILLEGAL on failure."""
         
-        movedPiece = getPiece(moveFrom)
-        if (not(self._isValidMove(movedPiece, moveFrom, moveTo))):
+        #convert both locations to Y-X format for use with our board array
+        moveFromYX = self._stdLocToXY(moveFrom)
+        moveToYX = self._stdLocToXY(moveTo)
+        
+        movedPiece = self._getPiece(moveFromYX)
+        if (not(self._isValidMove(movedPiece, moveFromYX, moveToYX))): # TODO: implement this method
             return self.MOVE_ILLEGAL
         else: #actually make the move
-            takenPiece = self._pieceTaken(moveTo)
-            self._doMove(movedPiece, moveTo, takenPiece)
-            self._updateFlags(movedPiece, moveFrom, moveTo, takenPiece)
+            takenPiece = self._pieceTaken(moveToYX)
+            self._doMove(movedPiece, moveToYX, takenPiece) # TODO: implement this method
+            self._updateFlags(movedPiece, moveFromYX, moveToYX, takenPiece) # TODO: implement this method
             #record the move
-            self.ply_history.append((moveFrom, moveTo))
+            self.ply_history.append((moveFromYX, moveToYX))
             return self.MOVE_SUCCESS
                 
         ## TODO: write a make move that modifies the state of the board noticeably
