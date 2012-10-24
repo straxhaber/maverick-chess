@@ -179,7 +179,20 @@ class ChessGame:
         else:
             return None, None
         
+    def _doMove(self, movedPiece, moveFromLoc, moveToLoc, takenLoc):
+        """Makes the given move, in which movedPiece moves to moveTo, taking 
+        the piece at takenLoc in the process.  Updates the board.
+         
+        @param movedPiece the piece being moved
+        @param moveTo the location that movedPiece is moving to.  Assumed to be
+        legal and in Y-X format as output by self._stdLocToXY
+        @param takenLoc the location of the taken piece in Y-X format as output
+        by self._stdLocToXY.  Will be null if no pieces are taken"""
         
+        piece = self._getPiece(moveFromLoc)
+        self.board[takenLoc[0]][takenLoc[1]] = self._P_EMPTY_SPACE
+        self.board[moveFromLoc[0]][moveFromLoc[1]] = self._P_EMPTY_SPACE
+        self.board[moveToLoc[0]][moveToLoc[1]] = piece
         
     def makeMove(self, moveFrom, moveTo):
         """Moves the piece at location moveFrom to location moveTo.  Returns
@@ -189,18 +202,16 @@ class ChessGame:
         moveFromYX = self._stdLocToXY(moveFrom)
         moveToYX = self._stdLocToXY(moveTo)
         
-        movedPiece = self._getPiece(moveFromYX)
-        if (not(self._isValidMove(movedPiece, moveFromYX, moveToYX))): # TODO: implement this method
+        if (not(self._isValidMove(moveFromYX, moveToYX))): # TODO: implement this method
             return self.MOVE_ILLEGAL
         else: #actually make the move
-            takenPiece = self._pieceTaken(moveToYX)
-            self._doMove(movedPiece, moveToYX, takenPiece) # TODO: implement this method
-            self._updateFlags(movedPiece, moveFromYX, moveToYX, takenPiece) # TODO: implement this method
+            takenPieceInfo = self._pieceTaken(moveToYX)
+            self._doMove(moveFromYX, moveToYX, takenPieceInfo[1])
+            self._updateFlags(moveFromYX, moveToYX, takenPieceInfo[1]) # TODO: implement this method
             #record the move
             self.ply_history.append((moveFromYX, moveToYX))
             return self.MOVE_SUCCESS
                 
-        ## TODO: write a make move that modifies the state of the board noticeably
 
 
 class TournamentSystem:
@@ -213,8 +224,6 @@ class TournamentSystem:
     
     def _newGame(self):
         """
-        TODO
-        
         Creates a new game, without players, and returns its gameID.
         """
         g = ChessGame()
@@ -224,8 +233,6 @@ class TournamentSystem:
         
     def joinGame(self, playerID):
         """
-        TODO
-        
         Joins the player with the given playerID to a game with fewer than 
         2 players.  If there are no such games, this creates one and adds the
         user to it.
