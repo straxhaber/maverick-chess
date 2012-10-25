@@ -198,7 +198,7 @@ def _main(port):
     # Run a server on the specified port
     endpoint = endpoints.TCP4ServerEndpoint(reactor, port)
     endpoint.listen(MaverickProtocolFactory(core))
-    reactor.run()
+    reactor.run() #@UndefinedVariable
     
 if __name__ == '__main__':
     _main(DEFAULT_PORT)
