@@ -3,9 +3,11 @@
 """TournamentSystem.py: A chess server that administers games"""
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
-__version__ = "pre-alpha"  # Used in checks for version during un-pickling
+__version__ = "pre-alpha"
 __status__ = "Development"
 __maintainer__ = "Matthew Strax-Haber and James Magnarelli"
+
+import pickle, random
 
 ###############################################################################
 # Code written by Matthew Strax-Haber & James Magnarelli. All Rights Reserved.
@@ -189,13 +191,13 @@ class ChessMatch:
                     self.status = ChessMatch.STATUS_ONGOING
                 return color
 
-
 class TournamentSystem:
-    
     def __init__(self):
         """Initializes a new tournament system with no games"""
         self.nextID = 1 # Next GameID key for game map (to ensure uniqueness) 
         self.games = {} # Dict from gameIDs to game objects. Initially empty.
+        self.players = {}
+        self._version = __version__ # Used in version check during un-pickling
         
     def joinGame(self, playerID):
         """Adds the player to a new or pending game.
@@ -233,20 +235,27 @@ class TournamentSystem:
         except KeyError:
             return False
 
-    ## TODO: Fill in stubs below with code
-
-    def saveGames(self, fileName):
+    @staticmethod
+    def saveTS(tournament, fileName):
         """Pickles the current games' states to a file
 
         @param fileName: The file to save state to"""
-        pass # TODO: write this
+        fd = open(fileName)
+        pickle.dump(tournament, fd)
         
-    def loadGames(self, fileName):
+    @staticmethod
+    def loadTS(tournament, fileName):
         """Load state from a file
 
         @param fileName: file created using TournamentSystem.saveGames
         @todo: check to make sure that the pickled data is the same version"""
-        pass # TODO: write this
+        fd = open(fileName)
+        tournament = pickle.load(fd)
+        
+        if (tournament._version != __version__):
+            raise TypeError("Attempted loading of an incompatible version")
+        
+        return tournament
     
     def register(self, name):
         """Registers a player with the system, returning their playerID.
@@ -387,3 +396,16 @@ if False:
             #record the move
             self.ply_history.append((moveFromYX, moveToYX))
             return self.MOVE_SUCCESS
+        
+    def _getUniqueInt(intList):
+        maxVal = 2**32-1
+    
+        ## Fail fast if the list is more than half filled in
+        if (len(intList) >= max/2):
+            raise RuntimeError("Cannot play more than 2**31-1 games concurrently")
+        
+        ## Get a unique value
+        n = random.randint(1,maxVal)
+        while n in intList:
+            n = random.randint(1,maxVal)
+        return n
