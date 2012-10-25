@@ -172,7 +172,7 @@ class ChessMatch:
     BLACK = "X"
     WHITE = "O"
     
-    def __init__(self):
+    def __init__(self, firstPlayerID=None):
         """Initialize a new chess match with initial state
         
         @param firstPlayerID: if set, randomly assigned to black or white"""
@@ -182,6 +182,9 @@ class ChessMatch:
         
         # Initialize match without players (whose playerIDs can be added later)
         self.players = { ChessMatch.WHITE : None, ChessMatch.BLACK : None}
+        
+        # Randomly set black or white to firstPlayerID (no-op if not specified)
+        self.players[random.choice(self.players.keys())] = firstPlayerID
     
         # Initialize match status
         self.status = ChessMatch.STATUS_PENDING
@@ -290,7 +293,7 @@ class TournamentSystem:
                     return (True, {"gameID" : gameID})
 
         # Add a player to a new game otherwise
-        newGame = ChessMatch()
+        newGame = ChessMatch(playerID)
         newID = _getUniqueInt(self.games.keys())
         self.games[newID] = newGame
         return (True, {"gameID" : newID})
