@@ -332,13 +332,6 @@ class TournamentSystem:
         @param gameID: TODO
         
         @return: TODO"""
-#        return (True,
-#                { "players" : "not yet implemented",
-#                  "isWhitesTurn" : "not yet implemented",
-#                  "board" : "not yet implemented", # make this a JSON array
-#                  "history" : "not yet implemented"
-#                  } # TODO: make this a JSON array -- see spec
-#                )
 
         if self.games.has_key(gameID):
             g = self.games[gameID]
