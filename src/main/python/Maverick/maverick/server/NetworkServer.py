@@ -12,6 +12,8 @@ from twisted.protocols import basic as basicProtocols
 
 from TournamentSystem import TournamentSystem
 
+import json
+
 ################################################################################
 # Code written by Matthew Strax-Haber and James Magnarelli. All Rights Reserved.
 ################################################################################
@@ -52,7 +54,8 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
 
         ## TODO: JSON-ify
         requestName = line.partition(" ")[0] # Request name (e.g., "REGISTER")
-        requestArgs = {"name": line.partition(" ")[2]} ## FIXME: parse arguments
+        requestArgsString = line.partition(" ")[2]
+#        requestArgs = {"name": line.partition(" ")[2]} ## FIXME: parse arguments
         ## TODO: log requests
         
         # Map of valid request names to
@@ -78,17 +81,25 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                                       {"status"})}
         
         errMsg = None # If this gets set, there was an error
+        
         if requestName in validRequests.keys():
-            (tsCommand, expArgs, _) = validRequests[requestName]
-            if expArgs != set(requestArgs.keys()):
-                fStr = "Invalid arguments, expected: {0}"
-                errMsg = fStr.format(",".join(list(expArgs)))
+            try:
+                requestArgs = json.loads(requestArgsString)
+            except ValueError:
+                errMsg = "Invalid JSON for arguments"
             else:
-                (successP, result) = tsCommand(**requestArgs)
-                if successP:
-                    response = "SUCCESS {0}".format(str(result))
-                if not successP:
-                    errMsg = result["error"]
+                (tsCommand, expArgs, _) = validRequests[requestName]
+                
+                if expArgs != set(requestArgs.keys()):
+                    fStr = "Invalid arguments, expected: {0}"
+                    errMsg = fStr.format(",".join(list(expArgs)))
+                else:
+                    (successP, result) = tsCommand(**requestArgs)
+                    if successP:
+                        jsonStr = json.dumps(result, ensure_ascii=True)
+                        response = "SUCCESS {0}".format(jsonStr)
+                    if not successP:
+                        errMsg = result["error"]
         else:
             errMsg = "Unrecognized verb \"{0}\" in request".format(requestName)
         
