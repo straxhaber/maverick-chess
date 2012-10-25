@@ -304,13 +304,13 @@ class TournamentSystem:
         @postcondition: game.getStatus() = ChessBoard.STATUS_CANCELED
         
         @todo: Check if the game ID exists and is ongoing or pending"""
-        try:
+        if self.games.has_key(gameID):
             if (self.games[gameID].status in [ChessMatch.STATUS_ONGOING,
                                               ChessMatch.STATUS_PENDING]):
                 self.games[gameID].status = ChessMatch.STATUS_CANCELLED
             else:
                 return (False, {"error" : "Game not active"})
-        except KeyError:
+        else:
             return (False, {"error" : "Invalid game ID"})
     
     def getStatus(self, playerID, gameID):
