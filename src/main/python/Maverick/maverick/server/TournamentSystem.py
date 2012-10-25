@@ -239,7 +239,40 @@ class TournamentSystem:
         self.games = {} # Dict from gameIDs to game objects. Initially empty.
         self.players = {} # Dict from playerID to player name
         self._version = __version__ # Used in version check during un-pickling
+
+    @staticmethod
+    def saveTS(tournament, fileName):
+        """Pickles the current games' states to a file
+
+        @param fileName: The file to save state to"""
+        fd = open(fileName)
+        pickle.dump(tournament, fd)
         
+    @staticmethod
+    def loadTS(tournament, fileName):
+        """Load state from a file
+
+        @param fileName: file created using TournamentSystem.saveGames
+        @todo: check to make sure that the pickled data is the same version"""
+        fd = open(fileName)
+        tournament = pickle.load(fd)
+        
+        if (tournament._version != __version__):
+            raise TypeError("Attempted loading of an incompatible version")
+        
+        return tournament
+    
+    def register(self, name):
+        """Registers a player with the system, returning their playerID.
+        
+        This should be called before trying to join a player to a game.
+        
+        @param name: TODO
+        
+        @return: TODO"""
+        #return (True, {"playerID" : "TODO"})
+        return (False, {"error" : "not yet implemented"})
+    
     def joinGame(self, playerID):
         """Adds the player to a new or pending game.
         
@@ -275,39 +308,6 @@ class TournamentSystem:
                 return (False, {"error" : "Game not active"})
         except KeyError:
             return (False, {"error" : "Invalid game ID"})
-
-    @staticmethod
-    def saveTS(tournament, fileName):
-        """Pickles the current games' states to a file
-
-        @param fileName: The file to save state to"""
-        fd = open(fileName)
-        pickle.dump(tournament, fd)
-        
-    @staticmethod
-    def loadTS(tournament, fileName):
-        """Load state from a file
-
-        @param fileName: file created using TournamentSystem.saveGames
-        @todo: check to make sure that the pickled data is the same version"""
-        fd = open(fileName)
-        tournament = pickle.load(fd)
-        
-        if (tournament._version != __version__):
-            raise TypeError("Attempted loading of an incompatible version")
-        
-        return tournament
-    
-    def register(self, name):
-        """Registers a player with the system, returning their playerID.
-        
-        This should be called before trying to join a player to a game.
-        
-        @param name: TODO
-        
-        @return: TODO"""
-        #return (True, {"playerID" : "TODO"})
-        return (False, {"error" : "not yet implemented"})
     
     def getStatus(self, playerID, gameID):
         """TODO
