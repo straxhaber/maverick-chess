@@ -325,7 +325,7 @@ class TournamentSystem:
         else:
             return (False, {"error" : "Invalid game ID"})
     
-    def getState(self, playerID, gameID):
+    def getState(self, gameID):
         """TODO
         
         @param playerID: TODO
