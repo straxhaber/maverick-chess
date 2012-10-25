@@ -95,12 +95,16 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                     fStr = "Invalid arguments, expected: {0}"
                     errMsg = fStr.format(",".join(list(expArgs)))
                 else:
-                    (successP, result) = tsCommand(**requestArgs)
-                    if successP:
-                        jsonStr = json.dumps(result, ensure_ascii=True)
-                        response = "SUCCESS {0}".format(jsonStr)
-                    if not successP:
-                        errMsg = result["error"]
+                    try:
+                        (successP, result) = tsCommand(**requestArgs)
+                    except:
+                        errMsg = "Uncaught exception"
+                    else:
+                        if successP:
+                            jsonStr = json.dumps(result, ensure_ascii=True)
+                            response = "SUCCESS {0}".format(jsonStr)
+                        if not successP:
+                            errMsg = result["error"]
         else:
             errMsg = "Unrecognized verb \"{0}\" in request".format(requestName)
         
