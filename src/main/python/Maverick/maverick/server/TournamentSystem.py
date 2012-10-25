@@ -335,16 +335,10 @@ class TournamentSystem:
 
         if self.games.has_key(gameID):
             g = self.games[gameID]
-            players = g.players
-            isWhitesTurn = g.isWhitesTurn()
-            board = g.board.board
-            history = g.board.history
-            
-            return (True, {"players": players,
-                           "isWhitesTurn": isWhitesTurn,
-                           "board": board,
-                           "history" : history})
-            
+            return (True, {"players": g.players,
+                           "isWhitesTurn": g.isWhitesTurn(),
+                           "board": g.board.board,
+                           "history" : g.board.history})
         else:
             return (False, {"error" : "Invalid game ID"})
         
