@@ -111,7 +111,7 @@ class ChessBoard:
         - Add move to game log
         - Remove the moving piece from the starting position
         - Update flags if necessary
-        - Add the moving piece to the starting position (possibly overwriting)
+        - Add the moving piece to the ending position (possibly overwriting)
         - Delete pawns in en passant state if relevant
         
         @todo: write the code for this class"""
@@ -119,7 +119,47 @@ class ChessBoard:
         if not self.legalMoveP(player, fromRank, fromFile, toRank, toFile):
             return False
         else:
-            return False ## FIXME
+            #record move in game log
+            self.history.append(((fromRank, fromFile),(toRank, toFile)))
+            
+            #remove moving piece from starting position
+            movedPiece = self.board[fromRank][fromFile]
+            self.board[fromRank][fromFile] = None
+            
+            ## TODO: update flags
+            #first, reset en passant flags to false
+            self.flag_enpassant[player] = False * ChessBoard.BOARD_SIZE
+            
+            #update castle flags
+            prevCastleFlag = self.canCastle[player]
+            if movedPiece == self.KING:
+                self.flag_canCastle[player] = (False, False)
+            if movedPiece == self.ROOK:
+                if fromFile == 0: #queen-side rook was moved
+                    self.flag_canCastle[player] = (False, prevCastleFlag[1])
+                elif fromFile == 7: #king-side rook was moved
+                    self.flag_canCastle[player] = (prevCastleFlag[0], False)
+                    
+            #if we've moved a pawn for the first time, set the en passant flags
+            if (movedPiece == self.PAWN and 
+                fromRank == {ChessMatch.White: 1, ChessMatch.Black: 6}[player] and
+                abs(toRank - fromRank) == 2):
+                self.flag_enpassant[player][fromFile] = True             
+            
+            #move piece to destination
+            self.board[toRank][toFile] = movedPiece
+            
+            #remove en passant pawns, if relevant
+            if self.flag_enpassant[player][toFile] == True:
+                if (player == ChessMatch.White and 
+                    toRank == ChessBoard.BOARD_SIZE - 2): 
+                    #we should take a black pawn via en passant
+                    self.board[ChessBoard.BOARD_SIZE - 2][toFile] = None
+                elif (player == ChessMatch.Black and toRank == 1):
+                    #we should take a white pawn via en passant
+                    self.board[2][toFile] = None
+                    
+            return True
         
     def legalMoveP(self, player, fromRank, fromFile, toRank, toFile):
         """Returns true if the specified move is legal
@@ -218,9 +258,9 @@ class TournamentSystem:
 
         # Add a player to a new game otherwise
         newGame = ChessMatch()
-        newGameID = _getUniqueInt(self.games.keys())
-        self.games += {newGameID : newGame}
-        return (0, {"gameID" : newGameID})
+        self.games[self.nextID] = newGame
+        self.nextID += 1
+        return (0, {"gameID" : self.nextID - 1})
     
     def cancelGame(self, gameID):
         """Marks the given match as cancelled
@@ -308,7 +348,7 @@ class TournamentSystem:
         @return: TODO"""
         
         if (not self.games.has_key(gameID)):
-            return (TournamentSystem.ERR_GAMENOTFOUND)
+            return (TournamentSystem.ERR_GAMENOTFOUND, {})
 #        elif (not self.players.)
         
 #        retCode = self.games
