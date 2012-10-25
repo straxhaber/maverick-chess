@@ -96,7 +96,7 @@ class ChessBoard:
         else:
             return ChessMatch.BLACK
     
-    def makeMove(self, player, fromRank, fromFile, toRank, toFile):
+    def makePly(self, player, fromRank, fromFile, toRank, toFile):
         """Makes a move if legal
         
         @param player: the player making the move (BLACK or WHITE constant)
@@ -124,9 +124,10 @@ class ChessBoard:
     def legalMoveP(self, player, fromRank, fromFile, toRank, toFile):
         """Returns true if the specified move is legal
         
-        Arguments are the same as makeMove
+        Arguments are the same as makePly
         
         Checks if:
+         - It is the specified player's turn
          - There is a piece at the from position
          - The to position doesn't contain a piece owned by the player
          - The path to make the move is free (for bishops, rooks, queens, etc.)
@@ -138,11 +139,11 @@ class ChessBoard:
     
 class ChessMatch:
     # Constants for game status
-    STATUS_PENDING = 602   # Game is waiting for players
-    STATUS_ONGOING = 352   # Game is in progress
+    STATUS_PENDING   = 602   # Game is waiting for players
+    STATUS_ONGOING   = 352   # Game is in progress
     STATUS_BLACK_WON = 586   # Black won the game
     STATUS_WHITE_WON = 756   # White won the game
-    STATUS_DRAWN = 586   # White won the game
+    STATUS_DRAWN     = 586   # White won the game
     STATUS_CANCELLED = 501   # Game was halted early
     
     # Constants for the players
@@ -161,12 +162,12 @@ class ChessMatch:
         ## Initialize match status
         self.status = ChessMatch.STATUS_PENDING
     
-    def makeMove(self, player, fromRank, fromFile, toRank, toFile):
+    def makePly(self, player, fromRank, fromFile, toRank, toFile):
         """Makes a move if legal
         
         @return: true if the move was successful, false otherwise"""
         if self.status == ChessMatch.STATUS_ONGOING:
-            return self.board.makeMove(player,
+            return self.board.makePly(player,
                                        fromRank, fromFile,
                                        toRank, toFile)
         else:
@@ -192,11 +193,14 @@ class ChessMatch:
                 return color
 
 class TournamentSystem:
+    
+    ERR_GAMENOTFOUND    = -203942302
+    ERR_INVALIDMOVE     = -394050238
+    
     def __init__(self):
         """Initializes a new tournament system with no games"""
-        self.nextID = 1 # Next GameID key for game map (to ensure uniqueness) 
         self.games = {} # Dict from gameIDs to game objects. Initially empty.
-        self.players = {}
+        self.players = {} # Dict from playerID to player name
         self._version = __version__ # Used in version check during un-pickling
         
     def joinGame(self, playerID):
@@ -214,9 +218,9 @@ class TournamentSystem:
 
         # Add a player to a new game otherwise
         newGame = ChessMatch()
-        self.games += {self.nextID : newGame}
-        self.nextID += 1
-        return (0, {"gameID" : self.nextID - 1})
+        newGameID = _getUniqueInt(self.games.keys())
+        self.games += {newGameID : newGame}
+        return (0, {"gameID" : newGameID})
     
     def cancelGame(self, gameID):
         """Marks the given match as cancelled
@@ -302,8 +306,28 @@ class TournamentSystem:
         @param toFile: TODO
         
         @return: TODO"""
+        
+        if (not self.games.has_key(gameID)):
+            return (TournamentSystem.ERR_GAMENOTFOUND)
+#        elif (not self.players.)
+        
+#        retCode = self.games
         return (-1, {"result" : "not yet implemented"})
     
+    
+def _getUniqueInt(intList):
+    maxVals = 2**32-1   # Maximum value of an int
+    maxSize = maxVals/2 # Maximum number of allocated ints
+
+    ## Fail fast if the list is more than half filled in
+    if (len(intList) >= maxSize):
+        raise RuntimeError("Cannot play more than 2**31-1 games concurrently")
+    
+    ## Get a unique value
+    n = random.randint(1,maxVals)
+    while n in intList:
+        n = random.randint(1,maxVals)
+    return n
     
 def main():
     print "This class should not be run directly"
@@ -379,7 +403,7 @@ if False:
         self.board[moveFromLoc[0]][moveFromLoc[1]] = self._P_EMPTY_SPACE
         self.board[moveToLoc[0]][moveToLoc[1]] = piece
         
-    def makeMove(self, moveFrom, moveTo):
+    def makePly(self, moveFrom, moveTo):
         """Moves the piece at location moveFrom to location moveTo.  Returns
         MOVE_SUCCESS on success, MOVE_ILLEGAL on failure."""
         
@@ -396,16 +420,3 @@ if False:
             #record the move
             self.ply_history.append((moveFromYX, moveToYX))
             return self.MOVE_SUCCESS
-        
-    def _getUniqueInt(intList):
-        maxVal = 2**32-1
-    
-        ## Fail fast if the list is more than half filled in
-        if (len(intList) >= max/2):
-            raise RuntimeError("Cannot play more than 2**31-1 games concurrently")
-        
-        ## Get a unique value
-        n = random.randint(1,maxVal)
-        while n in intList:
-            n = random.randint(1,maxVal)
-        return n
