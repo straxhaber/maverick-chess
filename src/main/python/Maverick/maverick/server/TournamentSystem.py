@@ -49,7 +49,7 @@ class ChessBoard:
             - Castling
         """
 
-        ## Initialize ply history -- a list of (moveFrom, moveTo) plies
+        # Initialize ply history -- a list of (moveFrom, moveTo) plies
         self.history = []
         
         # Initialize board to the basic chess starting position
@@ -77,14 +77,14 @@ class ChessBoard:
                 (ChessMatch.BLACK, ChessBoard.KNGT),
                 (ChessMatch.BLACK, ChessBoard.ROOK)])
 
-        ## Initialize en passant flags (True means en passant capture is
-        ## possible in the given column
+        # Initialize en passant flags (True means en passant capture is
+        # possible in the given column
         self.flag_enpassant = {
             ChessMatch.WHITE: [False] * ChessBoard.BOARD_SIZE,
             ChessMatch.BLACK: [False] * ChessBoard.BOARD_SIZE}
         
-        ## Initialize castle flags (queen-side ability, king-side ability)
-        ## Does not account for pieces blocking or checking the castle
+        # Initialize castle flags (queen-side ability, king-side ability)
+        # Does not account for pieces blocking or checking the castle
         self.flag_canCastle = {
             ChessMatch.WHITE: (True, True),
             ChessMatch.BLACK: (True, True)}
@@ -119,44 +119,44 @@ class ChessBoard:
         if not self.legalMoveP(player, fromRank, fromFile, toRank, toFile):
             return False
         else:
-            #record move in game log
+            # Record move in game log
             self.history.append(((fromRank, fromFile),(toRank, toFile)))
             
-            #remove moving piece from starting position
+            # Remove moving piece from starting position
             movedPiece = self.board[fromRank][fromFile]
             self.board[fromRank][fromFile] = None
             
             ## TODO: update flags
-            #first, reset en passant flags to false
+            # Reset en passant flags to false
             self.flag_enpassant[player] = False * ChessBoard.BOARD_SIZE
             
-            #update castle flags
+            # Update castle flags
             prevCastleFlag = self.canCastle[player]
             if movedPiece == self.KING:
                 self.flag_canCastle[player] = (False, False)
             if movedPiece == self.ROOK:
-                if fromFile == 0: #queen-side rook was moved
+                if fromFile == 0: # Queen-side rook was moved
                     self.flag_canCastle[player] = (False, prevCastleFlag[1])
-                elif fromFile == 7: #king-side rook was moved
+                elif fromFile == 7: # King-side rook was moved
                     self.flag_canCastle[player] = (prevCastleFlag[0], False)
                     
-            #if we've moved a pawn for the first time, set the en passant flags
+            # If we've moved a pawn for the first time, set the en passant flags
             if (movedPiece == self.PAWN and 
                 fromRank == {ChessMatch.White: 1, ChessMatch.Black: 6}[player] and
                 abs(toRank - fromRank) == 2):
                 self.flag_enpassant[player][fromFile] = True             
             
-            #move piece to destination
+            # Move piece to destination
             self.board[toRank][toFile] = movedPiece
             
-            #remove en passant pawns, if relevant
+            # Remove en passant pawns, if relevant
             if self.flag_enpassant[player][toFile] == True:
                 if (player == ChessMatch.White and 
                     toRank == ChessBoard.BOARD_SIZE - 2): 
-                    #we should take a black pawn via en passant
+                    # We should take a black pawn via en passant
                     self.board[ChessBoard.BOARD_SIZE - 2][toFile] = None
                 elif (player == ChessMatch.Black and toRank == 1):
-                    #we should take a white pawn via en passant
+                    # We should take a white pawn via en passant
                     self.board[2][toFile] = None
                     
             return True
@@ -193,13 +193,13 @@ class ChessMatch:
     def __init__(self):
         """Initialize a new chess match with initial state"""
         
-        ## Initialize with a new chess board
+        # Initialize with a new chess board
         self.board = ChessBoard()
         
-        ## Initialize match without players (whose playerIDs can be added later)
+        # Initialize match without players (whose playerIDs can be added later)
         self.players = { ChessMatch.WHITE : None, ChessMatch.BLACK : None}
     
-        ## Initialize match status
+        # Initialize match status
         self.status = ChessMatch.STATUS_PENDING
     
     def makePly(self, player, fromRank, fromFile, toRank, toFile):
@@ -359,11 +359,11 @@ def _getUniqueInt(intList):
     maxVals = 2**32-1   # Maximum value of an int
     maxSize = maxVals/2 # Maximum number of allocated ints
 
-    ## Fail fast if the list is more than half filled in
+    # Fail fast if the list is more than half filled in
     if (len(intList) >= maxSize):
         raise RuntimeError("Cannot play more than 2**31-1 games concurrently")
     
-    ## Get a unique value
+    # Get a unique value
     n = random.randint(1,maxVals)
     while n in intList:
         n = random.randint(1,maxVals)
@@ -376,7 +376,7 @@ if __name__ == '__main__':
     main()
     
     
-## Orphaned code (kept for re-use)
+# Orphaned code (kept for re-use)
 if False:
     @staticmethod
     def standardChessReferenceToArrayDereference(loc):

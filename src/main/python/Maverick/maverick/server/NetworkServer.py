@@ -1,5 +1,12 @@
 #!/usr/bin/python
 
+"""NetworkServer.py: A simple network API server for Maverick"""
+
+__author__ = "Matthew Strax-Haber and James Magnarelli"
+__version__ = "pre-alpha"
+__status__ = "Development"
+__maintainer__ = "Matthew Strax-Haber and James Magnarelli"
+
 from twisted.internet  import protocol, endpoints, reactor
 from twisted.protocols import basic as basicProtocols
 
@@ -9,59 +16,48 @@ from TournamentSystem import TournamentSystem
 # Code written by Matthew Strax-Haber and James Magnarelli. All Rights Reserved.
 ################################################################################
 
-## Port 7782 is not registered for use with the IANA as of December 17th, 2002
-defaultPort = 7782
+"""Default port for server"""
+DEFAULT_PORT = 7782
+# Port 7782 isn't registered for use with the IANA as of December 17th, 2002
 
 class MaverickProtocol(basicProtocols.LineOnlyReceiver):
-    """
-    Protocol for an asynchronous server that administers chess games to clients
-    """
+    """Protocol for an asynchronous server that administers chess games to clients"""
     _name = "MaverickChessServer"
     _version = "1.0a1"
 
-    ## put a TournamentSystem instance here
+    # put a TournamentSystem instance here
     __tournSys = None
 
     def __init__(self, tournamentSystem):
-        """
-        Store a reference to the TournamentSystem backing up this server
-        """
+        """Store a reference to the TournamentSystem backing up this server"""
         MaverickProtocol.__tournSys = tournamentSystem
 
     def connectionMade(self):
-        """
-        When a client connects, provide a welcome message
-        """
+        """When a client connects, provide a welcome message"""
 
         ## TODO: log client connections
 
-        ## Print out the server name and version
-        ##  (e.g., "MaverickChessServer/1.0a1")
-        fStr = "{0}/{1} WaitingForRequest" ## Template for welcome message
+        # Print out the server name and version
+        #  (e.g., "MaverickChessServer/1.0a1")
+        fStr = "{0}/{1} WaitingForRequest" # Template for welcome message
         welcomeMsg = fStr.format(MaverickProtocol._name,
                                  MaverickProtocol._version)
         self.sendLine(welcomeMsg)
 
     def connectionLost(self, reason=None):
-        """
-        When a client disconnects, log it
-        """
+        """When a client disconnects, log it"""
 
-        ### TODO: log client disconnections
+        ## TODO: log client disconnections
         
     def lineReceived(self, line):
-        """
-        Take input line-by-line and redirect it to the core
-        """
+        """Take input line-by-line and redirect it to the core"""
 
-        ### TODO: log client requests
-
-        ### FIXME: finish writing this method
-        ### TODO: Sanitize input
-
-        ### TODO: get request name and arguments
+        ## TODO: log client requests
+        ## FIXME: finish writing this method
+        ## TODO: Sanitize input
+        ## FIXME: actually parse request
         requestName = line.split(" ")[0]
-        reqArgs = {"name":"Matthew Strax-Haber"}
+        reqArgs = {"name" : "Matthew Strax-Haber"}
 
         errorString = None
         
@@ -179,13 +175,10 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
         
 
 class MaverickProtocolFactory(protocol.ServerFactory):
-    """
-    This is a simple factory that provides a MaverickProtocol backed by a
-    TournamentSystem instance
+    """Provides a MaverickProtocol backed by a TournamentSystem instance
 
     It does little more than build a protocol with a reference to the
-    provided TournamentSystem instance
-    """
+    provided TournamentSystem instance"""
 
     def __init__(self, tournamentSystem):
         """
@@ -194,23 +187,18 @@ class MaverickProtocolFactory(protocol.ServerFactory):
         self._tournamentSystem = tournamentSystem
         
     def buildProtocol(self, addr):
-        """
-        Create an instance of MaverickProtocol
-        @param addr: an object implementing L{twisted.internet.interfaces.IAddress}
-        """
+        """Create an instance of MaverickProtocol"""
         return MaverickProtocol(self._tournamentSystem)
 
 def _main(port):
-    """
-    Main method: called when the server code is run
-    """
-    ## Initialize a new instance of MaverickCore
+    """Main method: called when the server code is run"""
+    # Initialize a new instance of MaverickCore
     core = TournamentSystem()
 
-    ## Run a server on the specified port
+    # Run a server on the specified port
     endpoint = endpoints.TCP4ServerEndpoint(reactor, port)
     endpoint.listen(MaverickProtocolFactory(core))
     reactor.run()
     
 if __name__ == '__main__':
-    _main(defaultPort)
+    _main(DEFAULT_PORT)
