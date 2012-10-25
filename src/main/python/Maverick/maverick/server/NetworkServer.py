@@ -64,6 +64,8 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
         reqArgs = {"name":"Matthew Strax-Haber"}
 
         errorString = None
+        
+        ## TODO: re-factor out common code to shorten and simplify
 
         if requestName == "REGISTER":
             expectedArguments = {"name"}
@@ -71,14 +73,12 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                 fStr = "Invalid arguments, expected: {0}"
                 errorString = fStr.format(str(list(expectedArguments)))
             else:
-                (errCode, result) = self.__tournSys.register(reqArgs["name"])
-                if errCode == 0:
+                (successP, result) = self.__tournSys.register(reqArgs["name"])
+                if successP:
                     fStr = "SUCCESS \"{0}\""
                     response = fStr.format(str(result["playerID"]))
-                elif errCode == -1:
-                    errorString = "Unknown error"
-                elif errCode == -2:
-                    errorString = "Name already in use"
+                else:
+                    errorString = result["error"]
 
         elif requestName == "PLAY_GAME":
             expectedArguments = {"playerID"}
@@ -87,12 +87,12 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                 errorString = fStr.format(str(list(expectedArguments)))
             else:
                 playerID = reqArgs["playerID"]
-                (errCode, result) = self.__tournSys.playGame(playerID) ## FIXME
-                if errCode == 0:
+                (successP, result) = self.__tournSys.playGame(playerID) ## FIXME
+                if successP:
                     fStr = "SUCCESS \"{0}\""
                     response = fStr.format(str(result["gameID"]))
-                elif errCode == -1:
-                    errorString = "Unknown error"
+                else:
+                    errorString = result["error"]
 
         elif requestName == "GET_STATUS":
             expectedArguments = {"playerID", "gameID"}
@@ -102,13 +102,13 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
             else:
                 playerID = reqArgs["playerID"]
                 gameID = reqArgs["gameID"]
-                (errCode, result) = self.__tournSys.getStatus(
+                (successP, result) = self.__tournSys.getStatus(
                     playerID, gameID) ## FIXME
-                if errCode == 0:
+                if successP:
                     fStr = "SUCCESS \"{0}\""
                     response = fStr.format() ## FIXME
-                elif errCode == -1:
-                    errorString = "Unknown error"
+                else:
+                    errorString = result["error"]
 
         elif requestName == "GET_STATE":
             expectedArguments = {"playerID", "gameID"}
@@ -118,12 +118,12 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
             else:
                 playerID = reqArgs["playerID"]
                 gameID = reqArgs["gameID"]
-                (errCode, result) = self.__tournSys.getState(playerID, gameID)
-                if errCode == 0:
+                (successP, result) = self.__tournSys.getState(playerID, gameID)
+                if successP:
                     fStr = "SUCCESS \"{0}\""
                     response = fStr.format() ## FIXME
-                elif errCode == -1:
-                    errorString = "Unknown error"
+                else:
+                    errorString = result["error"]
 
         elif requestName == "MAKE_PLY":
             expectedArguments = {"playerID", "gameID",
@@ -139,13 +139,13 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                 fromFile = reqArgs["fromFile"]
                 toRank = reqArgs["toRank"]
                 toFile = reqArgs["toFile"]
-                (errCode, result) = self.__tournSys.makePly(
+                (successP, result) = self.__tournSys.makePly(
                     playerID, gameID, fromRank, fromFile, toRank, toFile)
-                if errCode == 0:
+                if successP:
                     fStr = "SUCCESS \"{0}\""
                     response = fStr.format() ## FIXME
-                elif errCode == -1:
-                    errorString = "Unknown error"
+                else:
+                    errorString = result["error"]
                     
         else:
             fStr = "Unrecognized verb \"{0}\" in request"
@@ -166,15 +166,11 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
         #            errorString = "Unknown error"
 
         if errorString == None:
-            """
-            Provide the user with the response
-            """
+            # Provide the user with the response
             self.sendLine(response)
         else:
-            """
-            Notify the user if they make an invalid request
-            """
-            fStr = "INVALID_REQUEST {0}: \"{1}\""
+            # Notify the user if they make an invalid request
+            fStr = "ERROR: {0} [query=\"{1}\"]"
             errorMsg = fStr.format(errorString, line)
             self.sendLine(errorMsg)
             ## TODO: log invalid request

@@ -234,9 +234,6 @@ class ChessMatch:
 
 class TournamentSystem:
     
-    ERR_GAMENOTFOUND    = -203942302
-    ERR_INVALIDMOVE     = -394050238
-    
     def __init__(self):
         """Initializes a new tournament system with no games"""
         self.games = {} # Dict from gameIDs to game objects. Initially empty.
@@ -254,13 +251,13 @@ class TournamentSystem:
             if game.getStatus() == ChessMatch.STATUS_PENDING:
                 color = game.joinMatch(playerID)
                 if color:
-                    return (0, {"gameID" : gameID})
+                    return (True, {"gameID" : gameID})
 
         # Add a player to a new game otherwise
         newGame = ChessMatch()
         self.games[self.nextID] = newGame
         self.nextID += 1
-        return (0, {"gameID" : self.nextID - 1})
+        return (True, {"gameID" : self.nextID - 1})
     
     def cancelGame(self, gameID):
         """Marks the given match as cancelled
@@ -275,9 +272,9 @@ class TournamentSystem:
                                               ChessMatch.STATUS_PENDING]):
                 self.games[gameID].status = ChessMatch.STATUS_CANCELLED
             else:
-                return False
+                return (False, {"error" : "Game not active"})
         except KeyError:
-            return False
+            return (False, {"error" : "Invalid game ID"})
 
     @staticmethod
     def saveTS(tournament, fileName):
@@ -309,7 +306,8 @@ class TournamentSystem:
         @param name: TODO
         
         @return: TODO"""
-        return (-1, {"playerID" : "not yet implemented"})
+        #return (True, {"playerID" : "TODO"})
+        return (False, {"error" : "not yet implemented"})
     
     def getStatus(self, playerID, gameID):
         """TODO
@@ -318,7 +316,8 @@ class TournamentSystem:
         @param gameID: TODO
         
         @return: TODO"""
-        return (-1, {"status" : "not yet implemented"})
+        #return (True, {"status" : "TODO"})
+        return (False, {"error" : "not yet implemented"})
     
     def getState(self, playerID, gameID):
         """TODO
@@ -327,13 +326,14 @@ class TournamentSystem:
         @param gameID: TODO
         
         @return: TODO"""
-        return (-1,
-                { "youAre" : "not yet implemented",
-                    "turn" : "not yet implemented",
-                    "board" : "not yet implemented", # make this a JSON array
-                    "history" : "not yet implemented"
-                    } # TODO: make this a JSON array -- see spec
-                )
+#        return (True,
+#                { "youAre" : "not yet implemented",
+#                    "turn" : "not yet implemented",
+#                    "board" : "not yet implemented", # make this a JSON array
+#                    "history" : "not yet implemented"
+#                    } # TODO: make this a JSON array -- see spec
+#                )
+        return (False, {"error" : "not yet implemented"})
         
     def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
         """TODO
@@ -352,7 +352,7 @@ class TournamentSystem:
 #        elif (not self.players.)
         
 #        retCode = self.games
-        return (-1, {"result" : "not yet implemented"})
+        return (False, {"error" : "not yet implemented"})
     
     
 def _getUniqueInt(intList):
