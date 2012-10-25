@@ -95,7 +95,7 @@ class ChessBoard:
         @param toRank: the rank to which piece is moving (integer in [0,7])
         @param toFile: the file to which piece is moving (integer in [0,7])
         
-        @return: True if the move was successful, false otherwise
+        @return: True if the move was successful, False otherwise
         
         - Check if the move is legal
         - Remove the moving piece from the starting position
@@ -105,44 +105,48 @@ class ChessBoard:
         
         @todo: write the code for this method"""
         
-        # Remove moving piece from starting position
-        movedPiece = self.board[fromRank][fromFile]
-        self.board[fromRank][fromFile] = None
-        
-        ## TODO: update flags
-        # Reset en passant flags to false
-        self.flag_enpassant[color] = False * ChessBoard.BOARD_SIZE
-        
-        # Update castle flags
-        prevCastleFlag = self.canCastle[color]
-        if movedPiece == self.KING:
-            self.flag_canCastle[color] = (False, False)
-        if movedPiece == self.ROOK:
-            if fromFile == 0: # Queen-side rook was moved
-                self.flag_canCastle[color] = (False, prevCastleFlag[1])
-            elif fromFile == 7: # King-side rook was moved
-                self.flag_canCastle[color] = (prevCastleFlag[0], False)
-                
-        # If we've moved a pawn for the first time, set the en passant flags
-        if (movedPiece == self.PAWN and 
-            fromRank == {ChessMatch.White: 1, ChessMatch.Black: 6}[color] and
-            abs(toRank - fromRank) == 2):
-            self.flag_enpassant[color][fromFile] = True             
-        
-        # Move piece to destination
-        self.board[toRank][toFile] = movedPiece
-        
-        # Remove en passant pawns, if relevant
-        if self.flag_enpassant[color][toFile] == True:
-            if (color == ChessMatch.White and 
-                toRank == ChessBoard.BOARD_SIZE - 2): 
-                # We should take a black pawn via en passant
-                self.board[ChessBoard.BOARD_SIZE - 2][toFile] = None
-            elif (color == ChessMatch.Black and toRank == 1):
-                # We should take a white pawn via en passant
-                self.board[2][toFile] = None
-                
-        return True
+        # Check if the move is legal
+        if not self.legalMoveP(color, fromRank, fromFile, toRank, toFile):
+            return False
+        else:
+            # Remove moving piece from starting position
+            movedPiece = self.board[fromRank][fromFile]
+            self.board[fromRank][fromFile] = None
+            
+            ## TODO: update flags
+            # Reset en passant flags to false
+            self.flag_enpassant[color] = False * ChessBoard.BOARD_SIZE
+            
+            # Update castle flags
+            prevCastleFlag = self.canCastle[color]
+            if movedPiece == self.KING:
+                self.flag_canCastle[color] = (False, False)
+            if movedPiece == self.ROOK:
+                if fromFile == 0: # Queen-side rook was moved
+                    self.flag_canCastle[color] = (False, prevCastleFlag[1])
+                elif fromFile == 7: # King-side rook was moved
+                    self.flag_canCastle[color] = (prevCastleFlag[0], False)
+                    
+            # If we've moved a pawn for the first time, set the en passant flags
+            if (movedPiece == self.PAWN and 
+                fromRank == {ChessMatch.White: 1, ChessMatch.Black: 6}[color] and
+                abs(toRank - fromRank) == 2):
+                self.flag_enpassant[color][fromFile] = True             
+            
+            # Move piece to destination
+            self.board[toRank][toFile] = movedPiece
+            
+            # Remove en passant pawns, if relevant
+            if self.flag_enpassant[color][toFile] == True:
+                if (color == ChessMatch.White and 
+                    toRank == ChessBoard.BOARD_SIZE - 2): 
+                    # We should take a black pawn via en passant
+                    self.board[ChessBoard.BOARD_SIZE - 2][toFile] = None
+                elif (color == ChessMatch.Black and toRank == 1):
+                    # We should take a white pawn via en passant
+                    self.board[2][toFile] = None
+                    
+            return True
         
     def legalMoveP(self, color, fromRank, fromFile, toRank, toFile):
         """Returns true if the specified move is legal
@@ -194,20 +198,27 @@ class ChessMatch:
         
     def whoseTurn(self):
         """Returns True if it is whites turn, False otherwise"""
-        return len(self.ply_history) % 2 == 0
+        if (len(self.ply_history) % 2 == 0):
+            return ChessMatch.WHITE
+        else:
+            return ChessMatch.BLACK
     
     def makePly(self, player, fromRank, fromFile, toRank, toFile):
         """Makes a move if legal
         
         @return: "SUCCESS" if move was successful, error message otherwise"""
         if self.status == ChessMatch.STATUS_ONGOING:
-            # TODO: Check if a player
-            # TODO: Translate playerID to color
+            if (self.players[ChessMatch.WHITE] == player):
+                color = ChessMatch.WHITE
+            elif (self.players[ChessMatch.BLACK] == player):
+                color = ChessMatch.BLACK
+            else:
+                return "You are not a player in this game"
             
-            color = None
+            if color != self.whoseTurn():
+                return "It is not your turn"
             
-            if self.legalMoveP(color, fromRank, fromFile, toRank, toFile):
-                self.board.makePly(color, fromRank, fromFile, toRank, toFile)
+            if self.board.makePly(color, fromRank, fromFile, toRank, toFile):
                 self.history.append(((fromRank, fromFile),(toRank, toFile)))
                 return "SUCCESS"
             else:
@@ -339,7 +350,7 @@ class TournamentSystem:
         if self.games.has_key(gameID):
             g = self.games[gameID]
             return (True, {"players": g.players,
-                           "isWhitesTurn": g.isWhitesTurn(),
+                           "isWhitesTurn": (g.whoseTurn() == ChessMatch.WHITE),
                            "board": g.board.board,
                            "history" : g.board.history})
         else:
@@ -358,18 +369,17 @@ class TournamentSystem:
         @return: TODO"""
         
         if self.games.has_key(gameID):
-            g = self.games[gameID]
-            
-        
-        if (not self.games.has_key(gameID)):
-            return (TournamentSystem.ERR_GAMENOTFOUND, {})
-#        elif (not self.players.)
-        
-#        retCode = self.games
-        return (False, {"error" : "not yet implemented"})
+            result = self.games[gameID].makePly()
+            if result == "SUCCESS":
+                return (True, {"status": "SUCCESS"})
+            else:
+                return (False, {"error" : result})
+        else:
+            return (False, {"error" : "Invalid game ID"})
     
     
 def _getUniqueInt(intList):
+    """Return a random integer in [1,2**32-1] that is not in intList"""
     maxVals = 2**32-1   # Maximum value of an int
     maxSize = maxVals/2 # Maximum number of allocated ints
 
