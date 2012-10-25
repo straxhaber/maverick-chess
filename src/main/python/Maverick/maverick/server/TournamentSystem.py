@@ -270,8 +270,12 @@ class TournamentSystem:
         @param name: TODO
         
         @return: TODO"""
-        #return (True, {"playerID" : "TODO"})
-        return (False, {"error" : "not yet implemented"})
+        if name in self.players.values():
+            return (False, {"error" : "player with this name already exists"})
+        else:
+            newID = _getUniqueInt(self.players.keys())
+            self.players[newID] = name
+            return (True, {"playerID" : newID})
     
     def joinGame(self, playerID):
         """Adds the player to a new or pending game.

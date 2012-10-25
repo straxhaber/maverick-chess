@@ -51,8 +51,8 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
         """Take input line-by-line and redirect it to the core"""
 
         ## TODO: JSON-ify
-        requestName = line.split(" ")[0] # Name of request (e.g., "REGISTER")
-        requestArgs = {"name" : "Matthew Strax-Haber"} ## FIXME: parse arguments
+        requestName = line.partition(" ")[0] # Request name (e.g., "REGISTER")
+        requestArgs = {"name": line.partition(" ")[2]} ## FIXME: parse arguments
         ## TODO: log requests
         
         # Map of valid request names to
@@ -82,11 +82,11 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
             (tsCommand, expArgs, _) = validRequests[requestName]
             if expArgs != set(requestArgs.keys()):
                 fStr = "Invalid arguments, expected: {0}"
-                errMsg = fStr.format(str(list(expArgs)))
+                errMsg = fStr.format(",".join(list(expArgs)))
             else:
                 (successP, result) = tsCommand(**requestArgs)
                 if successP:
-                    response = "SUCCESS \"{0}\"".format(str(result))
+                    response = "SUCCESS {0}".format(str(result))
                 if not successP:
                     errMsg = result["error"]
         else:
