@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 """TournamentSystem.py: A chess server that administers games"""
-from twisted.words.test.test_basesupport import self
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
@@ -87,10 +86,10 @@ class ChessBoard:
             ChessMatch.WHITE: (True, True),
             ChessMatch.BLACK: (True, True)}
     
-    def makePly(self, player, fromRank, fromFile, toRank, toFile):
+    def makePly(self, color, fromRank, fromFile, toRank, toFile):
         """Makes a move if legal
         
-        @param player: the player making the move (BLACK or WHITE constant)
+        @param color: the color making the move (BLACK or WHITE constant)
         @param fromRank: the rank from which piece is moving (integer in [0,7])
         @param fromFile: the file from which piece is moving (integer in [0,7])
         @param toRank: the rank to which piece is moving (integer in [0,7])
@@ -106,57 +105,53 @@ class ChessBoard:
         
         @todo: write the code for this method"""
         
-        if not self.legalMoveP(player, fromRank, fromFile, toRank, toFile):
-            return False
-        else:
-            # Remove moving piece from starting position
-            movedPiece = self.board[fromRank][fromFile]
-            self.board[fromRank][fromFile] = None
-            
-            ## TODO: update flags
-            # Reset en passant flags to false
-            self.flag_enpassant[player] = False * ChessBoard.BOARD_SIZE
-            
-            # Update castle flags
-            prevCastleFlag = self.canCastle[player]
-            if movedPiece == self.KING:
-                self.flag_canCastle[player] = (False, False)
-            if movedPiece == self.ROOK:
-                if fromFile == 0: # Queen-side rook was moved
-                    self.flag_canCastle[player] = (False, prevCastleFlag[1])
-                elif fromFile == 7: # King-side rook was moved
-                    self.flag_canCastle[player] = (prevCastleFlag[0], False)
-                    
-            # If we've moved a pawn for the first time, set the en passant flags
-            if (movedPiece == self.PAWN and 
-                fromRank == {ChessMatch.White: 1, ChessMatch.Black: 6}[player] and
-                abs(toRank - fromRank) == 2):
-                self.flag_enpassant[player][fromFile] = True             
-            
-            # Move piece to destination
-            self.board[toRank][toFile] = movedPiece
-            
-            # Remove en passant pawns, if relevant
-            if self.flag_enpassant[player][toFile] == True:
-                if (player == ChessMatch.White and 
-                    toRank == ChessBoard.BOARD_SIZE - 2): 
-                    # We should take a black pawn via en passant
-                    self.board[ChessBoard.BOARD_SIZE - 2][toFile] = None
-                elif (player == ChessMatch.Black and toRank == 1):
-                    # We should take a white pawn via en passant
-                    self.board[2][toFile] = None
-                    
-            return True
+        # Remove moving piece from starting position
+        movedPiece = self.board[fromRank][fromFile]
+        self.board[fromRank][fromFile] = None
         
-    def legalMoveP(self, player, fromRank, fromFile, toRank, toFile):
+        ## TODO: update flags
+        # Reset en passant flags to false
+        self.flag_enpassant[color] = False * ChessBoard.BOARD_SIZE
+        
+        # Update castle flags
+        prevCastleFlag = self.canCastle[color]
+        if movedPiece == self.KING:
+            self.flag_canCastle[color] = (False, False)
+        if movedPiece == self.ROOK:
+            if fromFile == 0: # Queen-side rook was moved
+                self.flag_canCastle[color] = (False, prevCastleFlag[1])
+            elif fromFile == 7: # King-side rook was moved
+                self.flag_canCastle[color] = (prevCastleFlag[0], False)
+                
+        # If we've moved a pawn for the first time, set the en passant flags
+        if (movedPiece == self.PAWN and 
+            fromRank == {ChessMatch.White: 1, ChessMatch.Black: 6}[color] and
+            abs(toRank - fromRank) == 2):
+            self.flag_enpassant[color][fromFile] = True             
+        
+        # Move piece to destination
+        self.board[toRank][toFile] = movedPiece
+        
+        # Remove en passant pawns, if relevant
+        if self.flag_enpassant[color][toFile] == True:
+            if (color == ChessMatch.White and 
+                toRank == ChessBoard.BOARD_SIZE - 2): 
+                # We should take a black pawn via en passant
+                self.board[ChessBoard.BOARD_SIZE - 2][toFile] = None
+            elif (color == ChessMatch.Black and toRank == 1):
+                # We should take a white pawn via en passant
+                self.board[2][toFile] = None
+                
+        return True
+        
+    def legalMoveP(self, color, fromRank, fromFile, toRank, toFile):
         """Returns true if the specified move is legal
         
         Arguments are the same as makePly
         
         Checks if:
-         - It is the specified player's turn
          - There is a piece at the from position
-         - The to position doesn't contain a piece owned by the player
+         - The to position doesn't contain a piece owned by the color
          - The path to make the move is free (for bishops, rooks, queens, etc.)
          - Flags don't preclude the move (i.e., castling)
         
@@ -178,7 +173,9 @@ class ChessMatch:
     WHITE = "O"
     
     def __init__(self):
-        """Initialize a new chess match with initial state"""
+        """Initialize a new chess match with initial state
+        
+        @param firstPlayerID: if set, randomly assigned to black or white"""
         
         # Initialize with a new chess board
         self.board = ChessBoard()
@@ -199,17 +196,21 @@ class ChessMatch:
     def makePly(self, player, fromRank, fromFile, toRank, toFile):
         """Makes a move if legal
         
-        @return: true if the move was successful, false otherwise"""
+        @return: "SUCCESS" if move was successful, error message otherwise"""
         if self.status == ChessMatch.STATUS_ONGOING:
-            successP = self.board.makePly(player,
-                                          fromRank, fromFile,
-                                          toRank, toFile)
-            # Record successful moves in game log
-            if successP:
+            # TODO: Check if a player
+            # TODO: Translate playerID to color
+            
+            color = None
+            
+            if self.legalMoveP(color, fromRank, fromFile, toRank, toFile):
+                self.board.makePly(color, fromRank, fromFile, toRank, toFile)
                 self.history.append(((fromRank, fromFile),(toRank, toFile)))
-            return successP
+                return "SUCCESS"
+            else:
+                return "Illegal move"
         else:
-            return False
+            return "Game not in progress"
     
     def join(self, playerID):
         """Joins the match in an empty slot. If ready, game starts.
@@ -290,7 +291,6 @@ class TournamentSystem:
 
         # Add a player to a new game otherwise
         newGame = ChessMatch()
-        newGame.join(playerID)
         newID = _getUniqueInt(self.games.keys())
         self.games[newID] = newGame
         return (True, {"gameID" : newID})
@@ -353,6 +353,10 @@ class TournamentSystem:
         @param toFile: TODO
         
         @return: TODO"""
+        
+        if self.games.has_key(gameID):
+            g = self.games[gameID]
+            
         
         if (not self.games.has_key(gameID)):
             return (TournamentSystem.ERR_GAMENOTFOUND, {})
