@@ -331,12 +331,13 @@ class TournamentSystem:
         
         @return: TODO"""
 #        return (True,
-#                { "youAre" : "not yet implemented",
-#                    "turn" : "not yet implemented",
+#                { "youAreWhite" : "not yet implemented",
+#                    "whitesTurn" : "not yet implemented",
 #                    "board" : "not yet implemented", # make this a JSON array
 #                    "history" : "not yet implemented"
 #                    } # TODO: make this a JSON array -- see spec
 #                )
+
         return (False, {"error" : "not yet implemented"})
         
     def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
