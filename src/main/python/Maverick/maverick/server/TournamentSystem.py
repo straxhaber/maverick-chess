@@ -292,9 +292,9 @@ class TournamentSystem:
 
         # Add a player to a new game otherwise
         newGame = ChessMatch()
-        self.games[self.nextID] = newGame
-        self.nextID += 1
-        return (True, {"gameID" : self.nextID - 1})
+        newID = _getUniqueInt(self.games.keys())
+        self.games[newID] = newGame
+        return (True, {"gameID" : newID})
     
     def cancelGame(self, gameID):
         """Marks the given match as cancelled
