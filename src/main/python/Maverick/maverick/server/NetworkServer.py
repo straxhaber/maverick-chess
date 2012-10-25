@@ -73,7 +73,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                                         {"status"}),
                          "GET_STATE": (self._ts.getState,
                                        {"playerID", "gameID"},
-                                       {"youAreWhite", "whitesTurn",
+                                       {"players", "isWhitesTurn",
                                         "board", "history"}),
                          "MAKE_PLY": (self._ts.makePly,
                                       {"playerID", "gameID",

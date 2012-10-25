@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 """TournamentSystem.py: A chess server that administers games"""
+from twisted.words.test.test_basesupport import self
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
@@ -48,9 +49,6 @@ class ChessBoard:
             - En passant
             - Castling
         """
-
-        # Initialize ply history -- a list of (moveFrom, moveTo) plies
-        self.history = []
         
         # Initialize board to the basic chess starting position
         # NOTE: the board is referenced as self.board[row][column].
@@ -88,13 +86,6 @@ class ChessBoard:
         self.flag_canCastle = {
             ChessMatch.WHITE: (True, True),
             ChessMatch.BLACK: (True, True)}
-        
-    def whoseTurn(self):
-        """Returns the player whose turn it is (even if game is over)"""
-        if len(self.ply_history) % 2:
-            return ChessMatch.WHITE
-        else:
-            return ChessMatch.BLACK
     
     def makePly(self, player, fromRank, fromFile, toRank, toFile):
         """Makes a move if legal
@@ -105,23 +96,19 @@ class ChessBoard:
         @param toRank: the rank to which piece is moving (integer in [0,7])
         @param toFile: the file to which piece is moving (integer in [0,7])
         
-        @return: true if the move was successful, false otherwise
+        @return: True if the move was successful, false otherwise
         
         - Check if the move is legal
-        - Add move to game log
         - Remove the moving piece from the starting position
         - Update flags if necessary
         - Add the moving piece to the ending position (possibly overwriting)
         - Delete pawns in en passant state if relevant
         
-        @todo: write the code for this class"""
+        @todo: write the code for this method"""
         
         if not self.legalMoveP(player, fromRank, fromFile, toRank, toFile):
             return False
         else:
-            # Record move in game log
-            self.history.append(((fromRank, fromFile),(toRank, toFile)))
-            
             # Remove moving piece from starting position
             movedPiece = self.board[fromRank][fromFile]
             self.board[fromRank][fromFile] = None
@@ -179,12 +166,12 @@ class ChessBoard:
     
 class ChessMatch:
     # Constants for game status
-    STATUS_PENDING   = 602   # Game is waiting for players
-    STATUS_ONGOING   = 352   # Game is in progress
-    STATUS_BLACK_WON = 586   # Black won the game
-    STATUS_WHITE_WON = 756   # White won the game
-    STATUS_DRAWN     = 586   # White won the game
-    STATUS_CANCELLED = 501   # Game was halted early
+    STATUS_PENDING   = "PENDING"   # Game is waiting for players
+    STATUS_ONGOING   = "ONGOING"   # Game is in progress
+    STATUS_BLACK_WON = "W_BLACK"   # Black won the game
+    STATUS_WHITE_WON = "W_WHITE"   # White won the game
+    STATUS_DRAWN     = "W_DRAWN"   # White won the game
+    STATUS_CANCELLED = "CANCELD"   # Game was halted early
     
     # Constants for the players
     BLACK = "X"
@@ -201,19 +188,30 @@ class ChessMatch:
     
         # Initialize match status
         self.status = ChessMatch.STATUS_PENDING
+        
+        # Initialize ply history -- a list of (moveFrom, moveTo) plies
+        self.history = []
+        
+    def whoseTurn(self):
+        """Returns True if it is whites turn, False otherwise"""
+        return len(self.ply_history) % 2 == 0
     
     def makePly(self, player, fromRank, fromFile, toRank, toFile):
         """Makes a move if legal
         
         @return: true if the move was successful, false otherwise"""
         if self.status == ChessMatch.STATUS_ONGOING:
-            return self.board.makePly(player,
-                                       fromRank, fromFile,
-                                       toRank, toFile)
+            successP = self.board.makePly(player,
+                                          fromRank, fromFile,
+                                          toRank, toFile)
+            # Record successful moves in game log
+            if successP:
+                self.history.append(((fromRank, fromFile),(toRank, toFile)))
+            return successP
         else:
             return False
     
-    def joinMatch(self, playerID):
+    def join(self, playerID):
         """Joins the match in an empty slot. If ready, game starts.
         
         @param playerID: ID of the player being added
@@ -286,12 +284,13 @@ class TournamentSystem:
         # Add the player to a pending game if one exists 
         for (gameID, game) in self.games:
             if game.getStatus() == ChessMatch.STATUS_PENDING:
-                color = game.joinMatch(playerID)
+                color = game.join(playerID)
                 if color:
                     return (True, {"gameID" : gameID})
 
         # Add a player to a new game otherwise
         newGame = ChessMatch()
+        newGame.join(playerID)
         newID = _getUniqueInt(self.games.keys())
         self.games[newID] = newGame
         return (True, {"gameID" : newID})
@@ -313,15 +312,18 @@ class TournamentSystem:
         else:
             return (False, {"error" : "Invalid game ID"})
     
-    def getStatus(self, playerID, gameID):
+    def getStatus(self, gameID):
         """TODO
         
-        @param playerID: TODO
         @param gameID: TODO
         
         @return: TODO"""
-        #return (True, {"status" : "TODO"})
-        return (False, {"error" : "not yet implemented"})
+        
+        if self.games.has_key(gameID):
+            status = self.games[gameID].status
+            return (True, {"status": status})
+        else:
+            return (False, {"error" : "Invalid game ID"})
     
     def getState(self, playerID, gameID):
         """TODO
@@ -331,14 +333,27 @@ class TournamentSystem:
         
         @return: TODO"""
 #        return (True,
-#                { "youAreWhite" : "not yet implemented",
-#                    "whitesTurn" : "not yet implemented",
-#                    "board" : "not yet implemented", # make this a JSON array
-#                    "history" : "not yet implemented"
-#                    } # TODO: make this a JSON array -- see spec
+#                { "players" : "not yet implemented",
+#                  "isWhitesTurn" : "not yet implemented",
+#                  "board" : "not yet implemented", # make this a JSON array
+#                  "history" : "not yet implemented"
+#                  } # TODO: make this a JSON array -- see spec
 #                )
 
-        return (False, {"error" : "not yet implemented"})
+        if self.games.has_key(gameID):
+            g = self.games[gameID]
+            players = g.players
+            isWhitesTurn = g.isWhitesTurn()
+            board = g.board.board
+            history = g.board.history
+            
+            return (True, {"players": players,
+                           "isWhitesTurn": isWhitesTurn,
+                           "board": board,
+                           "history" : history})
+            
+        else:
+            return (False, {"error" : "Invalid game ID"})
         
     def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
         """TODO
