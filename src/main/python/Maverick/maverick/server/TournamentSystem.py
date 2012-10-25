@@ -369,11 +369,11 @@ def _getUniqueInt(intList):
         n = random.randint(1,maxVals)
     return n
     
-def main():
+def _main():
     print "This class should not be run directly"
 
 if __name__ == '__main__':
-    main()
+    _main()
     
     
 # Orphaned code (kept for re-use)
