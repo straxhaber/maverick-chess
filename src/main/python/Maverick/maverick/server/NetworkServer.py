@@ -4,8 +4,6 @@
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
-__status__ = "Development"
-__maintainer__ = "Matthew Strax-Haber and James Magnarelli"
 
 from twisted.internet  import protocol, endpoints, reactor
 from twisted.protocols import basic as basicProtocols
