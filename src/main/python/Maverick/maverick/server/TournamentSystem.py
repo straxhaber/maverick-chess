@@ -98,11 +98,12 @@ class ChessBoard:
         - Update flags if necessary
         - Add the moving piece to the ending position (possibly overwriting)
         - Delete pawns in en passant state if relevant
+        - Moves the rook as well if the king is castling
         
         @todo: write the code for this method"""
         
         # Check if the move is legal
-        if not self.legalMoveP(color, fromRank, fromFile, toRank, toFile):
+        if not self.isLegalMove(color, fromRank, fromFile, toRank, toFile):
             return False
         else:
             # Remove moving piece from starting position
@@ -142,32 +143,90 @@ class ChessBoard:
                     self.board[2][toFile] = None
                     
             return True
-        
-    def legalMoveP(self, color, fromRank, fromFile, toRank, toFile):
+            
+            
+    def isLegalMove(self, color, fromRank, fromFile, toRank, toFile):
         """Returns true if the specified move is legal
         
         Arguments are the same as makePly
         
         Checks if:
-         - There is a piece at the from position
-         - The to position doesn't contain a piece owned by the color
-         - The path to make the move is free (for bishops, rooks, queens, etc.)
-         - Flags don't preclude the move (i.e., castling)
+         - there is a piece at the from position
+         - the to position doesn't contain a piece owned by the color
+         - flags don't preclude the move (i.e., castling)
+         - the path to make the move is free (for bishops, rooks, queens, etc.)
+         - this is a legal move for the piece type
+         - the king would not be in check after the move
+ 
+        Pawns:
+         - normally move one space up away from their color's starting position
+         - can move two spaces on first move
+         - can capture diagonally if there is a piece to be captured
+         
+        Rooks:
+         - move horizontally and vertically
+         - require a clear path between origin and destination
+        
+        Knights:
+         - move in the traditional "L" pattern
+         - do not require a clear path between origin and destination 
+        
+        Bishops:
+         - move diagonally
+         - require a clear path between origin and destination
+        
+        Queens:
+         - can make all moves that a rook or bishop would make from the same 
+         position
+        
+        Kings:
+         - can move one piece in any direction
+         - can move two squares toward a rook if the canCastle flag for that
+         direction ("a" file or "h" file) is True
+ 
+
         
         @todo: write the code for this class"""
         
         fromPiece = self.board[fromRank][fromFile]
         toPiece = self.board[toRank][toFile]
-        if (fromPiece == None or fromPiece[0] != color):
+        if(fromPiece == None or fromPiece[0] != color):
             # Player doesn't own a piece at the from position
             return False
-        if (toPiece != None and toPiece[0] == color):
+        if(toPiece != None and toPiece[0] == color):
             # We own a piece at the destination, and cannot move there
             return False
         
         # Check move legality for individual piece possibilities
-        if (fromPiece[1] == ChessBoard.PAWN):
-            return False
+        if(fromPiece[1] == ChessBoard.PAWN):
+            rankDist = abs(toRank - fromRank)
+            if(color == ChessMatch.White):
+                pawnStartRank = 2
+            else:
+                pawnStartRank = 6
+            # Check to make sure that the pawn is moving forward
+            if(rankDist == 1 or rankDist == 2):
+                # Check to make sure that the pawn is moving "forward"
+                if(color == ChessMatch.WHITE and toRank <= fromRank):
+                    return False
+                elif(color == ChessMatch.BLACK and toRank >= fromRank):
+                    return False
+                # Check that pawn is only moving forward 2 on first move
+                if(rankDist == 2 and fromRank != pawnStartRank):
+                    return False
+                # Check that if moving diagonally a piece is being captured
+                fileDist = abs(toFile - fromFile)
+                if(fileDist == 1 and toPiece != None):
+                    return True
+                # Check that, if moving straight, no piece is captured
+                elif(fileDist == 0 and toPiece == None):
+                    return True
+                else:
+                    return False
+            else:
+                return False
+            # Check that, if moving diagonally, a piece is being captured
+           
         
         
         return False ## FIXME
