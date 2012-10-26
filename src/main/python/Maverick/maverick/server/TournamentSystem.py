@@ -87,7 +87,7 @@ class ChessBoard:
             ChessMatch.BLACK: (True, True)}
     
     def makePly(self, color, fromRank, fromFile, toRank, toFile):
-        """Makes a move if legal
+        """Makes a ply if legal
         
         @param color: the color making the move (BLACK or WHITE constant)
         @param fromRank: the rank from which piece is moving (integer in [0,7])
