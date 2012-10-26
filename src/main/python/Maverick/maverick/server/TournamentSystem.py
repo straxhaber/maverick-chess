@@ -1,11 +1,7 @@
-#!/usr/bin/python
-
 """TournamentSystem.py: A chess server that administers games"""
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
-__status__ = "Development"
-__maintainer__ = "Matthew Strax-Haber and James Magnarelli"
 
 import pickle, random
 
@@ -118,7 +114,7 @@ class ChessBoard:
             self.flag_enpassant[color] = False * ChessBoard.BOARD_SIZE
             
             # Update castle flags
-            prevCastleFlag = self.canCastle[color]
+            prevCastleFlag = self.flag_canCastle[color]
             if movedPiece == self.KING:
                 self.flag_canCastle[color] = (False, False)
             if movedPiece == self.ROOK:
@@ -129,7 +125,7 @@ class ChessBoard:
                     
             # If we've moved a pawn for the first time, set the en passant flags
             if (movedPiece == self.PAWN and 
-                fromRank == {ChessMatch.White: 1, ChessMatch.Black: 6}[color] and
+                fromRank == {ChessMatch.WHITE: 1, ChessMatch.BLACK: 6}[color] and
                 abs(toRank - fromRank) == 2):
                 self.flag_enpassant[color][fromFile] = True             
             
@@ -137,12 +133,12 @@ class ChessBoard:
             self.board[toRank][toFile] = movedPiece
             
             # Remove en passant pawns, if relevant
-            if self.flag_enpassant[color][toFile] == True:
-                if (color == ChessMatch.White and 
+            if self.flag_enpassant[color][toFile]:
+                if (color == ChessMatch.WHITE and 
                     toRank == ChessBoard.BOARD_SIZE - 2): 
                     # We should take a black pawn via en passant
                     self.board[ChessBoard.BOARD_SIZE - 2][toFile] = None
-                elif (color == ChessMatch.Black and toRank == 1):
+                elif (color == ChessMatch.BLACK and toRank == 1):
                     # We should take a white pawn via en passant
                     self.board[2][toFile] = None
                     
@@ -198,7 +194,7 @@ class ChessMatch:
         
     def whoseTurn(self):
         """Returns True if it is whites turn, False otherwise"""
-        if (len(self.ply_history) % 2 == 0):
+        if (len(self.history) % 2 == 0):
             return ChessMatch.WHITE
         else:
             return ChessMatch.BLACK
@@ -369,7 +365,9 @@ class TournamentSystem:
         @return: TODO"""
         
         if self.games.has_key(gameID):
-            result = self.games[gameID].makePly()
+            result = self.games[gameID].makePly(playerID, gameID,
+                                                fromRank, fromFile,
+                                                toRank, toFile)
             if result == "SUCCESS":
                 return (True, {"status": "SUCCESS"})
             else:

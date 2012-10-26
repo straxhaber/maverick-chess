@@ -4,8 +4,6 @@
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
-__status__ = "Development"
-__maintainer__ = "Matthew Strax-Haber and James Magnarelli"
 
 from twisted.internet  import protocol, endpoints, reactor
 from twisted.protocols import basic as basicProtocols
@@ -23,7 +21,19 @@ DEFAULT_PORT = 7782
 # Port 7782 isn't registered for use with the IANA as of December 17th, 2002
 
 class MaverickProtocol(basicProtocols.LineOnlyReceiver):
-    """Protocol for an asynchronous server that administers chess games to clients"""
+    """Protocol for asynchronous server that administers chess games to clients
+    
+    Initiates all connections with a message:
+     MaverickChessServer/{version} WAITING_FOR_REQUEST
+    
+    Takes in queries of the form:
+     VERB {JSON of arguments}
+     
+    Responds back in the form:
+     if Successful:    SUCCESS {JSON of response}
+     if Error:         ERROR {error message} [{query}]
+     
+    After the query is responded to, the server disconnects the client"""
     _name = "MaverickChessServer"
     _version = "1.0a1"
 
@@ -40,7 +50,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
 
         # Print out the server name and version
         #  (e.g., "MaverickChessServer/1.0a1")
-        fStr = "{0}/{1} WaitingForRequest" # Template for welcome message
+        fStr = "{0}/{1} WAITING_FOR_REQUEST" # Template for welcome message
         welcomeMsg = fStr.format(MaverickProtocol._name,
                                  MaverickProtocol._version)
         self.sendLine(welcomeMsg)
@@ -51,12 +61,6 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
     
     def lineReceived(self, line):
         """Take input line-by-line and redirect it to the core"""
-
-        ## TODO: JSON-ify
-        requestName = line.partition(" ")[0] # Request name (e.g., "REGISTER")
-        requestArgsString = line.partition(" ")[2]
-#        requestArgs = {"name": line.partition(" ")[2]} ## FIXME: parse arguments
-        ## TODO: log requests
         
         # Map of valid request names to
         #  - corresponding TournamentSystem function
@@ -81,39 +85,51 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                                        "toRank", "toFile"},
                                       {"status"})}
         
-        errMsg = None # If this gets set, there was an error
+        requestName = line.partition(" ")[0] # Request name (e.g., "REGISTER")
+        ## TODO: log requests
+        requestArgsString = line.partition(" ")[2] # Arguments (unparsed)
         
+        errMsg = None # If this gets set, there was an error
         if requestName in validRequests.keys():
             try:
                 requestArgs = json.loads(requestArgsString)
             except ValueError:
                 errMsg = "Invalid JSON for arguments"
             else:
+                # Pull out the requirements for this request
                 (tsCommand, expArgs, _) = validRequests[requestName]
                 
                 if expArgs != set(requestArgs.keys()):
+                    # Give an error if not provided the correct arguments
                     fStr = "Invalid arguments, expected: {0}"
                     errMsg = fStr.format(",".join(list(expArgs)))
                 else:
                     try:
+                        # Dispatch command to TournamentSystem instance
                         (successP, result) = tsCommand(**requestArgs)
                     except:
+                        # Give an error if caught an exception
                         errMsg = "Uncaught exception"
                     else:
                         if successP:
+                            # Provide successful results to the user
                             jsonStr = json.dumps(result, ensure_ascii=True)
                             response = "SUCCESS {0}".format(jsonStr)
                         if not successP:
+                            # Pull out structured error messages from func call
                             errMsg = result["error"]
         else:
+            # Give an error if provided an invalid command
             errMsg = "Unrecognized verb \"{0}\" in request".format(requestName)
         
         # Respond to the client
         if errMsg == None:
-            self.sendLine(response) # Provide client with the response
+            # Provide client with the response
+            self.sendLine(response)
         else:
-            response = "ERROR: {1} [query=\"{0}\"]".format(line, errMsg)
-            self.sendLine(response) # Provide client with the error
+            # Provide client with the error
+            response = "ERROR {1} [query=\"{0}\"]".format(line, errMsg)
+            self.sendLine(response)
         
         # Close connection after each request
         self.transport.loseConnection()
