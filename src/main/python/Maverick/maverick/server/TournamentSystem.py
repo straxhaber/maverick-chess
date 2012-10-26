@@ -42,8 +42,7 @@ class ChessBoard:
              
         There are special states that must be kept track of:
             - En passant
-            - Castling
-        """
+            - Castling"""
         
         # Initialize board to the basic chess starting position
         # NOTE: the board is referenced as self.board[row][column].
