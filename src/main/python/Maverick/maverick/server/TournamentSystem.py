@@ -396,8 +396,10 @@ def _getUniqueInt(intList):
         n = random.randint(1,maxVals)
     return n
     
+    
 def _main():
     print "This class should not be run directly"
+
 
 if __name__ == '__main__':
     _main()
@@ -421,69 +423,3 @@ if False:
                'g':7,
                'h':8 }[columnLetter]
         return (rowNum, columnNum)
-    
-    def _pieceTaken(self, loc):
-        """Returns true if a move to the given location (given in (y,x) form)
-        would capture a piece.
-        
-        @param loc: The location to be evaluated for piece capture, given in x-y 
-        form for our board representation
-        
-        @return: A tuple containing the piece that would be taken (possibly None),
-        and the loc from which it would be taken (in (y,x) form) (possibly None)
-        """
-        # Check for en passant
-        if (self.isWhiteTurn()):
-            passantRow = 2
-            pawnRow = 3
-            pawn = self._P_WHITE_PAWN
-            flags = self.passant_flags['white'] 
-        else:
-            passantRow = 7
-            pawnRow = 6
-            pawn = self._P_BLACK_PAWN
-            flags = self.passant_flags['black']
-        
-        if ((loc[1] == passantRow) and flags[loc[0]]):
-            tLoc = loc[0], pawnRow
-            return pawn, tLoc
-        
-        #no en-passant.  test for normal capture
-        piece = self._getPiece(loc)
-        if (piece != None):
-            return piece, loc
-        else:
-            return None, None
-        
-    def _doMove(self, movedPiece, moveFromLoc, moveToLoc, takenLoc):
-        """Makes the given move, in which movedPiece moves to moveTo, taking 
-        the piece at takenLoc in the process.  Updates the board.
-         
-        @param movedPiece the piece being moved
-        @param moveTo the location that movedPiece is moving to.  Assumed to be
-        legal and in Y-X format as output by self._stdLocToXY
-        @param takenLoc the location of the taken piece in Y-X format as output
-        by self._stdLocToXY.  Will be null if no pieces are taken"""
-        
-        piece = self._getPiece(moveFromLoc)
-        self.board[takenLoc[0]][takenLoc[1]] = self._P_EMPTY_SPACE
-        self.board[moveFromLoc[0]][moveFromLoc[1]] = self._P_EMPTY_SPACE
-        self.board[moveToLoc[0]][moveToLoc[1]] = piece
-        
-    def makePly(self, moveFrom, moveTo):
-        """Moves the piece at location moveFrom to location moveTo.  Returns
-        MOVE_SUCCESS on success, MOVE_ILLEGAL on failure."""
-        
-        #convert both locations to Y-X format for use with our board array
-        moveFromYX = self._stdLocToXY(moveFrom)
-        moveToYX = self._stdLocToXY(moveTo)
-        
-        if (not(self._isValidMove(moveFromYX, moveToYX))): # TODO: implement this method
-            return self.MOVE_ILLEGAL
-        else: #actually make the move
-            takenPieceInfo = self._pieceTaken(moveToYX)
-            self._doMove(moveFromYX, moveToYX, takenPieceInfo[1])
-            self._updateFlags(moveFromYX, moveToYX, takenPieceInfo[1]) # TODO: implement this method
-            #record the move
-            self.ply_history.append((moveFromYX, moveToYX))
-            return self.MOVE_SUCCESS
