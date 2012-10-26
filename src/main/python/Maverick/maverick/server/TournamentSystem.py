@@ -46,7 +46,7 @@ class ChessBoard:
         """
         
         # Initialize board to the basic chess starting position
-        # NOTE: the board is referenced as self.board[row][column].
+        # NOTE: the board is referenced as self.board[rank][file].
         self.board = []
         self.board.append([
                 (ChessMatch.WHITE, ChessBoard.ROOK),
@@ -109,7 +109,6 @@ class ChessBoard:
             movedPiece = self.board[fromRank][fromFile]
             self.board[fromRank][fromFile] = None
             
-            ## TODO: update flags
             # Reset en passant flags to false
             self.flag_enpassant[color] = False * ChessBoard.BOARD_SIZE
             
@@ -160,10 +159,22 @@ class ChessBoard:
         fromPiece = self.board[fromRank][fromFile]
         toPiece = self.board[toRank][toFile]
         if (fromPiece == None or fromPiece[0] != color):
-            #player doesn't own a piece at the from position
+            # Player doesn't own a piece at the from position
+            return False
+        if (toPiece != None and toPiece[0] == color):
+            # We own a piece at the destination, and cannot move there
             return False
         
+        # Check move legality for individual piece possibilities
+        if (fromPiece[1] == ChessBoard.PAWN):
+            return False
+        
+        
         return False ## FIXME
+    
+
+        
+            
     
 class ChessMatch:
     # Constants for game status
