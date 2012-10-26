@@ -3,7 +3,8 @@
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
 
-import pickle, random
+import pickle
+import random
 
 ###############################################################################
 # Code written by Matthew Strax-Haber & James Magnarelli. All Rights Reserved.
