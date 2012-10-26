@@ -471,6 +471,7 @@ if False:
         self.board[moveFromLoc[0]][moveFromLoc[1]] = self._P_EMPTY_SPACE
         self.board[moveToLoc[0]][moveToLoc[1]] = piece
         
+        
     def makePly(self, moveFrom, moveTo):
         """Moves the piece at location moveFrom to location moveTo.  Returns
         MOVE_SUCCESS on success, MOVE_ILLEGAL on failure."""
