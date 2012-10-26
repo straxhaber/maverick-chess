@@ -5,12 +5,14 @@
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
 
-from twisted.internet  import protocol, endpoints, reactor
+import json
+
+from twisted.internet  import endpoints
+from twisted.internet  import protocol
+from twisted.internet  import reactor
 from twisted.protocols import basic as basicProtocols
 
 from TournamentSystem import TournamentSystem
-
-import json
 
 ################################################################################
 # Code written by Matthew Strax-Haber and James Magnarelli. All Rights Reserved.
