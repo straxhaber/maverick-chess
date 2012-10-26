@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """TournamentSystem.py: A chess server that administers games"""
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
