@@ -57,9 +57,9 @@ class ChessBoard:
                 (ChessMatch.WHITE, ChessBoard.BISH),
                 (ChessMatch.WHITE, ChessBoard.KNGT),
                 (ChessMatch.WHITE, ChessBoard.ROOK)])
-        self.board += [(ChessMatch.WHITE, ChessBoard.PAWN)] * 8
+        self.board.append([(ChessMatch.WHITE, ChessBoard.PAWN)] * 8)
         self.board += [[None] * 8] * 4
-        self.board += [(ChessMatch.BLACK, ChessBoard.PAWN)] * 8
+        self.board.append([(ChessMatch.BLACK, ChessBoard.PAWN)] * 8)
         self.board.append([
                 (ChessMatch.BLACK, ChessBoard.ROOK),
                 (ChessMatch.BLACK, ChessBoard.KNGT),
