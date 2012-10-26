@@ -157,6 +157,12 @@ class ChessBoard:
         
         @todo: write the code for this class"""
         
+        fromPiece = self.board[fromRank][fromFile]
+        toPiece = self.board[toRank][toFile]
+        if (fromPiece == None or fromPiece[0] != color):
+            #player doesn't own a piece at the from position
+            return False
+        
         return False ## FIXME
     
 class ChessMatch:
@@ -369,7 +375,7 @@ class TournamentSystem:
                                                 fromRank, fromFile,
                                                 toRank, toFile)
             if result == "SUCCESS":
-                return (True, {"status": "SUCCESS"})
+                return (True, {})
             else:
                 return (False, {"error" : result})
         else:

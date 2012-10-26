@@ -83,7 +83,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                                       {"playerID", "gameID",
                                        "fromRank", "fromFile",
                                        "toRank", "toFile"},
-                                      {"status"})}
+                                      {})}
         
         requestName = line.partition(" ")[0] # Request name (e.g., "REGISTER")
         ## TODO: log requests
