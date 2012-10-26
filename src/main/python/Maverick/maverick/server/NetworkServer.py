@@ -51,12 +51,6 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
     
     def lineReceived(self, line):
         """Take input line-by-line and redirect it to the core"""
-
-        ## TODO: JSON-ify
-        requestName = line.partition(" ")[0] # Request name (e.g., "REGISTER")
-        requestArgsString = line.partition(" ")[2]
-#        requestArgs = {"name": line.partition(" ")[2]} ## FIXME: parse arguments
-        ## TODO: log requests
         
         # Map of valid request names to
         #  - corresponding TournamentSystem function
@@ -81,8 +75,11 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                                        "toRank", "toFile"},
                                       {"status"})}
         
-        errMsg = None # If this gets set, there was an error
+        requestName = line.partition(" ")[0] # Request name (e.g., "REGISTER")
+        ## TODO: log requests
+        requestArgsString = line.partition(" ")[2] # Arguments (unparsed)
         
+        errMsg = None # If this gets set, there was an error
         if requestName in validRequests.keys():
             try:
                 requestArgs = json.loads(requestArgsString)
