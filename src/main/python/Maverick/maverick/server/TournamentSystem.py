@@ -24,12 +24,23 @@ class ChessBoard:
 
     # The width and height of a standard chess board.  Probably won't change.
     BOARD_SIZE = 8
+    
+    # Constants for the players
+    BLACK = "X"
+    WHITE = "O"
+        
+    # Map of correct starting ranks for pawns (which have special properties)
+    PAWN_STARTING_RANKS = {WHITE: 1, BLACK: 6}
+    ## TODO: Use this variable where possible
+    
+    ## TODO: Create a constant for INITIAL_BOARD that is created once
 
-    def __init__(self):
+    def __init__(self, startBoard=None):
         """Initialize a new Chess game according to normal Chess rules
 
-        NOTE: Board is represented as a list of rows; be careful dereferencing
-            i.e., "d1" is self.board[1][4]
+        NOTE: Board is represented as a list of rows and 0-indexed
+                be careful dereferencing!!!
+            i.e., "d1" is self.board[0][3]
 
         The start state corresponds roughly to this:
             [['R','N','B','Q','K','B','N','R'],
@@ -44,43 +55,51 @@ class ChessBoard:
         There are special states that must be kept track of:
             - En passant
             - Castling"""
+            
+        ## TODO: make sure everything is properly 0-indexed for dereferences
         
         # Initialize board to the basic chess starting position
         # NOTE: the board is referenced as self.board[rank][file].
-        self.board = []
-        self.board.append([
-                (ChessMatch.WHITE, ChessBoard.ROOK),
-                (ChessMatch.WHITE, ChessBoard.KNGT),
-                (ChessMatch.WHITE, ChessBoard.BISH),
-                (ChessMatch.WHITE, ChessBoard.QUEN),
-                (ChessMatch.WHITE, ChessBoard.KING),
-                (ChessMatch.WHITE, ChessBoard.BISH),
-                (ChessMatch.WHITE, ChessBoard.KNGT),
-                (ChessMatch.WHITE, ChessBoard.ROOK)])
-        self.board.append([(ChessMatch.WHITE, ChessBoard.PAWN)] * 8)
-        self.board += [[None] * 8] * 4
-        self.board.append([(ChessMatch.BLACK, ChessBoard.PAWN)] * 8)
-        self.board.append([
-                (ChessMatch.BLACK, ChessBoard.ROOK),
-                (ChessMatch.BLACK, ChessBoard.KNGT),
-                (ChessMatch.BLACK, ChessBoard.BISH),
-                (ChessMatch.BLACK, ChessBoard.QUEN),
-                (ChessMatch.BLACK, ChessBoard.KING),
-                (ChessMatch.BLACK, ChessBoard.BISH),
-                (ChessMatch.BLACK, ChessBoard.KNGT),
-                (ChessMatch.BLACK, ChessBoard.ROOK)])
+        if startBoard == None:
+            ## TODO: Use INITIAL_BOARD constant and create a deep copy
+            
+            self.board = []
+            self.board.append([
+                    (ChessBoard.WHITE, ChessBoard.ROOK),
+                    (ChessBoard.WHITE, ChessBoard.KNGT),
+                    (ChessBoard.WHITE, ChessBoard.BISH),
+                    (ChessBoard.WHITE, ChessBoard.QUEN),
+                    (ChessBoard.WHITE, ChessBoard.KING),
+                    (ChessBoard.WHITE, ChessBoard.BISH),
+                    (ChessBoard.WHITE, ChessBoard.KNGT),
+                    (ChessBoard.WHITE, ChessBoard.ROOK)])
+            self.board.append([(ChessBoard.WHITE, ChessBoard.PAWN)] * 8)
+            self.board += [[None] * 8] * 4
+            self.board.append([(ChessBoard.BLACK, ChessBoard.PAWN)] * 8)
+            self.board.append([
+                    (ChessBoard.BLACK, ChessBoard.ROOK),
+                    (ChessBoard.BLACK, ChessBoard.KNGT),
+                    (ChessBoard.BLACK, ChessBoard.BISH),
+                    (ChessBoard.BLACK, ChessBoard.QUEN),
+                    (ChessBoard.BLACK, ChessBoard.KING),
+                    (ChessBoard.BLACK, ChessBoard.BISH),
+                    (ChessBoard.BLACK, ChessBoard.KNGT),
+                    (ChessBoard.BLACK, ChessBoard.ROOK)])
+        else:
+            ## TODO: Create deep copy of startBoard and store to self.board
+            self.board = startBoard
 
         # Initialize en passant flags (True means en passant capture is
         # possible in the given column
         self.flag_enpassant = {
-            ChessMatch.WHITE: [False] * ChessBoard.BOARD_SIZE,
-            ChessMatch.BLACK: [False] * ChessBoard.BOARD_SIZE}
+            ChessBoard.WHITE: [False] * ChessBoard.BOARD_SIZE,
+            ChessBoard.BLACK: [False] * ChessBoard.BOARD_SIZE}
         
         # Initialize castle flags (queen-side ability, king-side ability)
         # Does not account for pieces blocking or checking the castle
         self.flag_canCastle = {
-            ChessMatch.WHITE: (True, True),
-            ChessMatch.BLACK: (True, True)}
+            ChessBoard.WHITE: (True, True),
+            ChessBoard.BLACK: (True, True)}
     
     def makePly(self, color, fromRank, fromFile, toRank, toFile):
         """Makes a ply if legal
@@ -111,7 +130,7 @@ class ChessBoard:
             self.board[fromRank][fromFile] = None
             
             # Reset en passant flags to false
-            self.flag_enpassant[color] = False * ChessBoard.BOARD_SIZE
+            self.flag_enpassant[color] = [False] * ChessBoard.BOARD_SIZE
             
             # Update castle flags
             prevCastleFlag = self.flag_canCastle[color]
@@ -125,7 +144,7 @@ class ChessBoard:
                     
             # If we've moved a pawn for the first time, set the en passant flags
             if (movedPiece == self.PAWN and 
-                fromRank == {ChessMatch.WHITE: 1, ChessMatch.BLACK: 6}[color] and
+                fromRank == {ChessBoard.WHITE: 1, ChessBoard.BLACK: 6}[color] and
                 abs(toRank - fromRank) == 2):
                 self.flag_enpassant[color][fromFile] = True             
             
@@ -134,11 +153,11 @@ class ChessBoard:
             
             # Remove en passant pawns, if relevant
             if self.flag_enpassant[color][toFile]:
-                if (color == ChessMatch.WHITE and 
+                if (color == ChessBoard.WHITE and 
                     toRank == ChessBoard.BOARD_SIZE - 2): 
                     # We should take a black pawn via en passant
                     self.board[ChessBoard.BOARD_SIZE - 2][toFile] = None
-                elif (color == ChessMatch.BLACK and toRank == 1):
+                elif (color == ChessBoard.BLACK and toRank == 1):
                     # We should take a white pawn via en passant
                     self.board[2][toFile] = None
                     
@@ -182,58 +201,58 @@ class ChessBoard:
         Kings:
          - can move one piece in any direction
          - can move two squares toward a rook if the canCastle flag for that
-         direction ("a" file or "h" file) is True
- 
-
+         direction ("a" file or "h" file) is True"""
         
-        @todo: write the code for this class"""
+        ## TODO finish this method
         
-        fromPiece = self.board[fromRank][fromFile]
-        toPiece = self.board[toRank][toFile]
-        if(fromPiece == None or fromPiece[0] != color):
-            # Player doesn't own a piece at the from position
+        # Pull out the (color, origin_type) entry at the from/to board positions
+        origin_entry = self.board[fromRank][fromFile]
+        destin_entry = self.board[toRank][toFile]
+        
+        # Check if:
+        #  - there is no piece at the position
+        #  - the player doesn't own a piece at the from position
+        if origin_entry == None or origin_entry[0] != color:
             return False
-        if(toPiece != None and toPiece[0] == color):
-            # We own a piece at the destination, and cannot move there
-            return False
         
-        # Check move legality for individual piece possibilities
-        if(fromPiece[1] == ChessBoard.PAWN):
-            rankDist = abs(toRank - fromRank)
-            if(color == ChessMatch.White):
+        origin_type = origin_entry[1] # the type of piece at the origin 
+        
+        # Check move legality for individual piece types
+        if origin_type == ChessBoard.PAWN:
+            
+            # Determine the correct starting rank and direction for each color
+            if color == ChessBoard.WHITE:
                 pawnStartRank = 2
+                direction = 1
             else:
                 pawnStartRank = 6
-            # Check to make sure that the pawn is moving forward
-            if(rankDist == 1 or rankDist == 2):
-                # Check to make sure that the pawn is moving "forward"
-                if(color == ChessMatch.WHITE and toRank <= fromRank):
-                    return False
-                elif(color == ChessMatch.BLACK and toRank >= fromRank):
-                    return False
-                # Check that pawn is only moving forward 2 on first move
-                if(rankDist == 2 and fromRank != pawnStartRank):
-                    return False
-                # Check that if moving diagonally a piece is being captured
-                fileDist = abs(toFile - fromFile)
-                if(fileDist == 1 and toPiece != None):
-                    return True
-                # Check that, if moving straight, no piece is captured
-                elif(fileDist == 0 and toPiece == None):
-                    return True
-                else:
-                    return False
-            else:
-                return False
-            # Check that, if moving diagonally, a piece is being captured
-           
-        
-        
-        return False ## FIXME
-    
-
-        
+                direction = -1
             
+            rank_delta = (toRank - fromRank) * direction # num spaces 'forward'
+            file_delta_abs = abs(toFile-fromFile) # num spaces left/right
+            
+            if rank_delta not in [1,2]:
+                return False
+            elif rank_delta == 1:
+                if file_delta_abs not in [0,1]:
+                    return False # Pawns can't move more than 1 space left/right
+                elif file_delta_abs == 1 and destin_entry == None:
+                    return False # Cannot move diagonally unless capturing
+                elif file_delta_abs == 0 and destin_entry != None:
+                    return False # Cannot move forward and capture
+            
+            elif rank_delta == 2:
+                if file_delta_abs != 0:
+                    return False # Pawns cannot move up 2 and left/right
+                elif fromFile != pawnStartRank:
+                    return False # Pawns can only move two spaces on first move
+           
+        # If we own a piece at the destination, we cannot move there
+        if destin_entry != None and destin_entry[0] == color:
+            return False
+        
+        return True # All of the error checks passed
+    
     
 class ChessMatch:
     # Constants for game status
@@ -244,9 +263,7 @@ class ChessMatch:
     STATUS_DRAWN     = "W_DRAWN"   # White won the game
     STATUS_CANCELLED = "CANCELD"   # Game was halted early
     
-    # Constants for the players
-    BLACK = "X"
-    WHITE = "O"
+    ## TODO: Detect and deal with check-mates
     
     def __init__(self, firstPlayerID=None):
         """Initialize a new chess match with initial state
@@ -257,7 +274,7 @@ class ChessMatch:
         self.board = ChessBoard()
         
         # Initialize match without players (whose playerIDs can be added later)
-        self.players = { ChessMatch.WHITE : None, ChessMatch.BLACK : None}
+        self.players = { ChessBoard.WHITE : None, ChessBoard.BLACK : None}
         
         # Randomly set black or white to firstPlayerID (no-op if not specified)
         self.players[random.choice(self.players.keys())] = firstPlayerID
@@ -271,19 +288,19 @@ class ChessMatch:
     def whoseTurn(self):
         """Returns True if it is whites turn, False otherwise"""
         if (len(self.history) % 2 == 0):
-            return ChessMatch.WHITE
+            return ChessBoard.WHITE
         else:
-            return ChessMatch.BLACK
+            return ChessBoard.BLACK
     
     def makePly(self, player, fromRank, fromFile, toRank, toFile):
         """Makes a move if legal
         
         @return: "SUCCESS" if move was successful, error message otherwise"""
         if self.status == ChessMatch.STATUS_ONGOING:
-            if (self.players[ChessMatch.WHITE] == player):
-                color = ChessMatch.WHITE
-            elif (self.players[ChessMatch.BLACK] == player):
-                color = ChessMatch.BLACK
+            if (self.players[ChessBoard.WHITE] == player):
+                color = ChessBoard.WHITE
+            elif (self.players[ChessBoard.BLACK] == player):
+                color = ChessBoard.BLACK
             else:
                 return "You are not a player in this game"
             
@@ -310,7 +327,7 @@ class ChessMatch:
         if playerID in self.players.values():
             return # Don't allow a player to play both sides
         
-        for color in [ChessMatch.WHITE, ChessMatch.BLACK]:
+        for color in [ChessBoard.WHITE, ChessBoard.BLACK]:
             if self.players[color] == None:
                 self.players[color] = playerID
                 if None not in self.players.values():
@@ -337,8 +354,8 @@ class TournamentSystem:
     def loadTS(tournament, fileName):
         """Load state from a file
 
-        @param fileName: file created using TournamentSystem.saveGames
-        @todo: check to make sure that the pickled data is the same version"""
+        @param fileName: file created using TournamentSystem.saveGames"""
+        
         fd = open(fileName)
         tournament = pickle.load(fd)
         
@@ -422,7 +439,7 @@ class TournamentSystem:
         if self.games.has_key(gameID):
             g = self.games[gameID]
             return (True, {"players": g.players,
-                           "isWhitesTurn": (g.whoseTurn() == ChessMatch.WHITE),
+                           "isWhitesTurn": (g.whoseTurn() == ChessBoard.WHITE),
                            "board": g.board.board,
                            "history" : g.board.history})
         else:
@@ -455,7 +472,7 @@ class TournamentSystem:
 def _getUniqueInt(intList):
     """Return a random integer in [1,2**32-1] that is not in intList"""
     maxVals = 2**32-1   # Maximum value of an int
-    maxSize = maxVals/2 # Maximum number of allocated ints
+    maxSize = 2**31     # Maximum number of allocated ints
 
     # Fail fast if the list is more than half filled in
     if (len(intList) >= maxSize):
@@ -467,30 +484,8 @@ def _getUniqueInt(intList):
         n = random.randint(1,maxVals)
     return n
     
-    
 def _main():
     print "This class should not be run directly"
 
-
 if __name__ == '__main__':
     _main()
-    
-    
-# Orphaned code (kept for re-use)
-if False:
-    @staticmethod
-    def standardChessReferenceToArrayDereference(loc):
-        """Converts a position given in standard chess notation to a tuple
-        containing the y and x coordinates of the position in our board
-        representation. Example: "d1" -> (1,4)"""
-        (columnLetter, rowNum) = loc
-        columnNum = {
-               'a':1,
-               'b':2,
-               'c':3,
-               'd':4,
-               'e':5,
-               'f':6,
-               'g':7,
-               'h':8 }[columnLetter]
-        return (rowNum, columnNum)
