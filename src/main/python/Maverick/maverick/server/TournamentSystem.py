@@ -162,7 +162,65 @@ class ChessBoard:
                     self.board[2][toFile] = None
                     
             return True
+        
+    def isClearLinearPath(self, fromRank, fromFile, toRank, toFile):
+        """Returns true if the straight-line path from origin to destination
+        is not obstructed.  To be used for horizontal, vertical, or diagonal
+        moves.
+        
+        @param fromRank: the rank of the starting position  (integer in [0,7])
+        @param fromFile: the file of the starting position  (integer in [0,7])
+        @param toRank: the rank of the ending position  (integer in [0,7])
+        @param toFile: the file of the ending position  (integer in [0,7])
+        
+        @return: True if the path is clear, False otherwise
+        
+        Builds a list of the rank and file values of squares to check for
+        clarity, then checks them all for clarity.
+        """
+        
+        rank_delta_abs = abs(toRank-fromRank) # num spaces up/down
+        file_delta_abs = abs(toFile-fromFile) # num spaces left/right
+        path_rank_values = [] # Rank values of squares that must be open
+        path_file_values = [] # File values of squares that must be open
+        
+        # Check if the path is diagonal
+        if rank_delta_abs == file_delta_abs:
+            # Build up lists of rank and file values to be checked
+            for r in range(fromRank, toRank):
+                if r not in [fromRank, toRank]:#don't check origin or dest
+                    path_rank_values += r
+                
+            for f in range(fromFile, toFile):
+                if f not in [fromFile, toFile]:
+                    path_file_values += f
+                    
+        #Check if the path is horizontal
+        elif rank_delta_abs == 0:
+            # Build up lists of rank and file values to be checked for clarity
+            for f in range(fromFile, toFile):
+                if f not in [fromFile, toFile]:
+                    path_file_values += f
+            path_rank_values = [fromRank] * len(path_file_values)
+        
+        #Check if the path is vertical
+        elif rank_delta_abs != 0:
+            #Build up lists of rank and file values to be checked for clarity
+            for r in range(fromRank, toRank):
+                if r not in [fromRank, toRank]:
+                    path_rank_values += r
+            path_file_values = [fromFile] * len(path_file_values)
             
+        # Check the squares in the path for clarity
+        for i in range(len(path_rank_values)):
+            rank_pos = path_rank_values[i]
+            file_pos = path_file_values[i]
+            if self.board[rank_pos][file_pos] is not None:
+                return False # There was a piece in one of the path squares
+        return True # None of the path squares contained a piece
+        
+            
+         
             
     def isLegalMove(self, color, fromRank, fromFile, toRank, toFile):
         """Returns true if the specified move is legal
@@ -176,6 +234,7 @@ class ChessBoard:
          - the path to make the move is free (for bishops, rooks, queens, etc.)
          - this is a legal move for the piece type
          - the king would not be in check after the move
+         - the move alters the board state
  
         Pawns:
          - normally move one space up away from their color's starting position
@@ -204,6 +263,8 @@ class ChessBoard:
          direction ("a" file or "h" file) is True"""
         
         ## TODO finish this method
+        ## TODO (James): add check for board state change(player MUST move)
+        ## TODO (James): add check that destination square is on the board
         
         # Pull out the (color, origin_type) entry at the from/to board positions
         origin_entry = self.board[fromRank][fromFile]
@@ -246,6 +307,56 @@ class ChessBoard:
                     return False # Pawns cannot move up 2 and left/right
                 elif fromFile != pawnStartRank:
                     return False # Pawns can only move two spaces on first move
+        
+        elif origin_type == ChessBoard.Rook:
+            
+            rank_delta_abs = abs(toRank-fromRank) # num spaces moved up/down
+            file_delta_abs = abs(toFile-fromFile) # num spaces moved left/right
+            
+            #check that piece either moves up/down or left/right, but not both
+            if rank_delta_abs != 0 and file_delta_abs != 0:
+                return False
+            
+            #check that path between origin and destination is clear
+            if not self.isClearLinearPath(fromRank, fromFile, toRank, toFile):
+                return False
+                
+        elif origin_type == ChessBoard.Knight:
+            pass
+            # TODO (James): check for illegal move given this piece type
+            
+        elif origin_type == ChessBoard.Bishop:
+            
+            rank_delta_abs = abs(toRank-fromRank) # num spaces moved up/down
+            file_delta_abs = abs(toFile-fromFile) # num spaces moved left/right
+            
+            #check that piece moves diagonally
+            if rank_delta_abs !=  file_delta_abs:
+                return False
+            
+            #check that path between origin and destination is clear
+            if not self.isClearLinearPath(fromRank, fromFile, toRank, toFile):
+                return False
+            
+        elif origin_type == ChessBoard.Queen:
+            
+            rank_delta_abs = abs(toRank-fromRank) # num spaces moved up/down
+            file_delta_abs = abs(toFile-fromFile) # num spaces moved left/right
+            
+            # check that if piece isn't moving horizontally or vertically, it is
+            # moving diagonally
+            if rank_delta_abs != 0 and file_delta_abs != 0 and
+                rank_delta_abs != file_delta_abs:
+                return False
+            
+            #check that path between origin and destination is clear
+            if not self.isClearLinearPath(fromRank, fromFile, toRank, toFile):
+                return False
+            
+        elif origin_type == ChessBoard.King:
+            pass
+            # TODO (James): check for illegal move given this piece type
+            
            
         # If we own a piece at the destination, we cannot move there
         if destin_entry != None and destin_entry[0] == color:
