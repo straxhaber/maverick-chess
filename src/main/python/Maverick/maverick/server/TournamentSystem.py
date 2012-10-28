@@ -322,8 +322,14 @@ class ChessBoard:
                 return False
                 
         elif origin_type == ChessBoard.Knight:
-            pass
-            # TODO (James): check for illegal move given this piece type
+            rank_delta_abs = abs(toRank-fromRank) # num spaces moved up/down
+            file_delta_abs = abs(toFile-fromFile) # num spaces moved left/right
+            
+            # Check that destination rank is offeset by 1 and file is offset by
+            # 2, or vice versa. 
+            if  (rank_delta_abs == 2 and file_delta_abs != 1) or
+                (rank_delta_abs == 1 and file_delta_abs != 2):
+                return False
             
         elif origin_type == ChessBoard.Bishop:
             
@@ -355,7 +361,7 @@ class ChessBoard:
             
         elif origin_type == ChessBoard.King:
             pass
-            # TODO (James): check for illegal move given this piece type
+            ## TODO (James): check for illegal move given this piece type
             
            
         # If we own a piece at the destination, we cannot move there
