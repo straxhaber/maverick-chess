@@ -352,7 +352,7 @@ class ChessBoard:
                 elif fromFile != pawnStartRank:
                     return False # Pawns can only move two spaces on first move
         
-        elif origin_type == ChessBoard.Rook:
+        elif origin_type == ChessBoard.ROOK:
             
             rank_delta_abs = abs(toRank-fromRank) # num spaces moved up/down
             file_delta_abs = abs(toFile-fromFile) # num spaces moved left/right
@@ -365,7 +365,7 @@ class ChessBoard:
             if not self.isClearLinearPath(fromRank, fromFile, toRank, toFile):
                 return False
                 
-        elif origin_type == ChessBoard.Knight:
+        elif origin_type == ChessBoard.KNGT:
             rank_delta_abs = abs(toRank-fromRank) # num spaces moved up/down
             file_delta_abs = abs(toFile-fromFile) # num spaces moved left/right
             
@@ -375,7 +375,7 @@ class ChessBoard:
                 (rank_delta_abs == 1 and file_delta_abs != 2)):
                 return False
             
-        elif origin_type == ChessBoard.Bishop:
+        elif origin_type == ChessBoard.BISH:
             
             rank_delta_abs = abs(toRank-fromRank) # num spaces moved up/down
             file_delta_abs = abs(toFile-fromFile) # num spaces moved left/right
@@ -388,7 +388,7 @@ class ChessBoard:
             if not self.isClearLinearPath(fromRank, fromFile, toRank, toFile):
                 return False
             
-        elif origin_type == ChessBoard.Queen:
+        elif origin_type == ChessBoard.QUEN:
             
             rank_delta_abs = abs(toRank-fromRank) # num spaces moved up/down
             file_delta_abs = abs(toFile-fromFile) # num spaces moved left/right
@@ -403,14 +403,14 @@ class ChessBoard:
             if not self.isClearLinearPath(fromRank, fromFile, toRank, toFile):
                 return False
             
-        elif origin_type == ChessBoard.King:
+        elif origin_type == ChessBoard.KING:
             
             rank_delta_abs = abs(toRank-fromRank) # num spaces moved up/down
             file_delta_abs = abs(toFile-fromFile) # num spaces moved left/right
             
             # Retrieve the kingside and queenside castle flags for this color
-            castleFlagQueenside = self.flag_CanCastle[color][0]
-            castleFlagKingside = self.flag_CanCastle[color][1]
+            castleFlagQueenside = self.flag_canCastle[color][0]
+            castleFlagKingside = self.flag_canCastle[color][1]
             
             # Determine the locations to which the king would move if castling
             castleFileQueenside = 3
@@ -456,6 +456,7 @@ class ChessBoard:
         
         # Check that the king would not be in check after the move
         if self.kingInCheck(color, postMoveBoard):
+
             return False
         
         return True # All of the error checks passed
