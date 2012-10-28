@@ -5,6 +5,7 @@ __version__ = "pre-alpha"
 
 import pickle
 import random
+import copy
 
 ###############################################################################
 # Code written by Matthew Strax-Haber & James Magnarelli. All Rights Reserved.
@@ -219,8 +220,57 @@ class ChessBoard:
                 return False # There was a piece in one of the path squares
         return True # None of the path squares contained a piece
         
+    def isKingInCheck(self, color, board):
+        """ Returns True if the king of the given color is in check
+        in the given board
+        
+        @param color: The color of the king to check, ChessMatch.WHITE or 
+        ChessMatch.BLACK
+        @param board: The board to use for this check.  A two dimensional array,
+        of the same form as ChessBoard.board
+        
+        @return: True if the king of the given color is in check on the given
+        board, False otherwise
+        
+        Finds the location of the king of the given color, and checks whether
+        any of the other player's non-king pieces could legally move to that
+        location.
+        """
+        
+        # Determine enemy player's color
+        if color == ChessBoard.WHITE:
+            otherColor = ChessBoard.BLACK
+        else:
+            otherColor = ChessBoard.WHITE
+        
+        enemyPieceLocations = [] # List of (rank, file) locations of pieces
+                                # that may have the king in check
+        # Locate given player's king, and opposing player's non-king pieces
+        for r in len(board):
+            row = board[r]
+            for f in len(row):
+                piece = row[f]
+                pieceColor = piece[0]
+                pieceType = piece[1]
+                if pieceColor == color and pieceType == ChessBoard.KING:
+                    kingRank = r
+                    kingFile = f
+                elif pieceColor != color and pieceType != ChessBoard.KING:
+                    enemyPieceLocations += (r,f)
+        
+        # Check if any enemy piece can legally move to the king's location
+        for piece in enemyPieceLocations:
+            pieceRank = piece[0] # Rank of the piece which may check the king
+            pieceFile = piece[1] # File of the piece which may check the king
+            # If a move to the king's location is legal, the king is in check
+            if self.isLegalMove(otherColor, pieceRank, pieceFile, kingRank,
+                                kingFile):
+                return True
+        
+        # If none of the enemy pieces could move to the king's location, the
+        # king is not in check
+        return False
             
-         
             
     def isLegalMove(self, color, fromRank, fromFile, toRank, toFile):
         """Returns true if the specified move is legal
@@ -258,13 +308,9 @@ class ChessBoard:
          position
         
         Kings:
-         - can move one piece in any direction
+         - can move one square in any direction
          - can move two squares toward a rook if the canCastle flag for that
          direction ("a" file or "h" file) is True"""
-        
-        ## TODO finish this method
-        ## TODO (James): add check for board state change(player MUST move)
-        ## TODO (James): add check that destination square is on the board
         
         # Pull out the (color, origin_type) entry at the from/to board positions
         origin_entry = self.board[fromRank][fromFile]
@@ -360,12 +406,58 @@ class ChessBoard:
                 return False
             
         elif origin_type == ChessBoard.King:
-            pass
-            ## TODO (James): check for illegal move given this piece type
             
-           
+            rank_delta_abs = abs(toRank-fromRank) # num spaces moved up/down
+            file_delta_abs = abs(toFile-fromFile) # num spaces moved left/right
+            
+            # Retrieve the kingside and queenside castle flags for this color
+            castleFlagQueenside = self.flag_CanCastle[color][0]
+            castleFlagKingside = self.flag_CanCastle[color][1]
+            
+            # Determine the locations to which the king would move if castling
+            castleFileQueenside = 3
+            castleFileKingside = 6
+            if color == ChessBoard.WHITE:
+                kingStartRank = 1
+            else:
+                kingStartRank = 7
+            
+            # Check that king only moves more than one square when castling
+            if file_delta_abs != 1 and rank_delta_abs != 1:
+                
+                # Check for illegal kingside castle
+                if toFile == castleFileKingside and toRank == kingStartRank:
+                    if not castleFlagKingside
+                        return False
+                    
+                # Check for illegal queenside castle
+                elif toFile == castleFileQueenside and toRank == kingStartRank:
+                    if not castleFlagQueenside:
+                        return False
+                 
+                # Otherwise, moves of more than one square are illegal
+                else:
+                    return False
+            
         # If we own a piece at the destination, we cannot move there
         if destin_entry != None and destin_entry[0] == color:
+            return False
+        
+        # Check that a move is being made
+        if fromRank == toRank and fromFile == toFile:
+            return False
+        
+        # Check that the proposed move is to a square on the board
+        if toRank not in range(1,7) or toFile not in range(1,7):
+            return False
+        
+        # Create the board that the proposed move would result in
+        postMoveBoard = copy.deepcopy(self.board)
+        postMoveBoard[fromRank][fromFile] = None
+        postMoveBoard[toRank][toFile] = origin_entry
+        
+        # Check that the king would not be in check after the move
+        if self.kingInCheck(postMoveBoard):
             return False
         
         return True # All of the error checks passed
