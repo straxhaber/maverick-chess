@@ -455,7 +455,7 @@ class ChessBoard:
         postMoveBoard[toRank][toFile] = origin_entry
         
         # Check that the king would not be in check after the move
-        if self.kingInCheck(postMoveBoard):
+        if self.kingInCheck(color, postMoveBoard):
             return False
         
         return True # All of the error checks passed
@@ -629,11 +629,13 @@ class TournamentSystem:
             return (False, {"error" : "Invalid game ID"})
     
     def getStatus(self, gameID):
-        """TODO
+        """Returns the status of the game with the given gameID, if it exists.
         
-        @param gameID: TODO
+        @param gameID: the integer gameID of an in-progress game
         
-        @return: TODO"""
+        @return:  On failure, returns a tuple of form (False, {"error": "some 
+        error message"}).  On success, returns a tuple of form (True, 
+        {"status": someStatus})"""
         
         if self.games.has_key(gameID):
             status = self.games[gameID].status
@@ -642,12 +644,21 @@ class TournamentSystem:
             return (False, {"error" : "Invalid game ID"})
     
     def getState(self, gameID):
-        """TODO
+        """
+        Returns the current state of the game, containing information about
+        the playerIDs of the black and white players, whose turn it is,
+        the current board state, and the game history.
         
-        @param playerID: TODO
-        @param gameID: TODO
+        @param gameID:  the integer gameID of an in-progress game
         
-        @return: TODO"""
+        @return: On failure, returns a tuple of form (False, {"error": "some 
+        error message"}).  On success, returns a tuple of form (True, 
+        {"players": {ChessBoard.WHITE: somePlayerID,
+                     ChessBoard.BLACK: somePlayerID},
+         "isWhitesTurn": someBoolean,
+         "board": someBoard,
+         "history": listOfPlies})
+         """
 
         if self.games.has_key(gameID):
             g = self.games[gameID]
@@ -659,16 +670,20 @@ class TournamentSystem:
             return (False, {"error" : "Invalid game ID"})
         
     def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
-        """TODO
+        """Makes the given ply in the given game on behalf of the given
+        player, if it is legal to do so.  
         
-        @param playerID: TODO
-        @param gameID: TODO
-        @param fromRank: TODO
-        @param fromFile: TODO
-        @param toRank: TODO
-        @param toFile: TODO
+        @param playerID: The integer playerID of a registered player.
+        @param gameID: The integer gameID of an in-progress game which 
+        has been joined by the given player
+        @param fromRank: The rank of the piece to be moved
+        @param fromFile: The file of the piece to be moved
+        @param toRank: The file to which the piece should be moved
+        @param toFile: The rank to which the piece should be moved
         
-        @return: TODO"""
+        @return: n failure, returns a tuple of form (False, {"error": "some 
+        error message"}).  On success, returns a tuple of form (True, {})
+        """
         
         if self.games.has_key(gameID):
             result = self.games[gameID].makePly(playerID, gameID,
