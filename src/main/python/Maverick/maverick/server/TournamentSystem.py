@@ -395,8 +395,8 @@ class ChessBoard:
             
             # check that if piece isn't moving horizontally or vertically, it is
             # moving diagonally
-            if rank_delta_abs != 0 and file_delta_abs != 0 and
-                rank_delta_abs != file_delta_abs:
+            if (rank_delta_abs != 0 and file_delta_abs != 0 and
+                rank_delta_abs != file_delta_abs):
                 return False
             
             #check that path between origin and destination is clear
