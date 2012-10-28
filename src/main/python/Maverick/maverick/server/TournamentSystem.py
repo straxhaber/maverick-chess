@@ -1,6 +1,6 @@
 """TournamentSystem.py: A chess server that administers games"""
 
-__author__ = "Matthew Strax-Haber and James Magnarelli"
+__author__ = "Matthew Strax-Haber, James Magnarelli, and Brad Fournier"
 __version__ = "pre-alpha"
 
 import pickle
@@ -8,7 +8,8 @@ import random
 import copy
 
 ###############################################################################
-# Code written by Matthew Strax-Haber & James Magnarelli. All Rights Reserved.
+# Code written by Matthew Strax-Haber, James Magnarelli, and
+# Brad Fournier. All Rights Reserved.
 ###############################################################################
 
 
@@ -32,7 +33,6 @@ class ChessBoard:
         
     # Map of correct starting ranks for pawns (which have special properties)
     PAWN_STARTING_RANKS = {WHITE: 1, BLACK: 6}
-    ## TODO: Use this variable where possible
     
     ## TODO: Create a constant for INITIAL_BOARD that is created once
 
@@ -119,8 +119,7 @@ class ChessBoard:
         - Add the moving piece to the ending position (possibly overwriting)
         - Delete pawns in en passant state if relevant
         - Moves the rook as well if the king is castling
-        
-        @todo: write the code for this method"""
+        """
         
         # Check if the move is legal
         if not self.isLegalMove(color, fromRank, fromFile, toRank, toFile):
@@ -328,11 +327,10 @@ class ChessBoard:
         if origin_type == ChessBoard.PAWN:
             
             # Determine the correct starting rank and direction for each color
+            pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
             if color == ChessBoard.WHITE:
-                pawnStartRank = 2
                 direction = 1
             else:
-                pawnStartRank = 6
                 direction = -1
             
             rank_delta = (toRank - fromRank) * direction # num spaces 'forward'
@@ -373,8 +371,8 @@ class ChessBoard:
             
             # Check that destination rank is offeset by 1 and file is offset by
             # 2, or vice versa. 
-            if  (rank_delta_abs == 2 and file_delta_abs != 1) or
-                (rank_delta_abs == 1 and file_delta_abs != 2):
+            if  ((rank_delta_abs == 2 and file_delta_abs != 1) or
+                (rank_delta_abs == 1 and file_delta_abs != 2)):
                 return False
             
         elif origin_type == ChessBoard.Bishop:
@@ -578,9 +576,12 @@ class TournamentSystem:
         
         This should be called before trying to join a player to a game.
         
-        @param name: TODO
+        @param name: A String containing the player's name
         
-        @return: TODO"""
+        @return: On failure, returns a tuple of form (False, {"error": "some 
+        error message"}).  On success, returns a tuple of form (True, 
+        {"PlayerID": someInteger})
+        """
         if name in self.players.values():
             return (False, {"error" : "player with this name already exists"})
         else:
@@ -592,7 +593,11 @@ class TournamentSystem:
         """Adds the player to a new or pending game.
         
         @param playerID: playerID of the player joining a game
-        @return: TODO"""
+        
+        @return: On failure, returns a tuple of form (False, {"error": "some 
+        error message"}).  On success, returns a tuple of form (True, 
+        {"gameID": someInteger})
+        """
         
         # Add the player to a pending game if one exists 
         for (gameID, game) in self.games:
@@ -613,8 +618,7 @@ class TournamentSystem:
         @return: True if successful, false otherwise
         @precondition: game is ongoing or bending
         @postcondition: game.getStatus() = ChessBoard.STATUS_CANCELED
-        
-        @todo: Check if the game ID exists and is ongoing or pending"""
+        """
         if self.games.has_key(gameID):
             if (self.games[gameID].status in [ChessMatch.STATUS_ONGOING,
                                               ChessMatch.STATUS_PENDING]):
