@@ -425,7 +425,7 @@ class ChessBoard:
                 
                 # Check for illegal kingside castle
                 if toFile == castleFileKingside and toRank == kingStartRank:
-                    if not castleFlagKingside
+                    if not castleFlagKingside:
                         return False
                     
                 # Check for illegal queenside castle
