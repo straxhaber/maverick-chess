@@ -102,7 +102,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
             else:
                 # Pull out the requirements for this request
                 (tsCommand, expArgs, _) = validRequests[requestName]
-                
+
                 if expArgs != set(requestArgs.keys()):
                     # Give an error if not provided the correct arguments
                     fStr = "Invalid arguments, expected: {0}"
@@ -125,19 +125,19 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
         else:
             # Give an error if provided an invalid command
             errMsg = "Unrecognized verb \"{0}\" in request".format(requestName)
-        
+
         # Respond to the client
-        if errMsg == None:
+        if errMsg is None:
             # Provide client with the response
             self.sendLine(response)
         else:
             # Provide client with the error
             response = "ERROR {1} [query=\"{0}\"]".format(line, errMsg)
             self.sendLine(response)
-        
+
         # Close connection after each request
         self.transport.loseConnection()
-        
+
 
 class MaverickProtocolFactory(protocol.ServerFactory):
     """Provides a MaverickProtocol backed by a TournamentSystem instance
@@ -150,10 +150,11 @@ class MaverickProtocolFactory(protocol.ServerFactory):
         Store a reference to the TournamentSystem backing up this server
         """
         self._tournamentSystem = tournamentSystem
-        
+
     def buildProtocol(self, addr):
         """Create an instance of MaverickProtocol"""
         return MaverickProtocol(self._tournamentSystem)
+
 
 def _main(port):
     """Main method: called when the server code is run"""
@@ -163,7 +164,7 @@ def _main(port):
     # Run a server on the specified port
     endpoint = endpoints.TCP4ServerEndpoint(reactor, port)
     endpoint.listen(MaverickProtocolFactory(core))
-    reactor.run() #@UndefinedVariable
-    
+    reactor.run()  # @UndefinedVariable
+
 if __name__ == '__main__':
     _main(DEFAULT_PORT)
