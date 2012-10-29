@@ -34,7 +34,23 @@ class ChessBoard:
     # Map of correct starting ranks for pawns (which have special properties)
     PAWN_STARTING_RANKS = {WHITE: 2, BLACK: 7}
 
-    ## TODO: Create a constant for INITIAL_BOARD that is created once
+    # A constant board, created once, that represents the board's start state
+    STARTING_BOARD = [[(WHITE, ROOK), (WHITE, KNGT), (WHITE, BISH),
+                       (WHITE, QUEN), (WHITE, KING), (WHITE, BISH),
+                       (WHITE, KNGT), (WHITE, ROOK)],
+                      [(WHITE, PAWN), (WHITE, PAWN), (WHITE, PAWN),
+                       (WHITE, PAWN), (WHITE, PAWN), (WHITE, PAWN),
+                       (WHITE, PAWN), (WHITE, PAWN)],
+                      [None, None, None, None, None, None, None, None],
+                      [None, None, None, None, None, None, None, None],
+                      [None, None, None, None, None, None, None, None],
+                      [None, None, None, None, None, None, None, None],
+                      [(BLACK, PAWN), (BLACK, PAWN), (BLACK, PAWN),
+                       (BLACK, PAWN), (BLACK, PAWN), (BLACK, PAWN),
+                       (BLACK, PAWN), (BLACK, PAWN)],
+                      [(BLACK, ROOK), (BLACK, KNGT), (BLACK, BISH),
+                       (BLACK, QUEN), (BLACK, KING), (BLACK, BISH),
+                       (BLACK, KNGT), (BLACK, ROOK)]]
 
     def __init__(self, startBoard=None):
         """Initialize a new Chess game according to normal Chess rules
@@ -59,36 +75,8 @@ class ChessBoard:
 
         ## TODO: make sure everything is properly 0-indexed for dereferences
 
-        # Initialize board to the basic chess starting position
-        # NOTE: the board is referenced as self.board[rank][file].
-        if startBoard == None:
-            ## TODO: Use INITIAL_BOARD constant and create a deep copy
-
-            self.board = []
-            self.board.append([
-                    (ChessBoard.WHITE, ChessBoard.ROOK),
-                    (ChessBoard.WHITE, ChessBoard.KNGT),
-                    (ChessBoard.WHITE, ChessBoard.BISH),
-                    (ChessBoard.WHITE, ChessBoard.QUEN),
-                    (ChessBoard.WHITE, ChessBoard.KING),
-                    (ChessBoard.WHITE, ChessBoard.BISH),
-                    (ChessBoard.WHITE, ChessBoard.KNGT),
-                    (ChessBoard.WHITE, ChessBoard.ROOK)])
-            self.board.append([(ChessBoard.WHITE, ChessBoard.PAWN)] * 8)
-            self.board += [[None] * 8] * 4
-            self.board.append([(ChessBoard.BLACK, ChessBoard.PAWN)] * 8)
-            self.board.append([
-                    (ChessBoard.BLACK, ChessBoard.ROOK),
-                    (ChessBoard.BLACK, ChessBoard.KNGT),
-                    (ChessBoard.BLACK, ChessBoard.BISH),
-                    (ChessBoard.BLACK, ChessBoard.QUEN),
-                    (ChessBoard.BLACK, ChessBoard.KING),
-                    (ChessBoard.BLACK, ChessBoard.BISH),
-                    (ChessBoard.BLACK, ChessBoard.KNGT),
-                    (ChessBoard.BLACK, ChessBoard.ROOK)])
-        else:
-            ## TODO: Create deep copy of startBoard and store to self.board
-            self.board = startBoard
+        # Perform deep copy of board start state into self.board
+        self.board = copy.deepcopy(ChessBoard.STARTING_BOARD)
 
         # Initialize en passant flags (True means en passant capture is
         # possible in the given column
@@ -736,3 +724,4 @@ def _main():
 
 if __name__ == '__main__':
     _main()
+
