@@ -73,8 +73,6 @@ class ChessBoard:
             - En passant
             - Castling"""
 
-        ## TODO: make sure everything is properly 0-indexed for dereferences
-
         # Perform deep copy of board start state into self.board
         self.board = copy.deepcopy(ChessBoard.STARTING_BOARD)
 
@@ -695,8 +693,6 @@ class ChessMatch:
     STATUS_WHITE_WON = "W_WHITE"   # White won the game
     STATUS_DRAWN = "W_DRAWN"   # White won the game
     STATUS_CANCELLED = "CANCELD"   # Game was halted early
-
-    ## TODO: Detect and deal with check-mates
 
     def __init__(self, firstPlayerID=None):
         """Initialize a new chess match with initial state

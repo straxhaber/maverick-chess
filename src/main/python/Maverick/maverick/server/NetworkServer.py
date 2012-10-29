@@ -6,6 +6,7 @@ __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
 
 import json
+import logging
 
 from twisted.internet import endpoints
 from twisted.internet import protocol
@@ -50,7 +51,9 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
 
     def connectionMade(self):
         """When a client connects, provide a welcome message"""
-        ## TODO: log connections
+
+        # Log the connection
+        self.logger.info("Connection made with client.")
 
         # Print out the server name and version
         #  (e.g., "MaverickChessServer/1.0a1")
@@ -61,7 +64,9 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
 
     def connectionLost(self, reason=None):
         """When a client disconnects, log it"""
-        ## TODO: log disconnections
+
+        # Log the disconnection
+        self.logger.info("Client disconnected.")
 
     def lineReceived(self, line):
         """Take input line-by-line and redirect it to the core"""
@@ -90,8 +95,12 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                                       {})}
 
         requestName = line.partition(" ")[0]  # Request name (e.g., "REGISTER")
-        ## TODO: log requests
+
         requestArgsString = line.partition(" ")[2]  # Arguments (unparsed)
+
+        # Log the request
+        self.logger.info("Received request. Type: ", requestName,
+                         " Arguments: ", requestArgsString)
 
         errMsg = None  # If this gets set, there was an error
         if requestName in validRequests.keys():
@@ -150,6 +159,11 @@ class MaverickProtocolFactory(protocol.ServerFactory):
         Store a reference to the TournamentSystem backing up this server
         """
         self._tournamentSystem = tournamentSystem
+
+        """
+        Instantiate a logger.
+        """
+        self.logger = logging.getLogger("MaverickServer")
 
     def buildProtocol(self, addr):
         """Create an instance of MaverickProtocol"""
