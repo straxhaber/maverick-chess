@@ -26,17 +26,17 @@ DEFAULT_PORT = 7782
 
 class MaverickProtocol(basicProtocols.LineOnlyReceiver):
     """Protocol for asynchronous server that administers chess games to clients
-    
+
     Initiates all connections with a message:
      MaverickChessServer/{version} WAITING_FOR_REQUEST
-    
+
     Takes in queries of the form:
      VERB {JSON of arguments}
-     
+
     Responds back in the form:
      if Successful:    SUCCESS {JSON of response}
      if Error:         ERROR {error message} [{query}]
-     
+
     After the query is responded to, the server disconnects the client"""
     _name = "MaverickChessServer"
     _version = "1.0a1"
@@ -54,7 +54,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
 
         # Print out the server name and version
         #  (e.g., "MaverickChessServer/1.0a1")
-        fStr = "{0}/{1} WAITING_FOR_REQUEST" # Template for welcome message
+        fStr = "{0}/{1} WAITING_FOR_REQUEST"  # Template for welcome message
         welcomeMsg = fStr.format(MaverickProtocol._name,
                                  MaverickProtocol._version)
         self.sendLine(welcomeMsg)
@@ -62,10 +62,10 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
     def connectionLost(self, reason=None):
         """When a client disconnects, log it"""
         ## TODO: log disconnections
-    
+
     def lineReceived(self, line):
         """Take input line-by-line and redirect it to the core"""
-        
+
         # Map of valid request names to
         #  - corresponding TournamentSystem function
         #  - expected arguments
@@ -88,12 +88,12 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
                                        "fromRank", "fromFile",
                                        "toRank", "toFile"},
                                       {})}
-        
-        requestName = line.partition(" ")[0] # Request name (e.g., "REGISTER")
+
+        requestName = line.partition(" ")[0]  # Request name (e.g., "REGISTER")
         ## TODO: log requests
-        requestArgsString = line.partition(" ")[2] # Arguments (unparsed)
-        
-        errMsg = None # If this gets set, there was an error
+        requestArgsString = line.partition(" ")[2]  # Arguments (unparsed)
+
+        errMsg = None  # If this gets set, there was an error
         if requestName in validRequests.keys():
             try:
                 requestArgs = json.loads(requestArgsString)
