@@ -566,7 +566,7 @@ class TournamentSystem:
     @staticmethod
     def loadTS(tournament, fileName):
         """Load state from a file
-l
+
         @param fileName: file created using TournamentSystem.saveGames"""
 
         fd = open(fileName)
@@ -687,7 +687,7 @@ l
         @param toRank: The file to which the piece should be moved
         @param toFile: The rank to which the piece should be moved
 
-        @return: n failure, returns a tuple of form (False, {"error": "some
+        @return: On failure, returns a tuple of form (False, {"error": "some
         error message"}).  On success, returns a tuple of form (True, {})
         """
 
