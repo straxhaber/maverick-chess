@@ -308,7 +308,7 @@ class ChessBoard:
         # Check if:
         #  - there is no piece at the position
         #  - the player doesn't own a piece at the from position
-        if origin_entry == None or origin_entry[0] != color:
+        if origin_entry is None or origin_entry[0] != color:
             return False
 
         origin_type = origin_entry[1]  # the type of piece at the origin
@@ -334,9 +334,9 @@ class ChessBoard:
                 if file_delta_abs not in [0, 1]:
                     return False  # Pawns can never move more than 1 space
                                     # horizontally
-                elif file_delta_abs == 1 and destin_entry == None:
+                elif file_delta_abs == 1 and destin_entry is None:
                     return False  # Cannot move diagonally unless capturing
-                elif file_delta_abs == 0 and destin_entry != None:
+                elif file_delta_abs == 0 and destin_entry is not None:
                     return False  # Cannot move forward and capture
 
             elif rank_delta == 2:
@@ -442,7 +442,7 @@ class ChessBoard:
                     return False
 
         # If we own a piece at the destination, we cannot move there
-        if destin_entry != None and destin_entry[0] == color:
+        if destin_entry is not None and destin_entry[0] == color:
             return False
 
         # Check that a move is being made
@@ -540,7 +540,7 @@ class ChessMatch:
             return  # Don't allow a player to play both sides
 
         for color in [ChessBoard.WHITE, ChessBoard.BLACK]:
-            if self.players[color] == None:
+            if self.players[color] is None:
                 self.players[color] = playerID
                 if None not in self.players.values():
                     self.status = ChessMatch.STATUS_ONGOING
