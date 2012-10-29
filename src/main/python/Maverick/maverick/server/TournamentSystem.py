@@ -719,6 +719,12 @@ class ChessMatch:
                 return "It is not your turn"
 
             if self.board.makePly(color, fromRank, fromFile, toRank, toFile):
+                # Check for checkmates
+                if self.board.isCheckMated(ChessBoard.WHITE):
+                    self.status = ChessMatch.STATUS_BLACK_WON
+                elif self.board.isCheckMated(ChessBoard.BLACK):
+                    self.status = ChessMatch.STATUS_WHITE_WON
+                
                 self.history.append(((fromRank, fromFile), (toRank, toFile)))
                 return "SUCCESS"
             else:
