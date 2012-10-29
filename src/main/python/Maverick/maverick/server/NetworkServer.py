@@ -16,8 +16,8 @@ from twisted.protocols import basic as basicProtocols
 from TournamentSystem import TournamentSystem
 
 #############################################################
-# Code written by Matthew Strax-Haber and James Magnarelli. #
-# All Rights Reserved.                                      #
+# Code written by Matthew Strax-Haber, James Magnarelli,    #
+# and Brad Fournier. All Rights Reserved.                   #
 #############################################################
 
 """Default port for server"""
