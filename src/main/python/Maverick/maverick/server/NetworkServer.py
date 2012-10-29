@@ -7,20 +7,22 @@ __version__ = "pre-alpha"
 
 import json
 
-from twisted.internet  import endpoints
-from twisted.internet  import protocol
-from twisted.internet  import reactor
+from twisted.internet import endpoints
+from twisted.internet import protocol
+from twisted.internet import reactor
 from twisted.protocols import basic as basicProtocols
 
 from TournamentSystem import TournamentSystem
 
-################################################################################
-# Code written by Matthew Strax-Haber and James Magnarelli. All Rights Reserved.
-################################################################################
+#############################################################
+# Code written by Matthew Strax-Haber and James Magnarelli. #
+# All Rights Reserved.                                      #
+#############################################################
 
 """Default port for server"""
 DEFAULT_PORT = 7782
 # Port 7782 isn't registered for use with the IANA as of December 17th, 2002
+
 
 class MaverickProtocol(basicProtocols.LineOnlyReceiver):
     """Protocol for asynchronous server that administers chess games to clients
