@@ -154,6 +154,61 @@ class ChessBoard:
 
             return True
 
+    def getSquaresInPath(self, fromRank, fromFile, toRank, toFile):
+        """Returns a list of squares in the straight-line path
+        from origin to destination (not including the origin or destination
+        squares.)  Returns an empty list if no straight-line path exists.
+
+        @param fromRank: the rank of the starting position  (integer in [0,7])
+        @param fromFile: the file of the starting position  (integer in [0,7])
+        @param toRank: the rank of the ending position  (integer in [0,7])
+        @param toFile: the file of the ending position  (integer in [0,7])
+
+        @return: A list of (rank, file) tuples representing squares in the path
+        from origin to destination, not including the origin or destination
+        squares.  Returns an empty list if no straight line path exists.
+        """
+
+        rank_delta_abs = abs(toRank - fromRank)  # num spaces up/down
+        file_delta_abs = abs(toFile - fromFile)  # num spaces left/right
+        path_rank_values = []  # Rank values of squares that must be open
+        path_file_values = []  # File values of squares that must be open
+
+        # Check if the path is diagonal
+        if rank_delta_abs == file_delta_abs:
+            # Build up lists of rank and file values to be included in path
+            for r in range(fromRank, toRank):
+                if r not in [fromRank, toRank]:  # don't include origin or dest
+                    path_rank_values += r
+
+            for f in range(fromFile, toFile):
+                if f not in [fromFile, toFile]:
+                    path_file_values += f
+
+        #Check if the path is horizontal
+        elif rank_delta_abs == 0:
+            # Build up lists of rank and file values to be included in path
+            for f in range(fromFile, toFile):
+                if f not in [fromFile, toFile]:  # don't include origin or dest
+                    path_file_values += f
+            path_rank_values = [fromRank] * len(path_file_values)
+
+        #Check if the path is vertical
+        elif rank_delta_abs != 0:
+            #Build up lists of rank and file values to be included in path
+            for r in range(fromRank, toRank):
+                if r not in [fromRank, toRank]:  # don't include origin or dest
+                    path_rank_values += r
+            path_file_values = [fromFile] * len(path_file_values)
+
+        # If the path is not straight-line, return the empty list
+        else:
+            return []
+
+        # Combine rank and file lists into return value
+        pathSquares = zip(path_rank_values, path_file_values)
+        return pathSquares
+
     def isClearLinearPath(self, fromRank, fromFile, toRank, toFile):
         """Returns true if the straight-line path from origin to destination
         is not obstructed.  To be used for horizontal, vertical, or diagonal
@@ -164,49 +219,25 @@ class ChessBoard:
         @param toRank: the rank of the ending position  (integer in [0,7])
         @param toFile: the file of the ending position  (integer in [0,7])
 
-        @return: True if the path is clear, False otherwise
+        @return: True if the path is clear, False if it is obstructed, or is
+        not a straight-line path.
 
         Builds a list of the rank and file values of squares to check for
         clarity, then checks them all for clarity.
         """
 
-        rank_delta_abs = abs(toRank - fromRank)  # num spaces up/down
-        file_delta_abs = abs(toFile - fromFile)  # num spaces left/right
-        path_rank_values = []  # Rank values of squares that must be open
-        path_file_values = []  # File values of squares that must be open
+        # Get the squares in the path, if there is one
+        pathSquares = self.getSquaresInPath(fromRank, fromFile, toRank, toFile)
 
-        # Check if the path is diagonal
-        if rank_delta_abs == file_delta_abs:
-            # Build up lists of rank and file values to be checked
-            for r in range(fromRank, toRank):
-                if r not in [fromRank, toRank]:  # don't check origin or dest
-                    path_rank_values += r
-
-            for f in range(fromFile, toFile):
-                if f not in [fromFile, toFile]:
-                    path_file_values += f
-
-        #Check if the path is horizontal
-        elif rank_delta_abs == 0:
-            # Build up lists of rank and file values to be checked for clarity
-            for f in range(fromFile, toFile):
-                if f not in [fromFile, toFile]:
-                    path_file_values += f
-            path_rank_values = [fromRank] * len(path_file_values)
-
-        #Check if the path is vertical
-        elif rank_delta_abs != 0:
-            #Build up lists of rank and file values to be checked for clarity
-            for r in range(fromRank, toRank):
-                if r not in [fromRank, toRank]:
-                    path_rank_values += r
-            path_file_values = [fromFile] * len(path_file_values)
+        # Return False if no straight-line path exists
+        if not pathSquares:
+            return False
 
         # Check the squares in the path for clarity
-        for i in range(len(path_rank_values)):
-            rank_pos = path_rank_values[i]
-            file_pos = path_file_values[i]
-            if self.board[rank_pos][file_pos] is not None:
+        for square in pathSquares:
+            rank = square[0]
+            file = square[1]
+            if self.board[rank][file] is not None:
                 return False  # There was a piece in one of the path squares
         return True  # None of the path squares contained a piece
 
@@ -226,7 +257,7 @@ class ChessBoard:
                 the location of all non-king enemy pieces
         """
 
-        enemyPieceLocations = []  # List of (rank, file) non-king pieces 
+        enemyPieceLocations = []  # List of (rank, file) non-king pieces
 
         # Locate given player's king, and opposing player's non-king pieces
         for r in len(board):
@@ -255,9 +286,18 @@ class ChessBoard:
         moved to, would inhibit the piece at fromRank, fromFile from being able
         to move to toRank, toFile
         """
-        pass
-        ## TODO (James): write the code for this function
-        
+
+        interruptSquares = []  # Squares that could interrupt path from origin
+                                # to destination.  An accumulator to be built
+                                # up and returned
+        interruptSquares.append((fromRank, fromFile))
+
+        # Build up list of squares in path from origin to destination
+        pathSquares = self.getSquaresInPath(fromRank, fromFile, toRank, toFile)
+
+        interruptSquares += (pathSquares)
+
+        return interruptSquares
 
     def isCheckMated(self, color):
         """ Returns True if the given color is in checkmate given the current
