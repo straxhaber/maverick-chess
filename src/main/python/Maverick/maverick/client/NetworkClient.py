@@ -17,6 +17,7 @@ from twisted.protocols import basic as basicProtocols
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+## TODO (mattsh): Logging
 
 """Default port for server"""
 DEFAULT_MAVERICK_PORT = 7782
@@ -27,7 +28,7 @@ DEfAULT_SERVER_URL = "127.0.0.1"
 class MaverickClientProtocol(basicProtocols.LineOnlyReceiver):
     """Protocol for connecting to the MaverickServer"""
 
-    def sendRequest(self, verb, dikt):
+    def makeRequest(self, verb, dikt):
         """Send a request to the server
 
         NOTE: does not validate data"""
@@ -54,22 +55,22 @@ def MaverickClient(Object):
     def register(self, name):
         """TODO write a good comment"""
         args = {"name": name}
-        self.sendRequest("REGISTER", args)
+        self.makeRequest("REGISTER", args)
 
     def joinGame(self, playerID):
         """TODO write a good comment"""
         args = {"playerID": playerID}
-        self.sendRequest("JOIN_GAME", args)
+        self.makeRequest("JOIN_GAME", args)
 
     def getStatus(self, gameID):
         """TODO write a good comment"""
         args = {"gameID": gameID}
-        self.sendRequest("GET_STATUS", args)
+        self.makeRequest("GET_STATUS", args)
 
     def getState(self, gameID):
         """TODO write a good comment"""
         args = {"gameID": gameID}
-        self.sendRequest("GET_STATE", args)
+        self.makeRequest("GET_STATE", args)
 
     def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
         """TODO write a good comment"""
@@ -79,9 +80,9 @@ def MaverickClient(Object):
                 "fromFile": fromFile,
                 "toRank": fromRank,
                 "toFile": toFile}
-        self.sendRequest("MAKE_PLY", args)
+        self.makeRequest("MAKE_PLY", args)
 
-    def sendRequest(self, verb, dikt):
+    def makeRequest(self, verb, dikt):
         """Sends a Maverick request to the server"""
         pass  # TODO write this
 

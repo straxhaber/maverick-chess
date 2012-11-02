@@ -12,6 +12,8 @@ import copy
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+## TODO (mattsh): Logging
+
 
 class ChessBoard:
     """Represents a chess game in Maverick"""

@@ -21,6 +21,8 @@ from TournamentSystem import TournamentSystem
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+## TODO (mattsh): Logging
+
 
 """Default port for server"""
 DEFAULT_MAVERICK_PORT = 7782
@@ -40,8 +42,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
      if Successful:    SUCCESS {JSON of response}
      if Error:         ERROR {error message} [{query}]
 
-    After the query is responded to, the server disconnects the client
-    """
+    After the query is responded to, the server disconnects the client"""
     _name = "MaverickChessServer"
     _version = "1.0a1"
 
@@ -52,11 +53,14 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         """Store a reference to the TournamentSystem backing up this server"""
         MaverickServerProtocol._ts = tournamentSystem
 
+        ## Instantiate a logger
+        self._logger = logging.getLogger(self.__class__.__name__)
+
     def connectionMade(self):
         """When a client connects, provide a welcome message"""
 
         # Log the connection
-        self.logger.info("Connection made with client.")
+        self._logger.info("Connection made with client.")
 
         # Print out the server name and version
         #  (e.g., "MaverickChessServer/1.0a1")
@@ -69,7 +73,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         """When a client disconnects, log it"""
 
         # Log the disconnection
-        self.logger.info("Client disconnected.")
+        self._logger.info("Client disconnected.")
 
     def lineReceived(self, line):
         """Take input line-by-line and redirect it to the core"""
@@ -102,7 +106,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         requestArgsString = line.partition(" ")[2]  # Arguments (unparsed)
 
         # Log the request
-        self.logger.info("Received request. Type: ", requestName,
+        self._logger.info("Received request. Type: ", requestName,
                          " Arguments: ", requestArgsString)
 
         errMsg = None  # If this gets set, there was an error
@@ -155,19 +159,18 @@ class MaverickServerProtocolFactory(protocol.ServerFactory):
     """Provides a MaverickServerProtocol backed by a TournamentSystem instance
 
     It does little more than build a protocol with a reference to the
-    provided TournamentSystem instance
-    """
+    provided TournamentSystem instance"""
 
     def __init__(self, tournamentSystem):
-        """
-        Store a reference to the TournamentSystem backing up this server
-        """
+        """Initialize server state
+
+        Makes a link to the TournamentSystem instance provided"""
+
+        # Store a reference to the TournamentSystem backing up this server
         self._tournamentSystem = tournamentSystem
 
-        """
-        Instantiate a logger.
-        """
-        self.logger = logging.getLogger("MaverickServer")
+        # Instantiate a logger
+        self._logger = logging.getLogger(self.__class__.__name__)
 
     def buildProtocol(self, addr):
         """Create an instance of MaverickServerProtocol"""
