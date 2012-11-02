@@ -45,11 +45,12 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
      if Error:         ERROR {error message} [{query}]
 
     After the query is responded to, the server disconnects the client"""
+
     _name = "MaverickChessServer"
     _version = __version__
 
-    # put a TournamentSystem instance here
     _ts = None
+    """put a TournamentSystem instance here"""
 
     def __init__(self, tournamentSystem):
         """Store a reference to the TournamentSystem backing up this server"""

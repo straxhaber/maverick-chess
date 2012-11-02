@@ -30,6 +30,7 @@ class MaverickClient(object):
     """Protocol for connecting to the MaverickServer"""
 
     TIMEOUT = 2
+    """Timeout (in seconds) for the telnet connections"""
 
     def __init__(self, host=DEfAULT_MAVERICK_HOST, port=DEFAULT_MAVERICK_PORT):
         self._logger = logging.getLogger("MaverickClient")
@@ -43,8 +44,6 @@ class MaverickClient(object):
 
         # Connect via telnet to the server
         connection = Telnet(self.host, self.port)
-
-        # TODO deal with timeout
 
         # Receive the welcome message and validate it
         # Example: MaverickChessServer/1.0a1 WAITING_FOR_REQUEST
@@ -68,6 +67,7 @@ class MaverickClient(object):
         # Receive the response
         response = connection.read_until("\n", MaverickClient.TIMEOUT)
 
+        # Parse the response and deal with it accordingly
         statusString, _, value = response.partition(" ")
         if statusString == "SUCCESS":
             result = json.loads(value)

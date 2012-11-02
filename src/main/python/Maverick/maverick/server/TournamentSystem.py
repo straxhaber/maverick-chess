@@ -34,8 +34,10 @@ class ChessBoard:
     BLACK = "X"
     WHITE = "O"
 
-    # Map of correct starting ranks for pawns (which have special properties)
     PAWN_STARTING_RANKS = {WHITE: 2, BLACK: 7}
+    """Map of correct starting ranks for pawns
+
+    Pawns have the special property that they only move up/down"""
 
     # A constant board, created once, that represents the board's start state
     STARTING_BOARD = [[(WHITE, ROOK), (WHITE, KNGT), (WHITE, BISH),
