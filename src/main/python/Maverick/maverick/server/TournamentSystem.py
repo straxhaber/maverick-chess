@@ -13,7 +13,7 @@ import logging
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-## TODO (mattsh): Logging
+# TODO (mattsh): Logging
 
 
 class ChessBoard:
@@ -484,10 +484,11 @@ class ChessBoard:
         result from the given move, in the form of ChessBoard.board
         """
 
-        postMoveBoard = copy.deepcopy(self.board)  # Copy the board, so as not
-                                                    # to modify anything real
-        origin_entry = postMoveBoard[fromRank - 1][fromFile - 1]  # Piece to be
-                                                                # moved
+        # Copy the board, so as not to modify anything real
+        postMoveBoard = copy.deepcopy(self.board)
+
+        # Piece to be moved
+        origin_entry = postMoveBoard[fromRank - 1][fromFile - 1]
 
         # Move the piece
         postMoveBoard[fromRank - 1][fromFile - 1] = None

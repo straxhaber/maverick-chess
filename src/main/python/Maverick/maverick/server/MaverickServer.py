@@ -21,14 +21,12 @@ from TournamentSystem import TournamentSystem
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-## TODO (mattsh): Logging
+# TODO (mattsh): Logging
 
 
 """Default port for server"""
 DEFAULT_MAVERICK_PORT = 7782
 # Port 7782 isn't registered for use with the IANA as of December 17th, 2002
-
-## TODO (James): modify all comments to use "##" rather than "#"
 
 
 class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
@@ -192,7 +190,7 @@ class MaverickServerProtocolFactory(protocol.ServerFactory):
         return MaverickServerProtocol(self._tournamentSystem)
 
 
-def _main(port=DEFAULT_MAVERICK_PORT, logLevelStr='DEBUG'):  # TODO DEBUG->INFO
+def _main(port=DEFAULT_MAVERICK_PORT, logLevelStr='INFO'):
     """Main method: called when the server code is run
 
     @param port: The port to use for communication with a Maverick server
