@@ -66,8 +66,8 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         # Log the connection
         self._logger.debug("Connection made with client.")
 
-        # Print out the server name and version
-        #  (e.g., "MaverickChessServer/1.0a1")
+        # Print out the server name, version, and prompt
+        #  (e.g., "MaverickChessServer/1.0a1 WAITING_FOR_REQUEST")
         fStr = "{0}/{1} WAITING_FOR_REQUEST"  # Template for welcome message
         welcomeMsg = fStr.format(MaverickServerProtocol._name,
                                  MaverickServerProtocol._version)
