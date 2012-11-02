@@ -5,7 +5,6 @@
 __author__ = "James Magnarelli, Matthew Strax-Haber, and Brad Fournier"
 __version__ = "pre-alpha"
 
-import json
 import logging
 
 from twisted.internet import protocol
@@ -28,13 +27,43 @@ DEfAULT_SERVER_URL = "127.0.0.1"
 class MaverickClientProtocol(basicProtocols.LineOnlyReceiver):
     """Protocol for connecting to the MaverickServer"""
 
-    def _makeRequest(self, verb, dikt):
-        """Send a request to the server
+    def __init__(self):
+        self._responseWelcome = None    # Intial welcome message
+        self._responseRequest = None    # Response to request
+        self._requestMadeP = False      # Has a request been made?
 
-        NOTE: does not validate data"""
-        requestStr = "%s %s".format(verb, json.dumps(dikt))
-        self.sendLine(requestStr)
-        ## TODO Write this
+        # TODO (mattsh): welcome cannot come before connection
+        # TODO (mattsh): response cannot come before request sent
+
+    def lineReceived(self, line):
+        """Handle responses from the server"""
+        if self._responseWelcome is None:
+            self._responseWelcome = line
+        elif self._responseRequest is None:
+            if not self._requestMadeP:
+                raise RuntimeError("Response received before request made !?")
+            else:
+                self._responseRequest = line
+        else:
+            raise RuntimeError("Unexpected data from server")
+
+    def sendLine(self, line):
+        """Send a request to the server"""
+        if self._responseWelcome is None:
+            raise RuntimeError("Cannot send request before receiving welcome")
+        elif self._requestMadeP:
+            raise RuntimeError("Cannot run multiple requests per connection")
+        else:
+            self._requestMadeP = True
+            return basicProtocols.LineOnlyReceiver.sendLine(self, line)
+
+#    def _makeRequest(self, verb, dikt):
+#        """Send a request to the server
+#
+#        NOTE: does not validate data"""
+#        requestStr = "%s %s".format(verb, json.dumps(dikt))
+#        self.sendLine(requestStr)
+#        ## TODO Write this
 
 
 class MaverickClientFactory(protocol.ClientFactory):

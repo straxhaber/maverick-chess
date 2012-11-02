@@ -880,7 +880,7 @@ class TournamentSystem:
         else:
             return (False, {"error": "Invalid game ID"})
 
-    def getState(self, gameID):
+    def getState(self, playerID, gameID):
         """
         Returns the current state of the game, containing information about
         the playerIDs of the black and white players, whose turn it is,
@@ -899,7 +899,16 @@ class TournamentSystem:
 
         if gameID in self.games:
             g = self.games[gameID]
-            return (True, {"players": g.players,
+
+            # Determine which player the client is
+            if g.players[ChessBoard.WHITE] == playerID:
+                youAreColor = ChessBoard.WHITE
+            elif g.players[ChessBoard.BLACK] == playerID:
+                youAreColor = ChessBoard.BLACK
+            else:
+                return (False, {"error": "You are not a player in this game"})
+
+            return (True, {"youAreColor": youAreColor,
                            "isWhitesTurn": (g.whoseTurn() == ChessBoard.WHITE),
                            "board": g.board.board,
                            "history": g.history})

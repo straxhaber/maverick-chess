@@ -35,7 +35,7 @@ class MaverickClient(object):
         self.port = port
         self.sock = None
 
-    def makeRequest(self, verb, dikt):
+    def _makeRequest(self, verb, dikt):
         """Send a request to the server
 
         NOTE: does not validate data"""
@@ -66,22 +66,22 @@ class MaverickClient(object):
     def register(self, name):
         """TODO write a good comment"""
         args = {"name": name}
-        self.makeRequest("REGISTER", args)
+        self._makeRequest("REGISTER", args)
 
     def joinGame(self, playerID):
         """TODO write a good comment"""
         args = {"playerID": playerID}
-        self.makeRequest("JOIN_GAME", args)
+        self._makeRequest("JOIN_GAME", args)
 
     def getStatus(self, gameID):
         """TODO write a good comment"""
         args = {"gameID": gameID}
-        self.makeRequest("GET_STATUS", args)
+        self._makeRequest("GET_STATUS", args)
 
     def getState(self, gameID):
         """TODO write a good comment"""
         args = {"gameID": gameID}
-        self.makeRequest("GET_STATE", args)
+        self._makeRequest("GET_STATE", args)
 
     def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
         """TODO write a good comment"""
@@ -91,7 +91,7 @@ class MaverickClient(object):
                 "fromFile": fromFile,
                 "toRank": fromRank,
                 "toFile": toFile}
-        self.makeRequest("MAKE_PLY", args)
+        self._makeRequest("MAKE_PLY", args)
 
 
 def _main():

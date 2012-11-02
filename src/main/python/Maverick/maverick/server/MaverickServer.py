@@ -46,7 +46,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
 
     After the query is responded to, the server disconnects the client"""
     _name = "MaverickChessServer"
-    _version = "1.0a1"
+    _version = __version__
 
     # put a TournamentSystem instance here
     _ts = None
@@ -85,7 +85,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         """Take input line-by-line and redirect it to the core"""
 
         # Log the request
-        self._logger.debug("Request: {0}".format(line))
+        self._logger.debug("Request received: {0}".format(line))
 
         # Map of valid request names to
         #  - corresponding TournamentSystem function
@@ -101,8 +101,8 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
                                         {"gameID"},
                                         {"status"}),
                          "GET_STATE": (self._ts.getState,
-                                       {"gameID"},
-                                       {"players", "isWhitesTurn",
+                                       {"playerID", "gameID"},
+                                       {"youAreColor", "isWhitesTurn",
                                         "board", "history"}),
                          "MAKE_PLY": (self._ts.makePly,
                                       {"playerID", "gameID",
@@ -189,7 +189,7 @@ class MaverickServerProtocolFactory(protocol.ServerFactory):
         return MaverickServerProtocol(self._tournamentSystem)
 
 
-def _main(port=DEFAULT_MAVERICK_PORT, logLevelStr='INFO'):
+def _main(port=DEFAULT_MAVERICK_PORT, logLevelStr='DEBUG'):  # TODO DEBUG->INFO
     """Main method: called when the server code is run
 
     @param port: The port to use for communication with a Maverick server
