@@ -9,13 +9,14 @@ import json
 import logging
 
 from twisted.internet import protocol
-from twisted.internet import reactor
+#from twisted.internet import reactor
 from twisted.protocols import basic as basicProtocols
 
 ###############################################################################
 # Code written by Matthew Strax-Haber, James Magnarelli, and Brad Fournier.
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
+
 
 """Default port for server"""
 DEFAULT_MAVERICK_PORT = 7782
@@ -26,99 +27,69 @@ DEfAULT_SERVER_URL = "127.0.0.1"
 class MaverickClientProtocol(basicProtocols.LineOnlyReceiver):
     """Protocol for connecting to the MaverickServer"""
 
-    def register(self, **args):
-        """Expected args: name
-
-        TODO write a good comment"""
-        MaverickClientProtocol.checkArguments({"name"}, args)
-        self._sendRequest("REGISTER", args)
-
-    def joinGame(self, **args):
-        """Expected args: playerID
-
-        TODO write a good comment"""
-        MaverickClientProtocol.checkArguments({"playerID"}, args)
-        self._sendRequest("JOIN_GAME", args)
-
-    def getStatus(self, **args):
-        """Expected args: gameID
-
-        TODO write a good comment"""
-        MaverickClientProtocol.checkArguments({"gameID"}, args)
-        self._sendRequest("GET_STATUS", args)
-
-    def getState(self, **args):
-        """Expected args: gameID
-
-        TODO write a good comment"""
-        MaverickClientProtocol.checkArguments({"gameID"}, args)
-        self._sendRequest("GET_STATE", args)
-
-    def makePly(self, **args):
-        """Expected args: playerID, gameID, fromRank, fromFile, toRank, toFile
-
-        TODO write a good comment"""
-        expectedArguments = {"playerID", "gameID",
-                             "fromRank", "fromFile",
-                             "toRank", "toFile"}
-        MaverickClientProtocol.checkArguments(expectedArguments, args)
-        self._sendRequest("MAKE_PLY", args)
-
     def _sendRequest(self, verb, dikt):
         """Send a request to the server
 
         NOTE: does not validate data"""
         requestStr = "%s %s".format(verb, json.dumps(dikt))
         self.sendLine(requestStr)
-
-    @staticmethod
-    def checkArguments(expArgs, givenArgs):
-        """Asserts that the set expArgs and the keys of givenArgs match
-
-        If they don't, raise a TypeError with a sensible error message"""
-        if (expArgs == set(givenArgs)):
-            return
-        elif (expArgs.issuperset(givenArgs)):
-            raise TypeError("unexpected keyword arg(s): %s".
-                            format(str(givenArgs.difference(expArgs))))
-        else:
-            raise TypeError("missing expected keyword arg(s): %s".
-                            format(str(expArgs.difference(givenArgs))))
+        ## TODO Write this
 
 
 class MaverickClientFactory(protocol.ClientFactory):
-    """Provides a MaverickClientProtocol for communication with a maverick
-    server.
-    """
+    """Provides a MaverickClientProtocol for communication with server."""
 
-    def __init__(self):
-        """
-        Instantiate a logger.
-        """
-        self.logger = logging.getLogger("MaverickClient")
-
-    def clientConnectionFailed(self, connector, reason):
-        self.logger.info("Connection failed - goodbye!")
-        reactor.stop()  # @UndefinedVariable
-
-    def clientConnectionLost(self, connector, reason):
-        self.logger.info("Connection lost.")
-        reactor.stop()  # @UndefinedVariable
-
-    def buildProtocol(self, addr):
-        """Create an instance of MaverickClientProtocol"""
-        return MaverickClientProtocol()
+    def __init__(self, url=DEfAULT_SERVER_URL, port=DEFAULT_MAVERICK_PORT):
+        """Instantiate a logger."""
+        self._logger = logging.getLogger("MaverickClient")
+        self.protocol = MaverickClientProtocol
 
 
-##  TODO: completely re-think this. There needs to be a way for client code
-##        to call into this code as if it were a library
-def _main(url=DEfAULT_SERVER_URL, port=DEFAULT_MAVERICK_PORT):
-    """Main method: called when the client code is run"""
+def MaverickClient(Object):
+    """TODO this is stub code
 
-    # Run a client to connect to a server on the specified port
-    f = MaverickClientFactory()
-    reactor.connectTCP("localhost", port, f)  # @UndefinedVariable
-    reactor.run()  # @UndefinedVariable
+    need to figure out how to build an asynchronous client that can dispatch
+    methods"""
+
+    def register(self, name):
+        """TODO write a good comment"""
+        args = {"name": name}
+        self.sendRequest("REGISTER", args)
+
+    def joinGame(self, playerID):
+        """TODO write a good comment"""
+        args = {"playerID": playerID}
+        self.sendRequest("JOIN_GAME", args)
+
+    def getStatus(self, gameID):
+        """TODO write a good comment"""
+        args = {"gameID": gameID}
+        self.sendRequest("GET_STATUS", args)
+
+    def getState(self, gameID):
+        """TODO write a good comment"""
+        args = {"gameID": gameID}
+        self.sendRequest("GET_STATE", args)
+
+    def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
+        """TODO write a good comment"""
+        args = {"playerID": playerID,
+                "gameID": gameID,
+                "fromRank": fromRank,
+                "fromFile": fromFile,
+                "toRank": fromRank,
+                "toFile": toFile}
+        self.sendRequest("MAKE_PLY", args)
+
+    def sendRequest(self, verb, dikt):
+        pass  # TODO write this
+
+
+        # Run a client to connect to a server on the specified port
+        #reactor.connectTCP(url, port, self)  # @UndefinedVariable
+
+def _main():
+    print "This class should not be run directly"
 
 if __name__ == '__main__':
     _main()

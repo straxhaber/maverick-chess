@@ -39,7 +39,8 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
      if Successful:    SUCCESS {JSON of response}
      if Error:         ERROR {error message} [{query}]
 
-    After the query is responded to, the server disconnects the client"""
+    After the query is responded to, the server disconnects the client
+    """
     _name = "MaverickChessServer"
     _version = "1.0a1"
 
@@ -149,11 +150,12 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         self.transport.loseConnection()
 
 
-class MaverickProtocolFactory(protocol.ServerFactory):
+class MaverickServerProtocolFactory(protocol.ServerFactory):
     """Provides a MaverickServerProtocol backed by a TournamentSystem instance
 
     It does little more than build a protocol with a reference to the
-    provided TournamentSystem instance"""
+    provided TournamentSystem instance
+    """
 
     def __init__(self, tournamentSystem):
         """
@@ -178,7 +180,7 @@ def _main(port=DEFAULT_MAVERICK_PORT):
 
     # Run a server on the specified port
     endpoint = endpoints.TCP4ServerEndpoint(reactor, port)
-    endpoint.listen(MaverickProtocolFactory(core))
+    endpoint.listen(MaverickServerProtocolFactory(core))
     reactor.run()  # @UndefinedVariable
 
 if __name__ == '__main__':
