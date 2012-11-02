@@ -12,10 +12,10 @@ from twisted.internet import protocol
 from twisted.internet import reactor
 from twisted.protocols import basic as basicProtocols
 
-#############################################################
-# Code written by Matthew Strax-Haber, James Magnarelli,    #
-# and Brad Fournier. All Rights Reserved.                   #
-#############################################################
+###############################################################################
+# Code written by Matthew Strax-Haber, James Magnarelli, and Brad Fournier.
+# All Rights Reserved. Not licensed for use without express permission.
+###############################################################################
 
 """Default port for server"""
 DEFAULT_MAVERICK_PORT = 7782
