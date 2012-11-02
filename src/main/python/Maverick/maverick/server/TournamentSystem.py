@@ -6,6 +6,7 @@ __version__ = "pre-alpha"
 import pickle
 import random
 import copy
+import logging
 
 ###############################################################################
 # Code written by Matthew Strax-Haber, James Magnarelli, and Brad Fournier.
@@ -90,6 +91,12 @@ class ChessBoard:
             ChessBoard.WHITE: (True, True),
             ChessBoard.BLACK: (True, True)}
 
+        # Instantiate a logger
+        self._logger = logging.getLogger(self.__class__.__name__)
+
+        # Log initialization
+        self._logger.debug("Initialized")
+
     def makePly(self, color, fromRank, fromFile, toRank, toFile):
         """Makes a ply if legal
 
@@ -106,8 +113,7 @@ class ChessBoard:
         - Update flags if necessary
         - Add the moving piece to the ending position (possibly overwriting)
         - Delete pawns in en passant state if relevant
-        - Moves the rook as well if the king is castling
-        """
+        - Moves the rook as well if the king is castling """
 
         # Check if the move is legal
         if not self.isLegalMove(color, fromRank, fromFile, toRank, toFile):

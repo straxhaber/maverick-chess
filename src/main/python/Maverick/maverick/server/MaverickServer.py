@@ -189,8 +189,19 @@ class MaverickServerProtocolFactory(protocol.ServerFactory):
         return MaverickServerProtocol(self._tournamentSystem)
 
 
-def _main(port=DEFAULT_MAVERICK_PORT):
-    """Main method: called when the server code is run"""
+def _main(port=DEFAULT_MAVERICK_PORT, logLevelStr='INFO'):
+    """Main method: called when the server code is run
+
+    @param port: The port to use for communication with a Maverick server
+    @param logLevelStr: The desired log level.  One of 'INFO', 'DEBUG',
+    'WARNING', 'ERROR', or 'CRITICAL'. Defaults to 'INFO' """
+
+    # Set logging level to whatever was specified
+    logLevel = getattr(logging, logLevelStr.upper(), None)
+    if not isinstance(logLevel, int):
+        raise ValueError('Invalid log level: %s' % logLevelStr)
+    logging.basicConfig(level=logLevel)
+
     # Initialize a new instance of MaverickCore
     core = TournamentSystem()
 
