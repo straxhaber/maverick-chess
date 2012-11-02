@@ -199,7 +199,7 @@ def _main(port=DEFAULT_MAVERICK_PORT, logLevelStr='INFO'):
     # Set logging level to whatever was specified
     logLevel = getattr(logging, logLevelStr.upper(), None)
     if not isinstance(logLevel, int):
-        raise ValueError('Invalid log level: {0}' % logLevelStr)
+        raise ValueError('Invalid log level: {0}'.format(logLevelStr))
     logging.basicConfig(level=logLevel)
 
     # Initialize a new instance of MaverickCore
