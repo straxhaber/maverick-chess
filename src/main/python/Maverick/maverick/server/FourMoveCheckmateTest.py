@@ -2,6 +2,7 @@ import unittest
 
 from TournamentSystem import TournamentSystem
 
+
 class TestTournamentSystem(unittest.TestCase):
     ts = TournamentSystem()
     p1 = ts.register("a")[1]["playerID"]
@@ -19,8 +20,8 @@ class TestTournamentSystem(unittest.TestCase):
     print ts.makePly(bp, gid, 8, 2, 6, 3)
     print ts.makePly(wp, gid, 1, 6, 4, 3)
     print ts.makePly(bp, gid, 8, 7, 6, 6)
-    print ts.makePly(wp, gid, 5, 8, 7, 6) #1, 4)
-    
+    print ts.makePly(wp, gid, 5, 8, 7, 6)
+
     print ts.getStatus(gid)
     print ts.getState(gid)
 

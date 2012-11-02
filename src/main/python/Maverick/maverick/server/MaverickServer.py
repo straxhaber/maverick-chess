@@ -21,8 +21,6 @@ from TournamentSystem import TournamentSystem
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-# TODO (mattsh): Logging
-
 
 """Default port for server"""
 DEFAULT_MAVERICK_PORT = 7782

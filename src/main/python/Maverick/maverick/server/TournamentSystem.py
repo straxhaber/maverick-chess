@@ -95,7 +95,9 @@ class ChessBoard:
             ChessBoard.WHITE: (True, True),
             ChessBoard.BLACK: (True, True)}
 
-        # Instantiate a logger
+        # Instantiate a logger and set log level to info
+        self.logLevel = getattr(logging, "INFO")  # A bit of a hack
+        logging.basicConfig(level=self.logLevel)
         self._logger = logging.getLogger(self.__class__.__name__)
 
         # Log initialization
