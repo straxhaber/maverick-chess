@@ -3,7 +3,7 @@
 """NetworkClient.py: A simple network API client for Maverick"""
 
 __author__ = "James Magnarelli, Matthew Strax-Haber, and Brad Fournier"
-__version__ = "pre-alpha"
+__version__ = "1.0"
 
 import json
 import logging

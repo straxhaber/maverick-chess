@@ -1,7 +1,7 @@
 """TournamentSystem.py: A chess server that administers games"""
 
 __author__ = "Matthew Strax-Haber, James Magnarelli, and Brad Fournier"
-__version__ = "pre-alpha"
+__version__ = "1.0"
 
 import pickle
 import random
@@ -338,6 +338,19 @@ class ChessBoard:
         ChessMatch.BLACK
 
         @return True if the given color is in checkmate, False otherwise
+        
+        -Check if any of the given color's pieces can take the enemy piece
+        checking the king
+
+        -Check if any of the given color's pieces can move in between their
+        king and the piece checking him
+        
+        -Check if the king can legally move
+        
+        If any of the above checks passes, see if that move would produce a
+        board where the given color king was not in check. If one does, then
+        there is no checkmate. 
+        
         """
 
         # Get other color
