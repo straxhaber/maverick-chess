@@ -27,12 +27,14 @@ class ChessBoard:
     QUEN = "Q"
     KING = "K"
 
-    # The width and height of a standard chess board.  Probably won't change.
     BOARD_SIZE = 8
+    """The width and height of a standard chess board."""
 
-    # Constants for the players
     BLACK = "X"
+    """Constant for the black player"""
+
     WHITE = "O"
+    """Constant for the white player"""
 
     PAWN_STARTING_RANKS = {WHITE: 2, BLACK: 7}
     """Map of correct starting ranks for pawns
@@ -93,7 +95,9 @@ class ChessBoard:
             ChessBoard.WHITE: (True, True),
             ChessBoard.BLACK: (True, True)}
 
-        # Instantiate a logger
+        # Instantiate a logger and set log level to info
+        self.logLevel = getattr(logging, "INFO")  # A bit of a hack
+        logging.basicConfig(level=self.logLevel)
         self._logger = logging.getLogger(self.__class__.__name__)
 
         # Log initialization

@@ -21,8 +21,6 @@ from TournamentSystem import TournamentSystem
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-# TODO (mattsh): Logging
-
 
 """Default port for server"""
 DEFAULT_MAVERICK_PORT = 7782
@@ -45,6 +43,8 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
     After the query is responded to, the server disconnects the client"""
 
     _name = "MaverickChessServer"
+    """The name of this server, as reported in its response headers"""
+
     _version = __version__
 
     _ts = None
