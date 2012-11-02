@@ -47,15 +47,17 @@ class MaverickClient(object):
         if welcome != welcome:
             raise MaverickClientException("invalid welcome message")
 
+        # TODO (mattsh): remove superfluous debug statements
+
         print "welcome: " + welcome
         print "got here"
 
-        requestStr = "%s %s\n".format(verb, json.dumps(dikt))
+        requestStr = "{0} {1}\n".format(verb, json.dumps(dikt))
 
-        print "debug 2"
+        print "debug 2: {0} {1}".format(verb, json.dumps(dikt))
         sock.sendall(requestStr)
-        print "debug 3"
 
+        print "debug 3: sent"
         response = sock.recv(4096)  # TODO (mattsh) cap response len in server
         print "debug 4"
 
