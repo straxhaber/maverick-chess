@@ -27,7 +27,7 @@ DEfAULT_SERVER_URL = "127.0.0.1"
 class MaverickClientProtocol(basicProtocols.LineOnlyReceiver):
     """Protocol for connecting to the MaverickServer"""
 
-    def _sendRequest(self, verb, dikt):
+    def sendRequest(self, verb, dikt):
         """Send a request to the server
 
         NOTE: does not validate data"""
@@ -82,6 +82,7 @@ def MaverickClient(Object):
         self.sendRequest("MAKE_PLY", args)
 
     def sendRequest(self, verb, dikt):
+        """Sends a Maverick request to the server"""
         pass  # TODO write this
 
 
