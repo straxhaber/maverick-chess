@@ -65,7 +65,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         """When a client connects, provide a welcome message"""
 
         # Log the connection
-        self._logger.info("Connection made with client.")
+        self._logger.debug("Connection made with client.")
 
         # Print out the server name and version
         #  (e.g., "MaverickChessServer/1.0a1")
@@ -85,7 +85,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         """Take input line-by-line and redirect it to the core"""
 
         # Log the request
-        self._logger.debug("Request: %s".format(line))
+        self._logger.debug("Request: {0}".format(line))
 
         # Map of valid request names to
         #  - corresponding TournamentSystem function
@@ -150,7 +150,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         # Respond to the client
         if errMsg is None:
             # Provide client with the response
-            logStr = "RESPONSE [query=\"{0}\"]: %s".format(line, response)
+            logStr = "RESPONSE [query=\"{0}\"]: {1}".format(line, response)
             self._logger.info(logStr)  # Log successful response
             self.sendLine(response)  # Send successful response
         else:
@@ -199,7 +199,7 @@ def _main(port=DEFAULT_MAVERICK_PORT, logLevelStr='INFO'):
     # Set logging level to whatever was specified
     logLevel = getattr(logging, logLevelStr.upper(), None)
     if not isinstance(logLevel, int):
-        raise ValueError('Invalid log level: %s' % logLevelStr)
+        raise ValueError('Invalid log level: {0}' % logLevelStr)
     logging.basicConfig(level=logLevel)
 
     # Initialize a new instance of MaverickCore
