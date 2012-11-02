@@ -28,6 +28,8 @@ from TournamentSystem import TournamentSystem
 DEFAULT_MAVERICK_PORT = 7782
 # Port 7782 isn't registered for use with the IANA as of December 17th, 2002
 
+## TODO (James): modify all comments to use "##" rather than "#"
+
 
 class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
     """Protocol for asynchronous server that administers chess games to clients
@@ -53,8 +55,11 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         """Store a reference to the TournamentSystem backing up this server"""
         MaverickServerProtocol._ts = tournamentSystem
 
-        ## Instantiate a logger
+        # Instantiate a logger
         self._logger = logging.getLogger(self.__class__.__name__)
+
+        # Log initialization
+        self._logger.debug("Initialized")
 
     def connectionMade(self):
         """When a client connects, provide a welcome message"""
@@ -67,16 +72,20 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         fStr = "{0}/{1} WAITING_FOR_REQUEST"  # Template for welcome message
         welcomeMsg = fStr.format(MaverickServerProtocol._name,
                                  MaverickServerProtocol._version)
+        self._logger.debug("Sending welcome message")
         self.sendLine(welcomeMsg)
 
     def connectionLost(self, reason=None):
         """When a client disconnects, log it"""
 
         # Log the disconnection
-        self._logger.info("Client disconnected.")
+        self._logger.debug("Client disconnected.")
 
     def lineReceived(self, line):
         """Take input line-by-line and redirect it to the core"""
+
+        # Log the request
+        self._logger.debug("Request: %s".format(line))
 
         # Map of valid request names to
         #  - corresponding TournamentSystem function
@@ -104,10 +113,6 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         requestName = line.partition(" ")[0]  # Request name (e.g., "REGISTER")
 
         requestArgsString = line.partition(" ")[2]  # Arguments (unparsed)
-
-        # Log the request
-        self._logger.info("Received request. Type: ", requestName,
-                         " Arguments: ", requestArgsString)
 
         errMsg = None  # If this gets set, there was an error
         if requestName in validRequests.keys():
@@ -145,13 +150,17 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         # Respond to the client
         if errMsg is None:
             # Provide client with the response
-            self.sendLine(response)
+            logStr = "RESPONSE [query=\"{0}\"]: %s".format(line, response)
+            self._logger.info(logStr)  # Log successful response
+            self.sendLine(response)  # Send successful response
         else:
             # Provide client with the error
             response = "ERROR {1} [query=\"{0}\"]".format(line, errMsg)
-            self.sendLine(response)
+            self._logger.info(response)  # Log error response
+            self.sendLine(response)  # Send error response
 
         # Close connection after each request
+        self._logger.debug("Dropping connection to user after completion")
         self.transport.loseConnection()
 
 
@@ -171,6 +180,9 @@ class MaverickServerProtocolFactory(protocol.ServerFactory):
 
         # Instantiate a logger
         self._logger = logging.getLogger(self.__class__.__name__)
+
+        # Log initialization
+        self._logger.debug("Initialized")
 
     def buildProtocol(self, addr):
         """Create an instance of MaverickServerProtocol"""
