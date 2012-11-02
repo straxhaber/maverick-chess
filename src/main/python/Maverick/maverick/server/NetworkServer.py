@@ -21,11 +21,11 @@ from TournamentSystem import TournamentSystem
 #############################################################
 
 """Default port for server"""
-DEFAULT_PORT = 7782
+DEFAULT_MAVERICK_PORT = 7782
 # Port 7782 isn't registered for use with the IANA as of December 17th, 2002
 
 
-class MaverickProtocol(basicProtocols.LineOnlyReceiver):
+class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
     """Protocol for asynchronous server that administers chess games to clients
 
     Initiates all connections with a message:
@@ -47,7 +47,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
 
     def __init__(self, tournamentSystem):
         """Store a reference to the TournamentSystem backing up this server"""
-        MaverickProtocol._ts = tournamentSystem
+        MaverickServerProtocol._ts = tournamentSystem
 
     def connectionMade(self):
         """When a client connects, provide a welcome message"""
@@ -58,8 +58,8 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
         # Print out the server name and version
         #  (e.g., "MaverickChessServer/1.0a1")
         fStr = "{0}/{1} WAITING_FOR_REQUEST"  # Template for welcome message
-        welcomeMsg = fStr.format(MaverickProtocol._name,
-                                 MaverickProtocol._version)
+        welcomeMsg = fStr.format(MaverickServerProtocol._name,
+                                 MaverickServerProtocol._version)
         self.sendLine(welcomeMsg)
 
     def connectionLost(self, reason=None):
@@ -149,7 +149,7 @@ class MaverickProtocol(basicProtocols.LineOnlyReceiver):
 
 
 class MaverickProtocolFactory(protocol.ServerFactory):
-    """Provides a MaverickProtocol backed by a TournamentSystem instance
+    """Provides a MaverickServerProtocol backed by a TournamentSystem instance
 
     It does little more than build a protocol with a reference to the
     provided TournamentSystem instance"""
@@ -166,11 +166,11 @@ class MaverickProtocolFactory(protocol.ServerFactory):
         self.logger = logging.getLogger("MaverickServer")
 
     def buildProtocol(self, addr):
-        """Create an instance of MaverickProtocol"""
-        return MaverickProtocol(self._tournamentSystem)
+        """Create an instance of MaverickServerProtocol"""
+        return MaverickServerProtocol(self._tournamentSystem)
 
 
-def _main(port):
+def _main(port=DEFAULT_MAVERICK_PORT):
     """Main method: called when the server code is run"""
     # Initialize a new instance of MaverickCore
     core = TournamentSystem()
@@ -181,4 +181,4 @@ def _main(port):
     reactor.run()  # @UndefinedVariable
 
 if __name__ == '__main__':
-    _main(DEFAULT_PORT)
+    _main()

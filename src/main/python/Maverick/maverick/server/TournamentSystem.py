@@ -251,9 +251,9 @@ class ChessBoard:
 
         # Check the squares in the path for clarity
         for square in pathSquares:
-            rank = square[0]
-            file = square[1]
-            if self.board[rank - 1][file - 1] is not None:
+            posnRank = square[0]
+            posnFile = square[1]
+            if self.board[posnRank - 1][posnFile - 1] is not None:
                 return False  # There was a piece in one of the path squares
         return True  # None of the path squares contained a piece
 
