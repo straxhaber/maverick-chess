@@ -27,12 +27,14 @@ class ChessBoard:
     QUEN = "Q"
     KING = "K"
 
-    # The width and height of a standard chess board.  Probably won't change.
     BOARD_SIZE = 8
+    """The width and height of a standard chess board."""
 
-    # Constants for the players
     BLACK = "X"
+    """Constant for the black player"""
+
     WHITE = "O"
+    """Constant for the white player"""
 
     # Map of correct starting ranks for pawns (which have special properties)
     PAWN_STARTING_RANKS = {WHITE: 2, BLACK: 7}
