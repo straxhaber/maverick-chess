@@ -165,6 +165,8 @@ class ChessBoard:
                 elif color == ChessBoard.BLACK:
                     self.board[pawnStartRank][toFile - 1] = None
 
+            fStr = "Moved piece from ({0},{1}), to ({2},{3})"
+            self._logger.info(fStr.format(fromRank, fromFile, toRank, toFile))
             return True
 
     def getSquaresInPath(self, fromRank, fromFile, toRank, toFile):
@@ -434,7 +436,7 @@ class ChessBoard:
         return True
 
     def isKingInCheck(self, color, board):
-        """ Determines whether the king of the given color is in check
+        """Determines whether the king of the given color is in check
         in the given board.
 
         @param color: The color of the king to check, ChessMatch.WHITE or
