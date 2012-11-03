@@ -3,4 +3,4 @@
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-"""MaverickChess: A system for playing chess and testing out AI concepts"""
+"""maverick: A system for playing chess and testing out AI concepts"""

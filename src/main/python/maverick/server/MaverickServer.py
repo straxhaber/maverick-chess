@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-"""NetworkServer.py: A simple network API server for Maverick"""
+"""MaverickServer.py: A simple network API server for Maverick"""
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "1.0"

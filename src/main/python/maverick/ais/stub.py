@@ -5,8 +5,7 @@
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
 
-#from maverick-chess.client.MaverickTelnetClient import MaverickClient
-from client.MaverickTelnetClient import MaverickClient
+from maverick.client.MaverickTelnetClient import MaverickClient
 
 
 class FooAI(MaverickClient):
@@ -17,6 +16,7 @@ class FooAI(MaverickClient):
 
 
 def main():
+    print "hello world"
     FooAI().runAI()
 
 if __name__ == '__main__':

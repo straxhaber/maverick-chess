@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-"""NetworkClient.py: A simple network API client for Maverick"""
+"""MaverickTelnetClient.py: A simple network API client for Maverick"""
 
 __author__ = "James Magnarelli, Matthew Strax-Haber, and Brad Fournier"
 __version__ = "1.0"
