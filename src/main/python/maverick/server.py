@@ -896,7 +896,7 @@ class TournamentSystem:
         error message"}).  On success, returns a tuple of form (True,
         {"gameID": someInteger})
         """
-
+        self._logger.info("joinGame called with pid {0}".format(playerID))
         # Add the player to a pending game if one exists
         for gameID, game in self.games.iteritems():
             if game.status == ChessMatch.STATUS_PENDING:
@@ -911,7 +911,7 @@ class TournamentSystem:
         newID = _getUniqueInt(self.games.keys())
         self.games[newID] = newGame
         fStr = "Added player{0} to new game {1}"
-        self._logger.info(fStr.format(playerID, gameID))
+        self._logger.info(fStr.format(playerID, newID))
         return (True, {"gameID": newID})
 
     def cancelGame(self, gameID):

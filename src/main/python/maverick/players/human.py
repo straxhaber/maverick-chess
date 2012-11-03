@@ -8,7 +8,7 @@ __version__ = "1.0"
 #import os
 #import sys
 
-from ..client import MaverickClient
+from client import MaverickClient
 
 
 ###############################################################################
@@ -17,9 +17,15 @@ from ..client import MaverickClient
 ###############################################################################
 
 
-def main(host, port):
+def main(host='127.0.0.1', port='7782'):
     nc = MaverickClient(host, port)
-    nc.register("FooBar")
+    playerID = nc.register("FooBar")
+    gameID = nc.joinGame(playerID)
+    status = nc.getStatus(gameID)
+    #state = nc.getState(playerID, gameID)
+    print playerID
+    print status
+
 
 if __name__ == '__main__':
     main()
