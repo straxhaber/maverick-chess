@@ -7,6 +7,7 @@ __version__ = "pre-alpha"
 
 import json
 import logging
+
 from telnetlib import Telnet
 
 ###############################################################################
@@ -16,10 +17,13 @@ from telnetlib import Telnet
 
 # TODO (mattsh): Logging
 
-"""Default port for server"""
+DEFAULT_MAVERICK_HOST = "127.0.0.1"
+"""Default host for server"""
+
 DEFAULT_MAVERICK_PORT = 7782
-DEfAULT_MAVERICK_HOST = "127.0.0.1"
-# Port 7782 isn't registered for use with the IANA as of December 17th, 2002
+"""Default port for server
+
+NOTE: Port 7782 isn't registered with the IANA as of December 17th, 2002"""
 
 
 class MaverickClientException(Exception):
@@ -32,7 +36,7 @@ class MaverickClient(object):
     TIMEOUT = 2
     """Timeout (in seconds) for the telnet connections"""
 
-    def __init__(self, host=DEfAULT_MAVERICK_HOST, port=DEFAULT_MAVERICK_PORT):
+    def __init__(self, host=DEFAULT_MAVERICK_HOST, port=DEFAULT_MAVERICK_PORT):
         self._logger = logging.getLogger("MaverickClient")
         self.host = host
         self.port = port
