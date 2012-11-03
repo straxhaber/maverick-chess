@@ -40,7 +40,15 @@ def printBoard(self, gameID):
     '''
 
     self.gameID = gameID
-    print "1" + self.ChessBoard[0] + self.ChessBoard[1] + self.ChessBoard[2] +
+    for i in range(0, 7):
+        row = '{0}'.format(i)
+        for j in range(0, 7):
+            row += " " + self.ChessBoard[i][j]
+        print row
+    print '1 2 3 4 5 6 7 8'
+    
+    """
+    print ("1" + self.ChessBoard[0] + self.ChessBoard[1] + self.ChessBoard[2] +
         self.ChessBoard[3] + self.ChessBoard[4] + self.ChessBoard[5] +
         self.ChessBoard[6] + self.ChessBoard[7] + \n + "2" +
         self.ChessBoard[8] + self.ChessBoard[9] + self.ChessBoard[10] +
@@ -64,4 +72,5 @@ def printBoard(self, gameID):
         self.ChessBoard[56] + self.ChessBoard[57] + self.ChessBoard[58] +
         self.ChessBoard[59] + self.ChessBoard[60] + self.ChessBoard[61] +
         self.ChessBoard[62] + self.ChessBoard[63] + \n + "1" + "2" + "3" +
-        "4" + "5" + "6" + "7" + "8"
+        "4" + "5" + "6" + "7" + "8")
+    """
