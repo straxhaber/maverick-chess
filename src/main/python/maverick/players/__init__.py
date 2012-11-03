@@ -3,4 +3,4 @@
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-"""maverick-chess.client: Client stub for connecting to MaverickChessServer"""
+"""players: agents for the maverick chess system"""

@@ -3,4 +3,4 @@
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-"""maverick-chess.server: A rudimentary server for hosting chess games"""
+"""test: tests for the maverick chess system"""
