@@ -78,29 +78,57 @@ class MaverickClient(object):
             raise MaverickClientException("Unknown status string received")
 
     def register(self, name):
-        """TODO write a good comment"""
+        """Registers a player with the system, returning their playerID.
+
+        This should be called before trying to join a player to a game.
+
+        @param name: A String containing the player's name
+        """
+
         response = self._makeRequest("REGISTER", name=name)
         return response["playerID"]
 
     def joinGame(self, playerID):
-        """TODO write a good comment"""
+        """Adds the player to a new or pending game.
+
+        @param playerID: playerID of the player joining a game
+        """
         response = self._makeRequest("JOIN_GAME", playerID=playerID)
         return response["gameID"]
 
     def getStatus(self, gameID):
-        """TODO write a good comment"""
+        """Returns the status of the game with the given gameID, if it exists.
+
+        @param gameID: the integer gameID of an in-progress game
+        """
         response = self._makeRequest("GET_STATUS", gameID=gameID)
         return response["status"]
 
     def getState(self, playerID, gameID):
-        """TODO write a good comment"""
+        """
+        Returns the current state of the game, containing information about
+        the playerIDs of the black and white players, whose turn it is,
+        the current board state, and the game history.
+
+        @param gameID:  the integer gameID of an in-progress game
+         """
         response = self._makeRequest("GET_STATE",
                                      playerID=playerID,
                                      gameID=gameID)
         return response
 
     def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
-        """TODO write a good comment"""
+        """Makes the given ply in the given game on behalf of the given
+        player, if it is legal to do so.
+
+        @param playerID: The integer playerID of a registered player.
+        @param gameID: The integer gameID of an in-progress game which
+        has been joined by the given player
+        @param fromRank: The rank of the piece to be moved
+        @param fromFile: The file of the piece to be moved
+        @param toRank: The file to which the piece should be moved
+        @param toFile: The rank to which the piece should be moved
+        """
         self._makeRequest("MAKE_PLY",
                           playerID=playerID,
                           gameID=gameID,
