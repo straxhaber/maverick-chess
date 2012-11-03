@@ -5,40 +5,24 @@
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
 
-import random
-import time
-
-from ...client import MaverickClient
-from ...server import ChessMatch
-
 ###############################################################################
 # Code written by Matthew Strax-Haber, James Magnarelli, and Brad Fournier.
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+from maverick.players.ais.common import MaverickAI
 
-class FooAI(MaverickClient):
-    """TODO"""
 
-    def __init__(self):
-        MaverickClient.__init__(self)
-        self.name = ".".join(self.__class__.__name__,
-                             str(time.time()),
-                             str(random.randrange(1, 2 ** 30)))
-
-    def _getPlaying(self):
-        self.playerID = self.register(self.name)
-        self.gameID = self.joinGame(self.playerID)
-        while True:
-            self.getStatus(self.gameID)
-            ChessMatch.STATUS_PENDING
+class Stub(MaverickAI):
 
     def runAI(self):
-        self._getPlaying()  # TODOx
+        self.startPlaying()
+        # TODO: play a game (probably some sort of loop)
 
 
-def _main():
-    print "This class should not be run directly"
+def main():
+    ai = Stub()
+    ai.runAI()
 
 if __name__ == '__main__':
-    _main()
+    main()

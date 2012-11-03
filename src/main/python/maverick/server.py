@@ -24,6 +24,12 @@ from twisted.protocols import basic as basicProtocols
 
 # TODO (mattsh): Logging
 
+# TODO (mattsh): Get the log level stuff specified like so:
+#                 - __init__s have __init__(..., logLevel=logging.INFO)
+#                 - main doesn't do anything with respect to logging
+#                This allows us to override log levels on a per-class basis
+#                 - Put a note in each __init__ docstring that it is a hack
+
 
 class ChessBoard:
     """Represents a chess game in Maverick"""
@@ -89,6 +95,14 @@ class ChessBoard:
             - En passant
             - Castling"""
 
+        # Instantiate a logger and set log level to info
+        self.logLevel = getattr(logging, "INFO")  # A bit of a hack
+        logging.basicConfig(level=self.logLevel)
+        self._logger = logging.getLogger(self.__class__.__name__)
+
+        # Log initialization
+        self._logger.debug("Initialized")
+
         # Perform deep copy of board start state into self.board
         self.board = copy.deepcopy(ChessBoard.STARTING_BOARD)
 
@@ -103,14 +117,6 @@ class ChessBoard:
         self.flag_canCastle = {
             ChessBoard.WHITE: (True, True),
             ChessBoard.BLACK: (True, True)}
-
-        # Instantiate a logger and set log level to info
-        self.logLevel = getattr(logging, "INFO")  # A bit of a hack
-        logging.basicConfig(level=self.logLevel)
-        self._logger = logging.getLogger(self.__class__.__name__)
-
-        # Log initialization
-        self._logger.debug("Initialized")
 
     def makePly(self, color, fromRank, fromFile, toRank, toFile):
         """Makes a ply if legal
@@ -864,7 +870,7 @@ class TournamentSystem:
         if (tournament._version != __version__):
             raise TypeError("Attempted loading of an incompatible version")
 
-        fStr = "Loaded game state from pickle file at {0}"
+        fStr = "Loaded game state from pickle file at {0}" # TODO: fix this
         return tournament
 
     def register(self, name):
@@ -1054,11 +1060,12 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
     """put a TournamentSystem instance here"""
 
     def __init__(self, tournamentSystem):
-        """Store a reference to the TournamentSystem backing up this server"""
-        MaverickServerProtocol._ts = tournamentSystem
+        """Initialize with a reference to a TournamentSystem backing"""
 
         # Instantiate a logger
         self._logger = logging.getLogger(self.__class__.__name__)
+
+        MaverickServerProtocol._ts = tournamentSystem
 
         # Log initialization
         self._logger.debug("Initialized")
@@ -1177,21 +1184,21 @@ class MaverickServerProtocolFactory(protocol.ServerFactory):
 
         Makes a link to the TournamentSystem instance provided"""
 
-        # Store a reference to the TournamentSystem backing up this server
-        self._tournamentSystem = tournamentSystem
-
         # Instantiate a logger
         self._logger = logging.getLogger(self.__class__.__name__)
 
+        # Store a reference to the TournamentSystem backing up this server
+        self._tournamentSystem = tournamentSystem
+
         # Log initialization
-        self._logger.debug("Initialized")
+        self._logger.info("Server initialized")
 
     def buildProtocol(self, addr):
         """Create an instance of MaverickServerProtocol"""
         return MaverickServerProtocol(self._tournamentSystem)
 
 
-def _main(port=DEFAULT_MAVERICK_PORT, logLevelStr='INFO'):
+def main(port=DEFAULT_MAVERICK_PORT, logLevelStr='INFO'):
     """Main method: called when the server code is run
 
     @param port: The port to use for communication with a Maverick server
@@ -1213,4 +1220,4 @@ def _main(port=DEFAULT_MAVERICK_PORT, logLevelStr='INFO'):
     reactor.run()  # @UndefinedVariable
 
 if __name__ == '__main__':
-    _main()
+    main()
