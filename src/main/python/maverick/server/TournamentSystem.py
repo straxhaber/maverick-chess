@@ -340,19 +340,19 @@ class ChessBoard:
         ChessMatch.BLACK
 
         @return True if the given color is in checkmate, False otherwise
-        
+
         -Check if any of the given color's pieces can take the enemy piece
         checking the king
 
         -Check if any of the given color's pieces can move in between their
         king and the piece checking him
-        
+
         -Check if the king can legally move
-        
+
         If any of the above checks passes, see if that move would produce a
         board where the given color king was not in check. If one does, then
-        there is no checkmate. 
-        
+        there is no checkmate.
+
         """
 
         # Get other color
@@ -430,9 +430,12 @@ class ChessBoard:
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
                 if not self.isKingInCheck(color, postMoveBoard):
+                    fStr = "Found that {0} is not in checkmate"
+                    self._logger.info(fStr.format(color))
                     return False
 
         # All tests passed - given color is in checkmate
+        self._logger.info("Found that {0} is in checkmate".format(color))
         return True
 
     def isKingInCheck(self, color, board):
@@ -478,10 +481,12 @@ class ChessBoard:
             # If a move to the king's location is legal, the king is in check
             if self.isLegalMove(otherColor, pieceRank, pieceFile, kingRank,
                                 kingFile):
+                self._logger.info("Found that {0} is in check".format(color))
                 return (True, (pieceRank, pieceFile))
 
         # If none of the enemy pieces could move to the king's location, the
         # king is not in check
+        self._logger.info("Found that {0} is not in check".format(color))
         return (False, None)
 
     def getResultBoard(self, fromRank, fromFile, toRank, toFile):
