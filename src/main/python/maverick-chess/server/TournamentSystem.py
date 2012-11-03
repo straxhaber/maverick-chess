@@ -1,7 +1,7 @@
 """TournamentSystem.py: A chess server that administers games"""
 
 __author__ = "Matthew Strax-Haber, James Magnarelli, and Brad Fournier"
-__version__ = "pre-alpha"
+__version__ = "1.0"
 
 import pickle
 import random
@@ -165,6 +165,8 @@ class ChessBoard:
                 elif color == ChessBoard.BLACK:
                     self.board[pawnStartRank][toFile - 1] = None
 
+            fStr = "Moved piece from ({0},{1}), to ({2},{3})"
+            self._logger.info(fStr.format(fromRank, fromFile, toRank, toFile))
             return True
 
     def getSquaresInPath(self, fromRank, fromFile, toRank, toFile):
@@ -338,6 +340,19 @@ class ChessBoard:
         ChessMatch.BLACK
 
         @return True if the given color is in checkmate, False otherwise
+        
+        -Check if any of the given color's pieces can take the enemy piece
+        checking the king
+
+        -Check if any of the given color's pieces can move in between their
+        king and the piece checking him
+        
+        -Check if the king can legally move
+        
+        If any of the above checks passes, see if that move would produce a
+        board where the given color king was not in check. If one does, then
+        there is no checkmate. 
+        
         """
 
         # Get other color
@@ -421,7 +436,7 @@ class ChessBoard:
         return True
 
     def isKingInCheck(self, color, board):
-        """ Determines whether the king of the given color is in check
+        """Determines whether the king of the given color is in check
         in the given board.
 
         @param color: The color of the king to check, ChessMatch.WHITE or
