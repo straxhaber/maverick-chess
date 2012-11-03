@@ -110,6 +110,7 @@ class MaverickClient(object):
         the playerIDs of the black and white players, whose turn it is,
         the current board state, and the game history.
 
+        @param playerID: the integer of the playerID of the player calling getState
         @param gameID:  the integer gameID of an in-progress game
          """
         response = self._makeRequest("GET_STATE",
