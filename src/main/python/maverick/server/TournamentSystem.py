@@ -749,6 +749,14 @@ class ChessMatch:
         # Initialize ply history -- a list of (moveFrom, moveTo) plies
         self.history = []
 
+        # Instantiate a logger and set log level to info
+        self.logLevel = getattr(logging, "INFO")  # A bit of a hack
+        logging.basicConfig(level=self.logLevel)
+        self._logger = logging.getLogger(self.__class__.__name__)
+
+        # Log initialization
+        self._logger.debug("Initialized")
+
     def whoseTurn(self):
         """Returns True if it is whites turn, False otherwise"""
         if (len(self.history) % 2 == 0):
@@ -779,6 +787,9 @@ class ChessMatch:
                     self.status = ChessMatch.STATUS_WHITE_WON
 
                 self.history.append(((fromRank, fromFile), (toRank, toFile)))
+                fStr = "Added ({0},{1}) -> ({2}, {3}) to match history"
+                self._logger.info(fStr.format(fromRank, fromFile, toRank,
+                                              toFile))
                 return "SUCCESS"
             else:
                 return "Illegal move"
@@ -803,6 +814,7 @@ class ChessMatch:
                 if None not in self.players.values():
                     self.status = ChessMatch.STATUS_ONGOING
                 return color
+        self._logger.info("Joined player {0} to this game".format(playerID))
 
 
 class TournamentSystem:
@@ -812,6 +824,14 @@ class TournamentSystem:
         self.games = {}  # Dict from gameIDs to game objects. Initially empty.
         self.players = {}  # Dict from playerID to player name
         self._version = __version__  # Used in version check during un-pickling
+
+        # Instantiate a logger and set log level to info
+        self.logLevel = getattr(logging, "INFO")  # A bit of a hack
+        logging.basicConfig(level=self.logLevel)
+        self._logger = logging.getLogger(self.__class__.__name__)
+
+        # Log initialization
+        self._logger.debug("Initialized")
 
     @staticmethod
     def saveTS(tournament, fileName):
@@ -833,6 +853,7 @@ class TournamentSystem:
         if (tournament._version != __version__):
             raise TypeError("Attempted loading of an incompatible version")
 
+        fStr = "Loaded game state from pickle file at {0}"
         return tournament
 
     def register(self, name):
@@ -851,6 +872,8 @@ class TournamentSystem:
         else:
             newID = _getUniqueInt(self.players.keys())
             self.players[newID] = name
+            self._logger.info("Registered {0} with playerID {1}".format(name,
+                                                                        newID))
             return (True, {"playerID": newID})
 
     def joinGame(self, playerID):
@@ -868,12 +891,16 @@ class TournamentSystem:
             if game.status == ChessMatch.STATUS_PENDING:
                 color = game.join(playerID)
                 if color:
+                    fStr = "Added player {0} to existing game {1}"
+                    self._logger.info(fStr.format(playerID, gameID))
                     return (True, {"gameID": gameID})
 
         # Add a player to a new game otherwise
         newGame = ChessMatch(playerID)
         newID = _getUniqueInt(self.games.keys())
         self.games[newID] = newGame
+        fStr = "Added player{0} to new game {1}"
+        self._logger.info(fStr.format(playerID, gameID))
         return (True, {"gameID": newID})
 
     def cancelGame(self, gameID):
@@ -886,6 +913,7 @@ class TournamentSystem:
         if gameID in self.games:
             if (self.games[gameID].status in [ChessMatch.STATUS_ONGOING,
                                               ChessMatch.STATUS_PENDING]):
+                self._logger("Canceled game {0}".format(gameID))
                 self.games[gameID].status = ChessMatch.STATUS_CANCELLED
             else:
                 return (False, {"error": "Game not active"})
@@ -903,6 +931,8 @@ class TournamentSystem:
 
         if gameID in self.games:
             status = self.games[gameID].status
+            fStr = "Found status of game {0} to be {1}"
+            self._logger.info(fStr.format(gameID, status))
             return (True, {"status": status})
         else:
             return (False, {"error": "Invalid game ID"})
