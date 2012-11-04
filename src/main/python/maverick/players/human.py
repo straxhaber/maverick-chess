@@ -8,10 +8,10 @@ __version__ = "1.0"
 #import os
 #import sys
 
-from ..client import MaverickClient
-
+import time
 from ..server import ChessBoard
 from ..server import ChessMatch
+from ..client import MaverickClient
 
 ###############################################################################
 # Code written by Matthew Strax-Haber, James Magnarelli, and Brad Fournier.
@@ -24,7 +24,7 @@ class HumanClient:
 
     pieceCharMappings = {ChessBoard.ROOK: 'r', ChessBoard.KNGT: 'n',
                          ChessBoard.BISH: 'b', ChessBoard.QUEN: 'q',
-                         ChessBoard.KING: 'k'}
+                         ChessBoard.KING: 'k', ChessBoard.PAWN: 'p'}
 
     def __init__(self, host, port):
         self.nc = MaverickClient(host, port)
@@ -39,25 +39,40 @@ class HumanClient:
         print("You have joined game {0}".format(self.gameID))
 
         # Figure out what color player we are
-        self.state = self.nc.getState(self.gameID)
-        self.status = self.nc.getStatus(self.playerID, self.gameID)
-        self.myColor = self.status['youAreColor']
+        self.state = self.nc.getState(self.playerID, self.gameID)
+        self.status = self.nc.getStatus(self.gameID)
+        self.myColor = self.state['youAreColor']
         self.amWhite = self.myColor == ChessBoard.WHITE
         if self.myColor == ChessBoard.WHITE:
             self.myWinStatus = ChessMatch.STATUS_WHITE_WON
+            colorStr = "white"
         else:
             self.myWinStatus = ChessMatch.STATUS_BLACK_WON
+            colorStr = "black"
+
+        print "You are playing as {0}".format(colorStr)
+
+    def getMoveAndMake(self):
+        qStr = "It is your move.  Please enter a move of form X1,Y1,X2,Y2: "
+        move = raw_input(qStr)
+        moveCoords = move.sp(",")
+
+        self.nc.makePly(self.playerID, self.gameID, moveCoords[0],
+                        moveCoords[1], moveCoords[2], moveCoords[3])
 
     def playGame(self):
         # Wait for game to start
         while self.status == ChessMatch.STATUS_PENDING:
             # If pending, sleep and then check status again
-            sleep(1)
-            self.status = self.nc.getStatus(self.playerID, self.gameID)
+            time.sleep(1)
+            self.status = self.nc.getStatus(self.gameID)
+
+        # Print the initial state of the board
+        self.printBoard()
 
         # While the game is in progress
         while self.status == ChessMatch.STATUS_ONGOING:
-            sleep(1)  # Don't poll the server too rapidly
+            time.sleep(1)  # Don't poll the server too rapidly
 
             newState = self.nc.getState(self.playerID, self.gameID)
 
@@ -71,7 +86,7 @@ class HumanClient:
                 self.state = newState
 
             #Refresh status
-            self.status = self.nc.getStatus(self.playerID, self.gameID)
+            self.status = self.nc.getStatus(self.gameID)
 
         # When this is reached, game is over
         endGameStr = "GAME OVER - {0}"
@@ -87,8 +102,11 @@ class HumanClient:
         print endGameStr
 
     def getPieceChar(self, piece):
-        pieceType = piece[0]
-        pieceColor = piece[1]
+        if piece is None:
+            return '.'
+
+        pieceColor = piece[0]
+        pieceType = piece[1]
         pieceChar = HumanClient.pieceCharMappings[pieceType]
 
         # Capitalize character if piece is white
@@ -107,27 +125,29 @@ class HumanClient:
         """
         fileOrdinal = ord('A')
 
-        for rank in range(1, ChessBoard.BOARD_SIZE + 1):
+        for rank in range(0, ChessBoard.BOARD_SIZE):
             # Print rank number
             print "{0}: ".format(rank)
-            row = self.board[rank]
-            for file in range(1, ChessBoard.BOARD_SIZE + 1):
+            row = self.state["board"][rank]
+            fileStr = ""
+            for file in range(0, ChessBoard.BOARD_SIZE):
                 piece = row[file]
-                print self.getPieceChar(piece)
-            print "\n"
+                fileStr += self.getPieceChar(piece)
+            print fileStr + "\n"
 
         # Print file numbers below board
         for file in range(1, ChessBoard.BOARD_SIZE + 1):
             print file
         print "\n"
 
+        ## TODO (James): space pieces evenly
+        ## TODO (James): fix file number printing to be horizontal
 
-def main(self, host='127.0.0.1', port=7782):
+
+def main(host='127.0.0.1', port=7782):
         humanClient = HumanClient(host, port)
         humanClient.getNameAndJoin()
         humanClient.playGame()
 
 if __name__ == '__main__':
     main()
-
-    
