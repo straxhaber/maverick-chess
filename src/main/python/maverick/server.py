@@ -24,11 +24,11 @@ from twisted.protocols import basic as basicProtocols
 
 # TODO (mattsh): Logging
 
-# TODO (mattsh): Get the log level stuff specified like so:
-#                 - __init__s have __init__(..., logLevel=logging.INFO)
-#                 - main doesn't do anything with respect to logging
-#                This allows us to override log levels on a per-class basis
-#                 - Put a note in each __init__ docstring that it is a hack
+# TODO (James): FOR ALL CLASSES, do the following:
+#                -Statically instantiate a logger
+#                -Set the log level to something appropriate
+#                -remove logger initialization in __init__s
+#                -update all references to loggers to be static references
 
 
 class ChessBoard:
@@ -74,6 +74,10 @@ class ChessBoard:
                        (BLACK, QUEN), (BLACK, KING), (BLACK, BISH),
                        (BLACK, KNGT), (BLACK, ROOK)]]
 
+    # Create a logger for this class
+    ChessBoard.logger = logging.getLogger(ChessBoard.__class__.__name__)
+    ChessBoard.logger.setLevel("INFO")
+
     def __init__(self, startBoard=None):
         """Initialize a new Chess game according to normal Chess rules
 
@@ -95,13 +99,8 @@ class ChessBoard:
             - En passant
             - Castling"""
 
-        # Instantiate a logger and set log level to info
-        self.logLevel = getattr(logging, "INFO")  # A bit of a hack
-        logging.basicConfig(level=self.logLevel)
-        self._logger = logging.getLogger(self.__class__.__name__)
-
         # Log initialization
-        self._logger.debug("Initialized")
+        ChessBoard.logger.debug("Initialized")
 
         # Perform deep copy of board start state into self.board
         self.board = copy.deepcopy(ChessBoard.STARTING_BOARD)
@@ -180,8 +179,11 @@ class ChessBoard:
                 elif color == ChessBoard.BLACK:
                     self.board[pawnStartRank][toFile - 1] = None
 
-            fStr = "Moved piece from ({0},{1}), to ({2},{3})"
-            self._logger.info(fStr.format(fromRank, fromFile, toRank, toFile))
+            # Log the successful move
+            logStrF = "Moved piece from ({0},{1}), to ({2},{3})"
+            logStr = logStrF.format(fromRank, fromFile, toRank, toFile)
+            ChessBoard.logger.info(logStr)
+
             return True
 
     def getSquaresInPath(self, fromRank, fromFile, toRank, toFile):
@@ -445,12 +447,12 @@ class ChessBoard:
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
                 if not self.isKingInCheck(color, postMoveBoard):
-                    fStr = "Found that {0} is not in checkmate"
-                    self._logger.info(fStr.format(color))
+                    logStr = "Found that {0} is not in checkmate".format(color)
+                    ChessBoard.logger.info(logStr)
                     return False
 
         # All tests passed - given color is in checkmate
-        self._logger.info("Found that {0} is in checkmate".format(color))
+        ChessBoard.logger.info("Found that {0} is in checkmate".format(color))
         return True
 
     def isKingInCheck(self, color, board):
@@ -496,12 +498,13 @@ class ChessBoard:
             # If a move to the king's location is legal, the king is in check
             if self.isLegalMove(otherColor, pieceRank, pieceFile, kingRank,
                                 kingFile):
-                self._logger.info("Found that {0} is in check".format(color))
+                logStr = "Found that {0} is in check".format(color)
+                ChessBoard.logger.info(logStr)
                 return (True, (pieceRank, pieceFile))
 
         # If none of the enemy pieces could move to the king's location, the
         # king is not in check
-        self._logger.info("Found that {0} is not in check".format(color))
+        ChessBoard.logger.info("Found that {0} is not in check".format(color))
         return (False, None)
 
     def getResultBoard(self, fromRank, fromFile, toRank, toFile):
@@ -736,6 +739,8 @@ class ChessBoard:
 
 
 class ChessMatch:
+    """Represents a chess game in Maverick"""
+
     # Constants for game status
     STATUS_PENDING = "PENDING"   # Game is waiting for players
     STATUS_ONGOING = "ONGOING"   # Game is in progress
@@ -743,6 +748,10 @@ class ChessMatch:
     STATUS_WHITE_WON = "W_WHITE"   # White won the game
     STATUS_DRAWN = "W_DRAWN"   # White won the game
     STATUS_CANCELLED = "CANCELD"   # Game was halted early
+
+    # Create a logger for this class
+    ChessMatch.logger = logging.getLogger(ChessMatch.__class__.__name__)
+    ChessMatch.logger.setLevel("INFO")
 
     def __init__(self, firstPlayerID=None):
         """Initialize a new chess match with initial state
@@ -764,13 +773,8 @@ class ChessMatch:
         # Initialize ply history -- a list of (moveFrom, moveTo) plies
         self.history = []
 
-        # Instantiate a logger and set log level to info
-        self.logLevel = getattr(logging, "INFO")  # A bit of a hack
-        logging.basicConfig(level=self.logLevel)
-        self._logger = logging.getLogger(self.__class__.__name__)
-
         # Log initialization
-        self._logger.debug("Initialized")
+        ChessMatch.logger.debug("Initialized")
 
     def whoseTurn(self):
         """Returns True if it is whites turn, False otherwise"""
@@ -802,9 +806,12 @@ class ChessMatch:
                     self.status = ChessMatch.STATUS_WHITE_WON
 
                 self.history.append(((fromRank, fromFile), (toRank, toFile)))
-                fStr = "Added ({0},{1}) -> ({2}, {3}) to match history"
-                self._logger.info(fStr.format(fromRank, fromFile, toRank,
-                                              toFile))
+
+                # Log this ply
+                logStrF = "Added ({0},{1}) -> ({2}, {3}) to match history"
+                logStr = logStrF.format(fromRank, fromFile, toRank,
+                                              toFile)
+                ChessMatch.logger.debug(logStr)
                 return "SUCCESS"
             else:
                 return "Illegal move"
@@ -829,12 +836,16 @@ class ChessMatch:
                 if None not in self.players.values():
                     self.status = ChessMatch.STATUS_ONGOING
                 return color
-        self._logger.info("Joined player {0} to this game".format(playerID))
+        logStr = "Joined player {0} to this game".format(playerID)
+        ChessMatch.logger.info(logStr)
 
 
 class TournamentSystem:
-    """TODO"""
-    ## TODO (mattsh): Move logger instantiation to top-leve
+    """A class for managing player interaction with chess matches"""
+    ## TODO (mattsh): Move logger instantiation to top-level
+
+    _loggerName = TournamentSystem.__class__.__name__
+    TournamentSystem.logger = logging.getLogger(_loggerName)
 
     def __init__(self):
         """Initializes a new tournament system with no games"""
@@ -842,13 +853,8 @@ class TournamentSystem:
         self.players = {}  # Dict from playerID to player name
         self._version = __version__  # Used in version check during un-pickling
 
-        # Instantiate a logger and set log level to info
-        self.logLevel = getattr(logging, "INFO")  # A bit of a hack
-        logging.basicConfig(level=self.logLevel)
-        self._logger = logging.getLogger(self.__class__.__name__)
-
         # Log initialization
-        self._logger.debug("Initialized")
+        TournamentSystem.logger.debug("Initialized")
 
     @staticmethod
     def saveTS(tournament, fileName):
@@ -857,6 +863,8 @@ class TournamentSystem:
         @param fileName: The file to save state to"""
         fd = open(fileName)
         pickle.dump(tournament, fd)
+        logStr = "Dumped game state to {0}".format(fileName)
+        TournamentSystem.logger.debug(logStr)
 
     @staticmethod
     def loadTS(tournament, fileName):
@@ -870,7 +878,9 @@ class TournamentSystem:
         if (tournament._version != __version__):
             raise TypeError("Attempted loading of an incompatible version")
 
-        fStr = "Loaded game state from pickle file at {0}" # TODO: fix this
+        logStr = "Loaded game state from pickle file at {0}".format(fileName)
+        TournamentSystem.logger.debug(logStr)
+
         return tournament
 
     def register(self, name):
@@ -889,8 +899,8 @@ class TournamentSystem:
         else:
             newID = _getUniqueInt(self.players.keys())
             self.players[newID] = name
-            self._logger.info("Registered {0} with playerID {1}".format(name,
-                                                                        newID))
+            logStr = "Registered {0} with playerID {1}".format(name, newID)
+            TournamentSystem.logger.info(logStr)
             return (True, {"playerID": newID})
 
     def joinGame(self, playerID):
@@ -902,22 +912,28 @@ class TournamentSystem:
         error message"}).  On success, returns a tuple of form (True,
         {"gameID": someInteger})
         """
-        self._logger.info("joinGame called with pid {0}".format(playerID))
+
+        # Log the join attempt
+        logStr = "joinGame called with pid {0}".format(playerID)
+        TournamentSystem.logger.debug(logStr)
+
         # Add the player to a pending game if one exists
         for gameID, game in self.games.iteritems():
             if game.status == ChessMatch.STATUS_PENDING:
                 color = game.join(playerID)
                 if color:
-                    fStr = "Added player {0} to existing game {1}"
-                    self._logger.info(fStr.format(playerID, gameID))
+                    # Build up a string to enter in the log
+                    logStrF = "Added player {0} to existing game {1}"
+                    logStr = logStrF.format(playerID, gameID)
+                    TournamentSystem.logger.debug(logStr)
                     return (True, {"gameID": gameID})
 
         # Add a player to a new game otherwise
         newGame = ChessMatch(playerID)
         newID = _getUniqueInt(self.games.keys())
         self.games[newID] = newGame
-        fStr = "Added player{0} to new game {1}"
-        self._logger.info(fStr.format(playerID, newID))
+        logStr = "Added player{0} to new game {1}".format(playerID, newID)
+        TournamentSystem.logger.info(logStr)
         return (True, {"gameID": newID})
 
     def cancelGame(self, gameID):
@@ -930,7 +946,7 @@ class TournamentSystem:
         if gameID in self.games:
             if (self.games[gameID].status in [ChessMatch.STATUS_ONGOING,
                                               ChessMatch.STATUS_PENDING]):
-                self._logger("Canceled game {0}".format(gameID))
+                TournamentSystem.logger("Canceled game {0}".format(gameID))
                 self.games[gameID].status = ChessMatch.STATUS_CANCELLED
             else:
                 return (False, {"error": "Game not active"})
@@ -948,8 +964,9 @@ class TournamentSystem:
 
         if gameID in self.games:
             status = self.games[gameID].status
-            fStr = "Found status of game {0} to be {1}"
-            self._logger.info(fStr.format(gameID, status))
+            logStrF = "Found status of game {0} to be {1}"
+            logStr = logStrF.format(gameID, status)
+            TournamentSystem.logger.info(logStr)
             return (True, {"status": status})
         else:
             return (False, {"error": "Invalid game ID"})
@@ -964,12 +981,10 @@ class TournamentSystem:
 
         @return: On failure, returns a tuple of form (False, {"error": "some
         error message"}).  On success, returns a tuple of form (True,
-        {"players": {ChessBoard.WHITE: somePlayerID,
-                     ChessBoard.BLACK: somePlayerID},
+        {"youAreColor": ChessBoard.WHITE or ChessBoard.BLACK,
          "isWhitesTurn": someBoolean,
          "board": someBoard,
-         "history": listOfPlies})
-         """
+         "history": listOfPlies})"""
 
         if gameID in self.games:
             g = self.games[gameID]
@@ -1059,42 +1074,43 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
     _ts = None
     """put a TournamentSystem instance here"""
 
+    logger = logging.getLogger(MaverickServerProtocol.__class__.__name__)
+    logger.setLevel("INFO")
+
     def __init__(self, tournamentSystem):
         """Initialize with a reference to a TournamentSystem backing"""
-
-        # Instantiate a logger
-        self._logger = logging.getLogger(self.__class__.__name__)
 
         MaverickServerProtocol._ts = tournamentSystem
 
         # Log initialization
-        self._logger.debug("Initialized")
+        MaverickServerProtocol.logger.debug("Initialized")
 
     def connectionMade(self):
         """When a client connects, provide a welcome message"""
 
         # Log the connection
-        self._logger.debug("Connection made with client.")
+        MaverickServerProtocol.logger.debug("Connection made with client.")
 
         # Print out the server name, version, and prompt
         #  (e.g., "MaverickChessServer/1.0a1 WAITING_FOR_REQUEST")
         fStr = "{0}/{1} WAITING_FOR_REQUEST"  # Template for welcome message
         welcomeMsg = fStr.format(MaverickServerProtocol._name,
                                  MaverickServerProtocol._version)
-        self._logger.debug("Sending welcome message")
+        MaverickServerProtocol.logger.debug("Sending welcome message")
         self.sendLine(welcomeMsg)
 
     def connectionLost(self, reason=None):
         """When a client disconnects, log it"""
 
         # Log the disconnection
-        self._logger.debug("Client disconnected.")
+        MaverickServerProtocol.logger.debug("Client disconnected.")
 
     def lineReceived(self, line):
         """Take input line-by-line and redirect it to the core"""
 
-        # Log the request
-        self._logger.debug("Request received: {0}".format(line))
+        # Build up a log string and log this request
+        logStr = "Request received: {0}".format(line)
+        MaverickServerProtocol.logger.debug(logStr)
 
         # Map of valid request names to
         #  - corresponding TournamentSystem function
@@ -1160,16 +1176,22 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         if errMsg is None:
             # Provide client with the response
             logStr = "RESPONSE [query=\"{0}\"]: {1}".format(line, response)
-            self._logger.info(logStr)  # Log successful response
+
+            # Log successful response
+            MaverickServerProtocol.logger.info(logStr)
             self.sendLine(response)  # Send successful response
+
         else:
             # Provide client with the error
             response = "ERROR {1} [query=\"{0}\"]".format(line, errMsg)
-            self._logger.info(response)  # Log error response
+            MaverickServerProtocol.logger.info(response)  # Log error response
             self.sendLine(response)  # Send error response
 
+        # Log the fact that the connection is being closed
+        logStr = "Dropping connection to user after completion"
+        MaverickServerProtocol.debug(logStr)
+
         # Close connection after each request
-        self._logger.debug("Dropping connection to user after completion")
         self.transport.loseConnection()
 
 
@@ -1179,37 +1201,31 @@ class MaverickServerProtocolFactory(protocol.ServerFactory):
     It does little more than build a protocol with a reference to the
     provided TournamentSystem instance"""
 
+    # Create a logger for this class
+    _loggerName = MaverickServerProtocolFactory.__class__.__name__
+    logger = logging.getLogger(_loggerName)
+    logger.setLevel("INFO")
+
     def __init__(self, tournamentSystem):
         """Initialize server state
 
         Makes a link to the TournamentSystem instance provided"""
 
-        # Instantiate a logger
-        self._logger = logging.getLogger(self.__class__.__name__)
-
         # Store a reference to the TournamentSystem backing up this server
         self._tournamentSystem = tournamentSystem
 
         # Log initialization
-        self._logger.info("Server initialized")
+        MaverickServerProtocolFactory.logger.info("Server initialized")
 
     def buildProtocol(self, addr):
         """Create an instance of MaverickServerProtocol"""
         return MaverickServerProtocol(self._tournamentSystem)
 
 
-def main(port=DEFAULT_MAVERICK_PORT, logLevelStr='INFO'):
+def main(port=DEFAULT_MAVERICK_PORT):
     """Main method: called when the server code is run
 
-    @param port: The port to use for communication with a Maverick server
-    @param logLevelStr: The desired log level.  One of 'INFO', 'DEBUG',
-    'WARNING', 'ERROR', or 'CRITICAL'. Defaults to 'INFO' """
-
-    # Set logging level to whatever was specified
-    logLevel = getattr(logging, logLevelStr.upper(), None)
-    if not isinstance(logLevel, int):
-        raise ValueError('Invalid log level: {0}'.format(logLevelStr))
-    logging.basicConfig(level=logLevel)
+    @param port: The port to use for communication with a Maverick server"""
 
     # Initialize a new instance of MaverickCore
     core = TournamentSystem()
