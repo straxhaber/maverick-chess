@@ -29,7 +29,7 @@ class MaverickClient(object):
     """Timeout (in seconds) for the telnet connections"""
 
     def __init__(self, host="127.0.0.1", port=7782):
-        """TODO
+        """TODO write a comment
 
         NOTE: Port 7782 is not registered with the IANA as of 2012-12-17"""
         self._logger = logging.getLogger("MaverickClient")
@@ -44,23 +44,32 @@ class MaverickClient(object):
         # Connect via telnet to the server
         connection = Telnet(self.host, self.port)
 
-        # Receive the welcome message and validate it
+        # Receive the welcome message
         # Example: MaverickChessServer/1.0a1 WAITING_FOR_REQUEST
         welcome = connection.read_until("\r\n", MaverickClient.TIMEOUT)
-        try:
-            assert welcome[:19] == "MaverickChessServer", "bad_name"
-            assert welcome[19] == "/", "bad_header_separator"
+
+        # Validate the welcome message
+        err = None
+        if welcome[:19] != "MaverickChessServer":
+            err = "bad_name"
+        elif welcome[19] != "/":
+            err = "bad_header_separator"
+        else:
             (version, sep, status) = welcome[20:].partition(" ")
-            assert version == __version__, "incompatible_version"
-            assert sep == " ", "bad_separator"
-            assert status == "WAITING_FOR_REQUEST\r\n", "bad_status"
-        except AssertionError, msg:
+            if version != __version__:
+                err = "incompatible_version"
+            elif sep != " ":
+                err = "bad_separator"
+            elif status != "WAITING_FOR_REQUEST\r\n":
+                err = "bad_status"
+        if err != None:
             raise MaverickClientException(
-                "Invalid welcome from server ({0}): {1}".format(msg,
-                                                                welcome))
+                "Invalid server welcome ({0}): {1}".format(err, welcome))
 
         # Send the request
-        requestStr = "{0} {1}\r\n".format(verb, json.dumps(dikt))
+        requestStr = "{0} {1}\r\n".format(verb,
+                                          json.dumps(dikt,
+                                                     encoding="utf-8"))
         connection.write(requestStr)
 
         # Receive the response
@@ -69,7 +78,10 @@ class MaverickClient(object):
         # Parse the response and deal with it accordingly
         statusString, _, value = response.partition(" ")
         if statusString == "SUCCESS":
-            result = json.loads(value)
+            try:
+                result = json.loads(value, object_hook=_asciify_json_dict)
+            except ValueError:
+                raise MaverickClientException("Invalid JSON in response")
             return result
         elif statusString == "ERROR":
             errMsg = value[:]
@@ -82,8 +94,7 @@ class MaverickClient(object):
 
         This should be called before trying to join a player to a game.
 
-        @param name: A String containing the player's name
-        """
+        @param name: A String containing the player's name"""
 
         response = self._makeRequest("REGISTER", name=name)
         return response["playerID"]
@@ -91,16 +102,14 @@ class MaverickClient(object):
     def joinGame(self, playerID):
         """Adds the player to a new or pending game.
 
-        @param playerID: playerID of the player joining a game
-        """
+        @param playerID: playerID of the player joining a game"""
         response = self._makeRequest("JOIN_GAME", playerID=playerID)
         return response["gameID"]
 
     def getStatus(self, gameID):
         """Returns the status of the game with the given gameID, if it exists.
 
-        @param gameID: the integer gameID of an in-progress game
-        """
+        @param gameID: the integer gameID of an in-progress game"""
         response = self._makeRequest("GET_STATUS", gameID=gameID)
         return response["status"]
 
@@ -112,8 +121,7 @@ class MaverickClient(object):
 
         @param playerID: the integer of the playerID of the player on which
                          getState is being called
-        @param gameID: the integer gameID of an in-progress game
-         """
+        @param gameID: the integer gameID of an in-progress game"""
         response = self._makeRequest("GET_STATE",
                                      playerID=playerID,
                                      gameID=gameID)
@@ -129,8 +137,7 @@ class MaverickClient(object):
         @param fromRank: The rank of the piece to be moved
         @param fromFile: The file of the piece to be moved
         @param toRank: The file to which the piece should be moved
-        @param toFile: The rank to which the piece should be moved
-        """
+        @param toFile: The rank to which the piece should be moved"""
         self._makeRequest("MAKE_PLY",
                           playerID=playerID,
                           gameID=gameID,
@@ -138,6 +145,38 @@ class MaverickClient(object):
                           fromFile=fromFile,
                           toRank=toRank,
                           toFile=toFile)
+
+
+def _asciify_json_list(data):
+    """Turn strings within a JSON list to ASCII"""
+    # Adapted from: bit.ly/TtJpzH
+    rv = []
+    for item in data:
+        if isinstance(item, unicode):
+            item = item.encode('ascii')
+        elif isinstance(item, list):
+            item = _asciify_json_list(item)
+        elif isinstance(item, dict):
+            item = _asciify_json_list(item)
+        rv.append(item)
+    return rv
+
+
+def _asciify_json_dict(data):
+    """Turn strings within a JSON dictionary to ASCII"""
+    # Adapted from: bit.ly/TtJpzH
+    rv = {}
+    for key, value in data.iteritems():
+        if isinstance(key, unicode):
+            key = key.encode('ascii')
+        if isinstance(value, unicode):
+            value = value.encode('ascii')
+        elif isinstance(value, list):
+            value = _asciify_json_list(value)
+        elif isinstance(value, dict):
+            value = _asciify_json_dict(value)
+        rv[key] = value
+    return rv
 
 
 def _main():

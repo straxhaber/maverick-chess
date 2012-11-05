@@ -1126,7 +1126,8 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         errMsg = None  # If this gets set, there was an error
         if requestName in validRequests.keys():
             try:
-                requestArgs = json.loads(requestArgsString)
+                requestArgs = json.loads(requestArgsString,
+                                         encoding="utf-8")
             except ValueError:
                 errMsg = "Invalid JSON for arguments"
             else:
@@ -1147,7 +1148,9 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
                     else:
                         if successP:
                             # Provide successful results to the user
-                            jsonStr = json.dumps(result, ensure_ascii=True)
+                            jsonStr = json.dumps(result,
+                                                 ensure_ascii=True,
+                                                 encoding="utf-8")
                             response = "SUCCESS {0}".format(jsonStr)
                         if not successP:
                             # Pull out structured error messages from func call
