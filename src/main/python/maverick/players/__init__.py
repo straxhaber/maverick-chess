@@ -6,4 +6,4 @@
 """players: agents for the maverick chess system"""
 
 # Submodules to be imported on "from players import *"
-__all__ = ["ais", "human"]
+__all__ = ["ais", "human", "common"]

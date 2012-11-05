@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-"""common.py: TODO write a description"""
+"""common.py: Common code for gameplay interfaces"""
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
@@ -48,7 +48,7 @@ class MaverickPlayer(MaverickClient):
         print(" -- {0}".format(message))
 
     def startPlaying(self):
-        """Enters the AI into an ongoing game (blocks until successful)
+        """Enters the player into an ongoing game (blocks until successful)
 
         @precondition: self.name must be set"""
         self.playerID = self.register(self.name)
@@ -72,11 +72,11 @@ class MaverickPlayer(MaverickClient):
 
     def getStatus(self):
         return MaverickClient.getStatus(self, self.gameID)
-#    MaverickPlayer.getStatus.__doc__ = MaverickClient.getStatus.__doc__
+    #MaverickPlayer.getStatus.__doc__ = MaverickClient.getStatus.__doc__
 
     def getState(self):
         return MaverickClient.getState(self, self.playerID, self.gameID)
-#    MaverickPlayer.getState.__doc__ = MaverickClient.getState.__doc__
+    #MaverickPlayer.getState.__doc__ = MaverickClient.getState.__doc__
 
     def makePly(self, fromRank, fromFile, toRank, toFile):
         MaverickClient.makePly(self,
@@ -84,7 +84,7 @@ class MaverickPlayer(MaverickClient):
                                fromRank, fromFile,
                                toRank, toFile)
     ## TODO
-#    MaverickPlayer.makePly.__doc__ = MaverickClient.makePly.__doc__
+    #MaverickPlayer.makePly.__doc__ = MaverickClient.makePly.__doc__
 
 
 def main():

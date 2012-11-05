@@ -20,12 +20,9 @@ from maverick.players.common import MaverickPlayer
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-# TODO (mattsh): Properly catch and deal with exceptions
-
 
 class HumanGamer(MaverickPlayer):
-    """TODO write a comment"""
-    ## TODO (James): Write comments for class and class methods
+    """Represents a human player connecting to the Maverick chess system."""
 
     FILE_LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h"]
     """Ordered listing of valid files"""
@@ -65,7 +62,7 @@ class HumanGamer(MaverickPlayer):
             qStr = "Please enter move (e.g., \"a1 b3\" to move a1 to b3):"
             playerMove = raw_input(qStr)
 
-            # TODO (mattsh): get the actual move stuff to work Ñ 0-delimited?
+            # TODO (mattsh): get the actual move stuff to work - 0-delimited?
 
             # Validate move
             if len(playerMove) == 6:
@@ -86,19 +83,41 @@ class HumanGamer(MaverickPlayer):
         toFile = HumanGamer.FILE_LETTERS.index(playerMove[3])
         toRank = HumanGamer.RANK_NUMBERS.index(playerMove[4])
 
-        self.makePly(fromFile, fromRank, toFile, toRank)
+        try:
+            self.makePly(fromFile, fromRank, toFile, toRank)
+        except:
+            self.displayMessage("Server did not accept move - please retry")
 
     def run(self):
-        """TODO write a comment"""
+        """Interact with the player, showing them the board and prompting them
+        for moves on their turn"""
 
         #  Get the user's name and get into a game
         self.name = raw_input("Please enter your name: ")
         self.startPlaying()
 
-        # TODO: welcome text
+        # Display a welcome message to the player
+        welcomeStrF = ("Welcome to Maverick Chess. You are playing as {0}. "
+                       "Pieces are represented by letters on the board "
+                        "as follows:\n"
+                        "P = pawn\n"
+                        "R = rook\n"
+                        "N = knight\n"
+                        "B = bishop\n"
+                        "Q = queen\n"
+                        "K = king\n"
+                        ". = no piece\n\n"
 
-        # Print the initial state of the board
-#        self.printBoard()  #TODO remove this
+                        "Upper-case letters are white pieces, and lower-case "
+                        "letters are black pieces.  Have fun. \n\n")
+
+        if self.isWhite:
+            colorStr = "white"
+        else:
+            colorStr = "black"
+
+        welcomeStr = welcomeStrF.format(colorStr)
+        self.displayMessage(welcomeStr)
 
         # While the game is in progress
         while self.getStatus() == ChessMatch.STATUS_ONGOING:
@@ -130,7 +149,11 @@ class HumanGamer(MaverickPlayer):
             self.displayMessage("ERROR: UNEXPECTED GAME STATUS TRANSITION")
 
     def getPieceChar(self, piece):
-        """TODO write a comment"""
+        """Return a character representing the given piece
+
+        @param piece: A piece as defined in maverick.server.ChessBoard
+
+        @return: A character representing the given piece on the chess board"""
         if piece is None:
             return '.'
         else:
@@ -153,9 +176,6 @@ class HumanGamer(MaverickPlayer):
 def main(host='127.0.0.1', port=7782):
         p = HumanGamer(host, port)
         p.run()
-
-#def main():
-#    print "This class should not be run directly"
 
 if __name__ == '__main__':
     main()

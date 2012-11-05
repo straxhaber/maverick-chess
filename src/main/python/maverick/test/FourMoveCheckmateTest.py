@@ -1,6 +1,6 @@
 import unittest
 
-from TournamentSystem import TournamentSystem
+from maverick.server import TournamentSystem
 
 
 class TestTournamentSystem(unittest.TestCase):
