@@ -63,8 +63,11 @@ class MaverickClient(object):
             elif status != "WAITING_FOR_REQUEST\r\n":
                 err = "bad_status"
         if err != None:
-            raise MaverickClientException(
-                "Invalid server welcome ({0}): {1}".format(err, welcome))
+            excMsg = "Invalid welcome from server ({0}): {1}".format(err,
+                                                                     welcome)
+            # TODO: maybe log something here. this was the old code:
+            # self._logger.warn(excMsg)
+            raise MaverickClientException(excMsg)
 
         # Send the request
         requestStr = "{0} {1}\r\n".format(verb,
