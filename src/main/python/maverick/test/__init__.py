@@ -4,3 +4,6 @@
 ###############################################################################
 
 """test: tests for the maverick chess system"""
+
+# Submodules to be imported on "from test import *"
+__all__ = ["FourMoveCheckmateTest"]

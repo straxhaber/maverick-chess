@@ -15,6 +15,15 @@ from telnetlib import Telnet
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+## TODO (James): Figure out a better way to get classnames for logger
+#                Instantiation. I looked around and couldn't find an
+#                alternative to doing it this way if we want to be
+#                able to log from static methods without module-level
+#                logging. I had found a best practices guide that recommends
+#                not doing module-level logging at
+#                http://css.dzone.com/articles/best-practices-python-logging
+
+
 class MaverickClientException(Exception):
     pass
 
@@ -26,7 +35,10 @@ class MaverickClient(object):
     """Timeout (in seconds) for the telnet connections"""
 
     # Create a logger for this class
-    logger = logging.getLogger(MaverickClient.__class__.__name__)
+    # Initialize logging configuration to avoid handler errors
+    logging.basicConfig()
+    ## TODO (James): find a better way to do this - see TODO at top of file
+    logger = logging.getLogger("MaverickClient")
     logger.setLevel("INFO")
 
     def __init__(self, host="127.0.0.1", port=7782):

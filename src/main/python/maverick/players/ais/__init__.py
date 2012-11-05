@@ -4,3 +4,6 @@
 ###############################################################################
 
 """maverick-chess.ais: A collection of AIs that play chess"""
+
+# Submodules to be imported on "from ais import *"
+__all__ = ["client", "server", "players", "test"]

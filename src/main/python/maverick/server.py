@@ -22,6 +22,14 @@ from twisted.protocols import basic as basicProtocols
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+## TODO (James): Figure out a better way to get classnames for logger
+#                Instantiation. I looked around and couldn't find an
+#                alternative to doing it this way if we want to be
+#                able to log from static methods without module-level
+#                logging. I had found a best practices guide that recommends
+#                not doing module-level logging at
+#                http://css.dzone.com/articles/best-practices-python-logging
+
 
 class ChessBoard:
     """Represents a chess game in Maverick"""
@@ -67,8 +75,9 @@ class ChessBoard:
                        (BLACK, KNGT), (BLACK, ROOK)]]
 
     # Create a logger for this class
-    ChessBoard.logger = logging.getLogger(ChessBoard.__class__.__name__)
-    ChessBoard.logger.setLevel("INFO")
+    ## TODO (James): find a better way to do this - see TODO at top of file
+    logger = logging.getLogger("ChessBoard")
+    logger.setLevel("INFO")
 
     def __init__(self, startBoard=None):
         """Initialize a new Chess game according to normal Chess rules
@@ -742,8 +751,9 @@ class ChessMatch:
     STATUS_CANCELLED = "CANCELD"   # Game was halted early
 
     # Create a logger for this class
-    ChessMatch.logger = logging.getLogger(ChessMatch.__class__.__name__)
-    ChessMatch.logger.setLevel("INFO")
+    ## TODO (James): find a better way to do this - see TODO at top of file
+    logger = logging.getLogger("ChessMatch")
+    logger.setLevel("INFO")
 
     def __init__(self, firstPlayerID=None):
         """Initialize a new chess match with initial state
@@ -835,8 +845,11 @@ class ChessMatch:
 class TournamentSystem:
     """A class for managing player interaction with chess matches"""
 
-    _loggerName = TournamentSystem.__class__.__name__
-    TournamentSystem.logger = logging.getLogger(_loggerName)
+    # Initialize logging configuration to avoid handler errors
+    logging.basicConfig()
+    ## TODO (James): find a better way to do this - see TODO at top of file
+    logger = logging.getLogger("TournamentSystem")
+    logger.setLevel("INFO")
 
     def __init__(self):
         """Initializes a new tournament system with no games"""
@@ -1065,7 +1078,8 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
     _ts = None
     """put a TournamentSystem instance here"""
 
-    logger = logging.getLogger(MaverickServerProtocol.__class__.__name__)
+    ## TODO (James): find a better way to do this - see TODO at top of file
+    logger = logging.getLogger("MaverickServerProtocol")
     logger.setLevel("INFO")
 
     def __init__(self, tournamentSystem):
@@ -1180,7 +1194,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
 
         # Log the fact that the connection is being closed
         logStr = "Dropping connection to user after completion"
-        MaverickServerProtocol.debug(logStr)
+        MaverickServerProtocol.logger.debug(logStr)
 
         # Close connection after each request
         self.transport.loseConnection()
@@ -1193,8 +1207,8 @@ class MaverickServerProtocolFactory(protocol.ServerFactory):
     provided TournamentSystem instance"""
 
     # Create a logger for this class
-    _loggerName = MaverickServerProtocolFactory.__class__.__name__
-    logger = logging.getLogger(_loggerName)
+    ## TODO (James): find a better way to do this - see TODO at top of file
+    logger = logging.getLogger("MaverickServerProtocolFactory")
     logger.setLevel("INFO")
 
     def __init__(self, tournamentSystem):
