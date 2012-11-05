@@ -15,7 +15,6 @@ from telnetlib import Telnet
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-
 class MaverickClientException(Exception):
     pass
 
@@ -26,16 +25,15 @@ class MaverickClient(object):
     TIMEOUT = 2
     """Timeout (in seconds) for the telnet connections"""
 
+    # Create a logger for this class
+    logger = logging.getLogger(MaverickClient.__class__.__name__)
+    logger.setLevel("INFO")
+
     def __init__(self, host="127.0.0.1", port=7782):
         """Initializes a MaverickClient, for use in Maverick Chess
 
-        Initializes a logger, and sets the hostname and port number for
-        communication with a Maverick chess server.
-
         NOTE: Port 7782 is not registered with the IANA as of 2012-12-17"""
 
-        # Instantiate a logger
-        self._logger = logging.getLogger("MaverickClient")
         self.host = host
         self.port = port
 
@@ -70,15 +68,15 @@ class MaverickClient(object):
         statusString, _, value = response.partition(" ")
         if statusString == "SUCCESS":
             result = json.loads(value)
-            self._logger.debug("Received success response")
+            MaverickClient.logger.debug("Received success response")
             return result
         elif statusString == "ERROR":
             errMsg = value[:]
-            self._logger.warn("Received error response")
+            MaverickClient.logger.warn("Received error response")
             raise MaverickClientException(errMsg)
         else:
             msg = "Invalid status string received"
-            self._logger.warn(msg)
+            MaverickClient.logger.warn(msg)
             raise MaverickClientException(msg)
 
     def register(self, name):

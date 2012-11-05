@@ -22,14 +22,6 @@ from twisted.protocols import basic as basicProtocols
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-# TODO (mattsh): Logging
-
-# TODO (James): FOR ALL CLASSES, do the following:
-#                -Statically instantiate a logger
-#                -Set the log level to something appropriate
-#                -remove logger initialization in __init__s
-#                -update all references to loggers to be static references
-
 
 class ChessBoard:
     """Represents a chess game in Maverick"""
@@ -842,7 +834,6 @@ class ChessMatch:
 
 class TournamentSystem:
     """A class for managing player interaction with chess matches"""
-    ## TODO (mattsh): Move logger instantiation to top-level
 
     _loggerName = TournamentSystem.__class__.__name__
     TournamentSystem.logger = logging.getLogger(_loggerName)
