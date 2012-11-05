@@ -57,20 +57,35 @@ class MaverickClient(object):
         # Connect via telnet to the server
         connection = Telnet(self.host, self.port)
 
-        # Receive the welcome message and validate it
+        # Receive the welcome message
         # Example: MaverickChessServer/1.0a1 WAITING_FOR_REQUEST
         welcome = connection.read_until("\r\n", MaverickClient.TIMEOUT)
-        try:
-            assert welcome[:19] == "MaverickChessServer", "bad_name"
-            assert welcome[19] == "/", "bad_header_separator"
+
+        # Validate the welcome message
+        err = None
+        if welcome[:19] != "MaverickChessServer":
+            err = "bad_name"
+        elif welcome[19] != "/":
+            err = "bad_header_separator"
+        else:
             (version, sep, status) = welcome[20:].partition(" ")
-            assert version == __version__, "incompatible_version"
-            assert sep == " ", "bad_separator"
-            assert status == "WAITING_FOR_REQUEST\r\n", "bad_status"
-        except AssertionError, msg:
-            pass
+
+            if version != __version__:
+                err = "incompatible_version"
+            elif sep != " ":
+                err = "bad_separator"
+            elif status != "WAITING_FOR_REQUEST\r\n":
+                err = "bad_status"
+        if err != None:
+            excMsg = "Invalid welcome from server ({0}): {1}".format(err,
+                                                                     welcome)
+            MaverickClient.logger.warn(excMsg)
+            raise MaverickClientException(excMsg)
+
         # Send the request
-        requestStr = "{0} {1}\r\n".format(verb, json.dumps(dikt))
+        requestStr = "{0} {1}\r\n".format(verb,
+                                          json.dumps(dikt,
+                                                     encoding="utf-8"))
         connection.write(requestStr)
 
         # Receive the response
@@ -79,8 +94,10 @@ class MaverickClient(object):
         # Parse the response and deal with it accordingly
         statusString, _, value = response.partition(" ")
         if statusString == "SUCCESS":
-            result = json.loads(value)
-            MaverickClient.logger.debug("Received success response")
+            try:
+                result = json.loads(value, object_hook=_asciify_json_dict)
+            except ValueError:
+                raise MaverickClientException("Invalid JSON in response")
             return result
         elif statusString == "ERROR":
             errMsg = value[:]
@@ -149,6 +166,38 @@ class MaverickClient(object):
                           fromFile=fromFile,
                           toRank=toRank,
                           toFile=toFile)
+
+
+def _asciify_json_list(data):
+    """Turn strings within a JSON list to ASCII"""
+    # Adapted from: bit.ly/TtJpzH
+    rv = []
+    for item in data:
+        if isinstance(item, unicode):
+            item = item.encode('ascii')
+        elif isinstance(item, list):
+            item = _asciify_json_list(item)
+        elif isinstance(item, dict):
+            item = _asciify_json_list(item)
+        rv.append(item)
+    return rv
+
+
+def _asciify_json_dict(data):
+    """Turn strings within a JSON dictionary to ASCII"""
+    # Adapted from: bit.ly/TtJpzH
+    rv = {}
+    for key, value in data.iteritems():
+        if isinstance(key, unicode):
+            key = key.encode('ascii')
+        if isinstance(value, unicode):
+            value = value.encode('ascii')
+        elif isinstance(value, list):
+            value = _asciify_json_list(value)
+        elif isinstance(value, dict):
+            value = _asciify_json_dict(value)
+        rv[key] = value
+    return rv
 
 
 def _main():
