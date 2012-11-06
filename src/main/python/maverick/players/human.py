@@ -26,7 +26,7 @@ class HumanGamer(MaverickPlayer):
     _logger = logging.getLogger("maverick.players.human.HumanGamer")
     logging.basicConfig(level=logging.INFO)
 
-    # TODO put some logging throughout this class
+    # TODO (mattsh): put some logging throughout this class
 
     FILE_LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h"]
     """Ordered listing of valid files"""

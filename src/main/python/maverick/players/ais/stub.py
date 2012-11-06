@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-"""TODO.py: TODO write a description"""
+"""stub.py: TODO (mattsh) write a description in concrete copy of this stub"""
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
@@ -27,7 +27,8 @@ class MaverickAI(MaverickPlayer):
                            self.playerID,
                            self.gameID)
 
-        # TODO: play a game (probably some sort of loop)
+        # TODO (mattsh): in concrete copy of this stub, play a game
+        # (probably some sort of loop)
 
 
 def main():

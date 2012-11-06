@@ -4,7 +4,7 @@ from maverick.server import TournamentSystem
 
 
 class TestTournamentSystem(unittest.TestCase):
-    # TODO Make this into proper unit tests
+    # Note: this is not a proper unit test
 
     ts = TournamentSystem()
     p1 = ts.register("a")[1]["playerID"]

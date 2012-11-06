@@ -72,24 +72,23 @@ class MaverickPlayer(MaverickClient):
             self.isWhite = False
 
     def run(self):
-        """TODO method comment"""
+        """TODO (mattsh) method comment"""
         raise NotImplementedError("Must be overridden by the extending class")
 
     def getStatus(self):
+        """TODO (mattsh) __DETAILED__ docstring"""
         return MaverickClient.getStatus(self, self.gameID)
-    #MaverickPlayer.getStatus.__doc__ = MaverickClient.getStatus.__doc__
 
     def getState(self):
+        """TODO (mattsh) __DETAILED__ docstring"""
         return MaverickClient.getState(self, self.playerID, self.gameID)
-    #MaverickPlayer.getState.__doc__ = MaverickClient.getState.__doc__
 
     def makePly(self, fromRank, fromFile, toRank, toFile):
+        """TODO (mattsh) __DETAILED__ docstring"""
         MaverickClient.makePly(self,
                                self.playerID, self.gameID,
                                fromRank, fromFile,
                                toRank, toFile)
-    ## TODO
-    #MaverickPlayer.makePly.__doc__ = MaverickClient.makePly.__doc__
 
 
 def main():

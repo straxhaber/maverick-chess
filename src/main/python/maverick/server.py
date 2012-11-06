@@ -1145,7 +1145,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
                         errMsg = "Uncaught exception"
                     else:
                         if successP:
-                            # TODO: check keys of response
+                            # TODO (mattsh): check keys of response
 
                             # Provide successful results to the user
                             jsonStr = json.dumps(result,

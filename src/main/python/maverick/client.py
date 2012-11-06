@@ -15,14 +15,6 @@ import logging
 
 from telnetlib import Telnet
 
-## TODO (James): Figure out a better way to get classnames for _logger
-#                Instantiation. I looked around and couldn't find an
-#                alternative to doing it this way if we want to be
-#                able to log from static methods without module-level
-#                logging. I had found a best practices guide that recommends
-#                not doing module-level logging at
-#                http://css.dzone.com/articles/best-practices-python-logging
-
 
 class MaverickClientException(Exception):
     pass
