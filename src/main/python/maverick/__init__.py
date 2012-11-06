@@ -6,4 +6,4 @@
 """maverick: A system for playing chess and testing out AI concepts"""
 
 # Submodules to be imported on "from maverick import *"
-__all__ = ["client", "server", "players", "test"]
+__all__ = ["client", "server", "players"]
