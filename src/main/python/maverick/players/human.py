@@ -26,7 +26,7 @@ class HumanGamer(MaverickPlayer):
     """Represents a human player connecting to the Maverick chess system."""
 
     # Initialize class _logger
-    _logger = logging.getLogger("HumanGamer")
+    _logger = logging.getLogger("maverick.players.human.HumanGamer")
     _logger.setLevel("INFO")
 
     FILE_LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h"]

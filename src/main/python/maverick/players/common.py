@@ -23,7 +23,7 @@ class MaverickPlayer(MaverickClient):
     """Provides basic methods for a Maverick AI"""
 
     # Initialize class _logger
-    _logger = logging.getLogger("MaverickPlayer")
+    _logger = logging.getLogger("maverick.players.common.MaverickPlayer")
     _logger.setLevel("INFO")
 
     SLEEP_TIME = 1

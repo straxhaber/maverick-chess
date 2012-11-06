@@ -32,7 +32,7 @@ class MaverickClient(object):
     """Protocol for connecting to the MaverickServer"""
 
     # Initialize class _logger
-    _logger = logging.getLogger("MaverickClient")
+    _logger = logging.getLogger("maverick.client.MaverickClient")
     _logger.setLevel("INFO")
 
     TIMEOUT = 2

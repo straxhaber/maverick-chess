@@ -23,11 +23,11 @@ from twisted.internet import reactor
 from twisted.protocols import basic as basicProtocols
 
 
-class ChessBoard:
+class ChessBoard(object):
     """Represents a chess game in Maverick"""
 
     # Initialize class logger
-    _logger = logging.getLogger("ChessBoard")
+    _logger = logging.getLogger("maverick.server.ChessBoard")
     _logger.setLevel("INFO")
 
     # Constants for the pieces
@@ -730,11 +730,11 @@ class ChessBoard:
         return True  # All of the error checks passed
 
 
-class ChessMatch:
+class ChessMatch(object):
     """Represents a chess game in Maverick"""
 
     # Initialize class logger
-    _logger = logging.getLogger("ChessMatch")
+    _logger = logging.getLogger("maverick.server.ChessMatch")
     _logger.setLevel("INFO")
 
     # Constants for game status
@@ -832,11 +832,11 @@ class ChessMatch:
         ChessMatch._logger.info(logStr)
 
 
-class TournamentSystem:
+class TournamentSystem(object):
     """A class for managing player interaction with chess matches"""
 
     # Initialize class logger
-    _logger = logging.getLogger("TournamentSystem")
+    _logger = logging.getLogger("maverick.server.TournamentSystem")
     _logger.setLevel("INFO")
 
     def __init__(self):
@@ -1056,7 +1056,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
     After the query is responded to, the server disconnects the client"""
 
     # Initialize class logger
-    _logger = logging.getLogger("MaverickServerProtocol")
+    _logger = logging.getLogger("maverick.server.MaverickServerProtocol")
     _logger.setLevel("INFO")
 
     name = "MaverickChessServer"
@@ -1190,14 +1190,14 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         self.transport.loseConnection()
 
 
-class MaverickServerProtocolFactory(protocol.ServerFactory):
+class MaverickServerProtFactory(protocol.ServerFactory):
     """Provides a MaverickServerProtocol backed by a TournamentSystem instance
 
     It does little more than build a protocol with a reference to the
     provided TournamentSystem instance"""
 
     # Initialize class logger
-    _logger = logging.getLogger("MaverickServerProtocolFactory")
+    _logger = logging.getLogger("maverick.server.MaverickServerProtFactory")
     _logger.setLevel("INFO")
 
     def __init__(self, tournamentSystem):
@@ -1209,7 +1209,7 @@ class MaverickServerProtocolFactory(protocol.ServerFactory):
         self._tournamentSystem = tournamentSystem
 
         # Log initialization
-        MaverickServerProtocolFactory._logger.info("Server initialized")
+        MaverickServerProtFactory._logger.info("Server initialized")
 
     def buildProtocol(self, addr):
         """Create an instance of MaverickServerProtocol"""
@@ -1226,7 +1226,7 @@ def main(port=DEFAULT_MAVERICK_PORT):
 
     # Run a server on the specified port
     endpoint = endpoints.TCP4ServerEndpoint(reactor, port)
-    endpoint.listen(MaverickServerProtocolFactory(core))
+    endpoint.listen(MaverickServerProtFactory(core))
     reactor.run()  # @UndefinedVariable
 
 if __name__ == '__main__':
