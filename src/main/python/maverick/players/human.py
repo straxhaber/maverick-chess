@@ -24,10 +24,7 @@ class HumanGamer(MaverickPlayer):
 
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.human.HumanGamer")
-
-    # Manually set log level to WARNING or above
-    if _logger.isEnabledFor(logging.INFO):
-        _logger.setLevel(logging.WARNING)
+    logging.basicConfig(level=logging.INFO)
 
     # TODO put some logging throughout this class
 

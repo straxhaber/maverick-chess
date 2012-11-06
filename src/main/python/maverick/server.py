@@ -917,7 +917,7 @@ class TournamentSystem(object):
         newGame = ChessMatch(playerID)
         newID = _getUniqueInt(self.games.keys())
         self.games[newID] = newGame
-        TournamentSystem._logger.info("Added player{0} to new game {1}",
+        TournamentSystem._logger.info("Added player {0} to new game {1}",
                                       playerID, newID)
         return (True, {"gameID": newID})
 
