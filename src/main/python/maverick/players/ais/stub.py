@@ -10,18 +10,25 @@ __version__ = "pre-alpha"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-from maverick.players.ais.common import MaverickAI
+import logging
+
+from maverick.players.common import MaverickPlayer
 
 
-class Stub(MaverickAI):
+class MaverickAI(MaverickPlayer):
+
+    # Initialize class _logger
+    _logger = logging.getLogger("MaverickAI")
+    _logger.setLevel("INFO")
 
     def runAI(self):
         self.startPlaying()
+
         # TODO: play a game (probably some sort of loop)
 
 
 def main():
-    ai = Stub()
+    ai = MaverickAI()
     ai.runAI()
 
 if __name__ == '__main__':

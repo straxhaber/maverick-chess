@@ -5,17 +5,17 @@
 __author__ = "James Magnarelli, Matthew Strax-Haber, and Brad Fournier"
 __version__ = "1.0"
 
-import json
-import logging
-
-from telnetlib import Telnet
-
 ###############################################################################
 # Code written by Matthew Strax-Haber, James Magnarelli, and Brad Fournier.
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-## TODO (James): Figure out a better way to get classnames for logger
+import json
+import logging
+
+from telnetlib import Telnet
+
+## TODO (James): Figure out a better way to get classnames for _logger
 #                Instantiation. I looked around and couldn't find an
 #                alternative to doing it this way if we want to be
 #                able to log from static methods without module-level
@@ -31,15 +31,12 @@ class MaverickClientException(Exception):
 class MaverickClient(object):
     """Protocol for connecting to the MaverickServer"""
 
+    # Initialize class _logger
+    _logger = logging.getLogger("MaverickClient")
+    _logger.setLevel("INFO")
+
     TIMEOUT = 2
     """Timeout (in seconds) for the telnet connections"""
-
-    # Create a logger for this class
-    # Initialize logging configuration to avoid handler errors
-    logging.basicConfig()
-    ## TODO (James): find a better way to do this - see TODO at top of file
-    logger = logging.getLogger("MaverickClient")
-    logger.setLevel("INFO")
 
     def __init__(self, host="127.0.0.1", port=7782):
         """Initializes a MaverickClient, for use in Maverick Chess
@@ -79,7 +76,7 @@ class MaverickClient(object):
         if err != None:
             excMsg = "Invalid welcome from server ({0}): {1}".format(err,
                                                                      welcome)
-            MaverickClient.logger.warn(excMsg)
+            MaverickClient._logger.warn(excMsg)
             raise MaverickClientException(excMsg)
 
         # Send the request
@@ -101,11 +98,11 @@ class MaverickClient(object):
             return result
         elif statusString == "ERROR":
             errMsg = value[:]
-            MaverickClient.logger.warn("Received error response")
+            MaverickClient._logger.warn("Received error response")
             raise MaverickClientException(errMsg)
         else:
             msg = "Invalid status string received"
-            MaverickClient.logger.warn(msg)
+            MaverickClient._logger.warn(msg)
             raise MaverickClientException(msg)
 
     def register(self, name):

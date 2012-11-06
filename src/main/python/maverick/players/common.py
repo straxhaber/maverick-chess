@@ -10,6 +10,7 @@ __version__ = "pre-alpha"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+import logging
 import random
 import time
 
@@ -20,6 +21,10 @@ from maverick.server import ChessMatch
 
 class MaverickPlayer(MaverickClient):
     """Provides basic methods for a Maverick AI"""
+
+    # Initialize class _logger
+    _logger = logging.getLogger("MaverickPlayer")
+    _logger.setLevel("INFO")
 
     SLEEP_TIME = 1
     """Amount of time to wait between requests when polling"""

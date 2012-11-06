@@ -1,9 +1,15 @@
 #!/usr/bin/python
 
 """human.py: A simple chess client for human users to play games"""
+from maverick.client import MaverickClientException
 
 __author__ = "James Magnarelli, Matthew Strax-Haber, and Brad Fournier"
 __version__ = "1.0"
+
+###############################################################################
+# Code written by Matthew Strax-Haber, James Magnarelli, and Brad Fournier.
+# All Rights Reserved. Not licensed for use without express permission.
+###############################################################################
 
 #import os
 #import sys
@@ -15,14 +21,13 @@ from maverick.server import ChessBoard
 from maverick.server import ChessMatch
 from maverick.players.common import MaverickPlayer
 
-###############################################################################
-# Code written by Matthew Strax-Haber, James Magnarelli, and Brad Fournier.
-# All Rights Reserved. Not licensed for use without express permission.
-###############################################################################
-
 
 class HumanGamer(MaverickPlayer):
     """Represents a human player connecting to the Maverick chess system."""
+
+    # Initialize class _logger
+    _logger = logging.getLogger("HumanGamer")
+    _logger.setLevel("INFO")
 
     FILE_LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h"]
     """Ordered listing of valid files"""
@@ -43,9 +48,6 @@ class HumanGamer(MaverickPlayer):
                           ChessBoard.PAWN: {ChessBoard.WHITE: 'P',
                                             ChessBoard.BLACK: 'p'}}
     """Mapping of piece constants to their visual represenataion"""
-
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
 
     def __init__(self, host, port):
         """Initialize a human player"""
@@ -85,8 +87,9 @@ class HumanGamer(MaverickPlayer):
 
         try:
             self.makePly(fromFile, fromRank, toFile, toRank)
-        except:
-            self.displayMessage("Server did not accept move - please retry")
+        except MaverickClientException, msg:
+            self.displayMessage("Server did not accept move - please retry.")
+            self.displayMessage("Message from server: {0}".format(msg))
 
     def run(self):
         """Interact with the player, showing them the board and prompting them
