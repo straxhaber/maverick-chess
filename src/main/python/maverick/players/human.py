@@ -27,7 +27,7 @@ class HumanGamer(MaverickPlayer):
 
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.human.HumanGamer")
-    _logger.setLevel("INFO")
+    logging.basicConfig(level=logging.INFO)
 
     FILE_LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h"]
     """Ordered listing of valid files"""

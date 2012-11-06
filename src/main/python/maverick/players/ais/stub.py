@@ -19,7 +19,7 @@ class MaverickAI(MaverickPlayer):
 
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.ais.stub.MaverickAI")
-    _logger.setLevel("INFO")
+    logging.basicConfig(level=logging.INFO)
 
     def runAI(self):
         self.startPlaying()

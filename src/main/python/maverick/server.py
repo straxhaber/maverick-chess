@@ -28,7 +28,7 @@ class ChessBoard(object):
 
     # Initialize class logger
     _logger = logging.getLogger("maverick.server.ChessBoard")
-    _logger.setLevel("INFO")
+    logging.basicConfig(level=logging.INFO)
 
     # Constants for the pieces
     PAWN = "P"
