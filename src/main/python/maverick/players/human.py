@@ -61,7 +61,7 @@ class HumanGamer(MaverickPlayer):
 
         haveValidMove = False
         while not haveValidMove:
-            qStr = "Please enter move (e.g., \"a1 b3\" to move a1 to b3):"
+            qStr = "Please enter move (e.g., \"a1 b3\" to move a1 to b3):  "
             playerMove = raw_input(qStr)
 
             # TODO (mattsh): get the actual move stuff to work - 0-delimited?
@@ -96,7 +96,7 @@ class HumanGamer(MaverickPlayer):
         for moves on their turn"""
 
         #  Get the user's name and get into a game
-        self.name = raw_input("Please enter your name: ")
+        self.name = raw_input("Please enter your name:  ")
         self.startPlaying()
 
         # Display a welcome message to the player
