@@ -23,6 +23,9 @@ class MaverickAI(MaverickPlayer):
 
     def runAI(self):
         self.startPlaying()
+        MaverickAI._logger("I ({0}) have entered game {1}",
+                           self.playerID,
+                           self.gameID)
 
         # TODO: play a game (probably some sort of loop)
 

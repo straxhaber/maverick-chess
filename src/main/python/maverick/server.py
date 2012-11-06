@@ -173,8 +173,8 @@ class ChessBoard(object):
 
             # Log the successful move
             logStrF = "Moved piece from ({0},{1}), to ({2},{3})"
-            logStr = logStrF.format(fromRank, fromFile, toRank, toFile)
-            ChessBoard._logger.info(logStr)
+            ChessBoard._logger.info(logStrF,
+                                    fromRank, fromFile, toRank, toFile)
 
             return True
 
@@ -439,12 +439,12 @@ class ChessBoard(object):
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
                 if not self.isKingInCheck(color, postMoveBoard):
-                    logStr = "Found that {0} is not in checkmate".format(color)
-                    ChessBoard._logger.info(logStr)
+                    logStrF = "Found that {0} is not in checkmate"
+                    ChessBoard._logger.info(logStrF, color)
                     return False
 
         # All tests passed - given color is in checkmate
-        ChessBoard._logger.info("Found that {0} is in checkmate".format(color))
+        ChessBoard._logger.info("Found that {0} is in checkmate", color)
         return True
 
     def isKingInCheck(self, color, board):
@@ -490,13 +490,12 @@ class ChessBoard(object):
             # If a move to the king's location is legal, the king is in check
             if self.isLegalMove(otherColor, pieceRank, pieceFile, kingRank,
                                 kingFile):
-                logStr = "Found that {0} is in check".format(color)
-                ChessBoard._logger.info(logStr)
+                ChessBoard._logger.info("Found that {0} is in check", color)
                 return (True, (pieceRank, pieceFile))
 
         # If none of the enemy pieces could move to the king's location, the
         # king is not in check
-        ChessBoard._logger.info("Found that {0} is not in check".format(color))
+        ChessBoard._logger.info("Found that {0} is not in check", color)
         return (False, None)
 
     def getResultBoard(self, fromRank, fromFile, toRank, toFile):
@@ -801,9 +800,8 @@ class ChessMatch(object):
 
                 # Log this ply
                 logStrF = "Added ({0},{1}) -> ({2}, {3}) to match history"
-                logStr = logStrF.format(fromRank, fromFile, toRank,
-                                              toFile)
-                ChessMatch._logger.debug(logStr)
+                ChessMatch._logger.debug(logStrF,
+                                         fromRank, fromFile, toRank, toFile)
                 return "SUCCESS"
             else:
                 return "Illegal move"
@@ -828,8 +826,7 @@ class ChessMatch(object):
                 if None not in self.players.values():
                     self.status = ChessMatch.STATUS_ONGOING
                 return color
-        logStr = "Joined player {0} to this game".format(playerID)
-        ChessMatch._logger.info(logStr)
+        ChessMatch._logger.info("Joined player {0} to this game", playerID)
 
 
 class TournamentSystem(object):
@@ -855,8 +852,7 @@ class TournamentSystem(object):
         @param fileName: The file to save state to"""
         fd = open(fileName)
         pickle.dump(tournament, fd)
-        logStr = "Dumped game state to {0}".format(fileName)
-        TournamentSystem._logger.debug(logStr)
+        TournamentSystem._logger.debug("Dumped game state to {0}", fileName)
 
     @staticmethod
     def loadTS(tournament, fileName):
@@ -870,8 +866,8 @@ class TournamentSystem(object):
         if (tournament._version != __version__):
             raise TypeError("Attempted loading of an incompatible version")
 
-        logStr = "Loaded game state from pickle file at {0}".format(fileName)
-        TournamentSystem._logger.debug(logStr)
+        logStrF = "Loaded game state from pickle file at {0}"
+        TournamentSystem._logger.debug(logStrF, fileName)
 
         return tournament
 
@@ -891,8 +887,8 @@ class TournamentSystem(object):
         else:
             newID = _getUniqueInt(self.players.keys())
             self.players[newID] = name
-            logStr = "Registered {0} with playerID {1}".format(name, newID)
-            TournamentSystem._logger.info(logStr)
+            TournamentSystem._logger.info("Registered {0} with playerID {1}",
+                                          name, newID)
             return (True, {"playerID": newID})
 
     def joinGame(self, playerID):
@@ -905,26 +901,24 @@ class TournamentSystem(object):
         {"gameID": someInteger})"""
 
         # Log the join attempt
-        logStr = "joinGame called with pid {0}".format(playerID)
-        TournamentSystem._logger.debug(logStr)
+        TournamentSystem._logger.debug("joinGame called with pid {0}",
+                                       playerID)
 
         # Add the player to a pending game if one exists
         for gameID, game in self.games.iteritems():
             if game.status == ChessMatch.STATUS_PENDING:
                 color = game.join(playerID)
                 if color:
-                    # Build up a string to enter in the log
                     logStrF = "Added player {0} to existing game {1}"
-                    logStr = logStrF.format(playerID, gameID)
-                    TournamentSystem._logger.debug(logStr)
+                    TournamentSystem._logger.debug(logStrF, playerID, gameID)
                     return (True, {"gameID": gameID})
 
         # Add a player to a new game otherwise
         newGame = ChessMatch(playerID)
         newID = _getUniqueInt(self.games.keys())
         self.games[newID] = newGame
-        logStr = "Added player{0} to new game {1}".format(playerID, newID)
-        TournamentSystem._logger.info(logStr)
+        TournamentSystem._logger.info("Added player{0} to new game {1}",
+                                      playerID, newID)
         return (True, {"gameID": newID})
 
     def cancelGame(self, gameID):
@@ -937,7 +931,7 @@ class TournamentSystem(object):
         if gameID in self.games:
             if (self.games[gameID].status in [ChessMatch.STATUS_ONGOING,
                                               ChessMatch.STATUS_PENDING]):
-                TournamentSystem._logger("Canceled game {0}".format(gameID))
+                TournamentSystem._logger("Canceled game {0}", gameID)
                 self.games[gameID].status = ChessMatch.STATUS_CANCELLED
             else:
                 return (False, {"error": "Game not active"})
@@ -955,9 +949,8 @@ class TournamentSystem(object):
 
         if gameID in self.games:
             status = self.games[gameID].status
-            logStrF = "Found status of game {0} to be {1}"
-            logStr = logStrF.format(gameID, status)
-            TournamentSystem._logger.info(logStr)
+            TournamentSystem._logger.info("Found status of game {0} to be {1}",
+                                          gameID, status)
             return (True, {"status": status})
         else:
             return (False, {"error": "Invalid game ID"})
@@ -1108,7 +1101,8 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         fStr = "{0}/{1} WAITING_FOR_REQUEST"  # Template for welcome message
         welcomeMsg = fStr.format(MaverickServerProtocol.name,
                                  MaverickServerProtocol.version)
-        MaverickServerProtocol._logger.debug("Sending welcome message")
+        MaverickServerProtocol._logger.debug("Sending welcome message: {0}",
+                                             welcomeMsg)
         self.sendLine(welcomeMsg)
 
     def connectionLost(self, reason=None):
@@ -1120,13 +1114,11 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
     def lineReceived(self, line):
         """Take input line-by-line and redirect it to the core"""
 
-        # Build up a log string and log this request
-        logStr = "Request received: {0}".format(line)
-        MaverickServerProtocol._logger.debug(logStr)
+        # Log request
+        MaverickServerProtocol._logger.debug("Request received: {0}", line)
 
-        requestName = line.partition(" ")[0]  # Request name (e.g., "REGISTER")
-
-        requestArgsString = line.partition(" ")[2]  # Arguments (unparsed)
+        # Pull out request name (e.g., "REGISTER") and arguments (unparsed)
+        (requestName, _, requestArgsString) = line.partition(" ")[0]
 
         errMsg = None  # If this gets set, there was an error
         if requestName in MaverickServerProtocol.VALID_REQUESTS:
@@ -1170,21 +1162,28 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         # Respond to the client
         if errMsg is None:
             # Provide client with the response
-            logStr = "RESPONSE [query=\"{0}\"]: {1}".format(line, response)
 
             # Log successful response
-            MaverickServerProtocol._logger.info(logStr)
-            self.sendLine(response)  # Send successful response
+            logStrF = "RESPONSE [query=\"{0}\"]: {1}"
+            MaverickServerProtocol._logger.info(logStrF, line, response)
 
+            # Send successful response
+            self.sendLine(response)
         else:
             # Provide client with the error
+
+            # Compute error response
             response = "ERROR {1} [query=\"{0}\"]".format(line, errMsg)
-            MaverickServerProtocol._logger.info(response)  # Log error response
-            self.sendLine(response)  # Send error response
+
+            # Log error response
+            MaverickServerProtocol._logger.info(response)
+
+            # Send error response
+            self.sendLine(response)
 
         # Log the fact that the connection is being closed
-        logStr = "Dropping connection to user after completion"
-        MaverickServerProtocol._logger.debug(logStr)
+        logStrF = "Dropping connection to user after completion"
+        MaverickServerProtocol._logger.debug(logStrF)
 
         # Close connection after each request
         self.transport.loseConnection()

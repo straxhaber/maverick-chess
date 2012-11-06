@@ -11,9 +11,6 @@ __version__ = "1.0"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-#import os
-#import sys
-
 import logging
 import time
 
@@ -27,7 +24,12 @@ class HumanGamer(MaverickPlayer):
 
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.human.HumanGamer")
-    logging.basicConfig(level=logging.INFO)
+
+    # Manually set log level to WARNING or above
+    if _logger.isEnabledFor(logging.INFO):
+        _logger.setLevel(logging.WARNING)
+
+    # TODO put some logging throughout this class
 
     FILE_LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h"]
     """Ordered listing of valid files"""
