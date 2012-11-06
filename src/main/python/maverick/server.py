@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 """server.py: A rudimentary chess server that hosts games"""
-from maverick-chess.server import TournamentSystem
 
 __author__ = "Matthew Strax-Haber, James Magnarelli, and Brad Fournier"
 __version__ = "1.0"
