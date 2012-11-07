@@ -146,7 +146,7 @@ class ChessBoard(object):
             ChessBoard.WHITE: (True, True),
             ChessBoard.BLACK: (True, True)}
 
-    def makePly(self, color, fromRank, fromFile, toRank, toFile):
+    def request_makePly(self, color, fromRank, fromFile, toRank, toFile):
         """Makes a ply if legal
 
         @param color: the color making the move (BLACK or WHITE constant)
@@ -566,7 +566,7 @@ class ChessBoard(object):
     def isLegalMove(self, color, fromRank, fromFile, toRank, toFile):
         """Returns true if the specified move is legal
 
-        Arguments are the same as makePly
+        Arguments are the same as request_makePly
 
         Checks if:
          - there is a piece at the from position
@@ -797,7 +797,7 @@ class ChessMatch(object):
     """Represents a chess game in Maverick"""
 
     # Initialize class logger
-    _logger = logging.getLogger("maverick.server.ChessMatch")
+    _logger = logging.getLogger("maverick.data.ChessMatch")
     _logger.setLevel("INFO")
 
     # Constants for game status
@@ -838,7 +838,7 @@ class ChessMatch(object):
         else:
             return ChessBoard.BLACK
 
-    def makePly(self, player, fromRank, fromFile, toRank, toFile):
+    def request_makePly(self, player, fromRank, fromFile, toRank, toFile):
         """Makes a move if legal
 
         @return: "SUCCESS" if move was successful, error message otherwise"""
@@ -853,7 +853,7 @@ class ChessMatch(object):
             if color != self.whoseTurn():
                 return "It is not your turn"
 
-            if self.board.makePly(color, fromRank, fromFile, toRank, toFile):
+            if self.board.request_makePly(color, fromRank, fromFile, toRank, toFile):
                 # Check for checkmates
                 if self.board.isCheckMated(ChessBoard.WHITE):
                     self.status = ChessMatch.STATUS_BLACK_WON

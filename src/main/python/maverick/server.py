@@ -67,7 +67,7 @@ class TournamentSystem(object):
 
         return tournament
 
-    def register(self, name):
+    def request_register(self, name):
         """Registers a player with the system, returning their playerID.
 
         This should be called before trying to join a player to a game.
@@ -87,7 +87,7 @@ class TournamentSystem(object):
                                           name, newID)
             return (True, {"playerID": newID})
 
-    def joinGame(self, playerID):
+    def request_joinGame(self, playerID):
         """Adds the player to a new or pending game.
 
         @param playerID: playerID of the player joining a game
@@ -97,7 +97,7 @@ class TournamentSystem(object):
         {"gameID": someInteger})"""
 
         # Log the join attempt
-        TournamentSystem._logger.debug("joinGame called with pid {0}",
+        TournamentSystem._logger.debug("request_joinGame called with pid {0}",
                                        playerID)
 
         # Add the player to a pending game if one exists
@@ -122,7 +122,7 @@ class TournamentSystem(object):
 
         @return: True if successful, false otherwise
         @precondition: game is ongoing or bending
-        @postcondition: game.getStatus() = ChessBoard.STATUS_CANCELED"""
+        @postcondition: game.request_getStatus() = ChessBoard.STATUS_CANCELED"""
 
         if gameID in self.games:
             if (self.games[gameID].status in [ChessMatch.STATUS_ONGOING,
@@ -134,7 +134,7 @@ class TournamentSystem(object):
         else:
             return (False, {"error": "Invalid game ID"})
 
-    def getStatus(self, gameID):
+    def request_getStatus(self, gameID):
         """Returns the status of the game with the given gameID, if it exists.
 
         @param gameID: the integer gameID of an in-progress game
@@ -151,7 +151,7 @@ class TournamentSystem(object):
         else:
             return (False, {"error": "Invalid game ID"})
 
-    def getState(self, playerID, gameID):
+    def request_getState(self, playerID, gameID):
         """Returns the current state of the game, containing information about
         the playerIDs of the black and white players, whose turn it is,
         the current board state, and the game history.
@@ -184,7 +184,7 @@ class TournamentSystem(object):
         else:
             return (False, {"error": "Invalid game ID"})
 
-    def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
+    def request_makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
         """Makes the given ply in the given game on behalf of the given
         player, if it is legal to do so.
 
@@ -200,7 +200,7 @@ class TournamentSystem(object):
         error message"}).  On success, returns a tuple of form (True, {})"""
 
         if gameID in self.games:
-            result = self.games[gameID].makePly(playerID, fromRank, fromFile,
+            result = self.games[gameID].request_makePly(playerID, fromRank, fromFile,
                                                 toRank, toFile)
             if result == "SUCCESS":
                 return (True, {})
@@ -255,20 +255,20 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
     version = __version__
     """The version of this server, as reported in its response headers"""
 
-    VALID_REQUESTS = {"REGISTER": (TournamentSystem.register,
+    VALID_REQUESTS = {"REGISTER": (TournamentSystem.request_register,
                                    {"name"},
                                    {"playerID"}),
-                      "JOIN_GAME": (TournamentSystem.joinGame,
+                      "JOIN_GAME": (TournamentSystem.request_joinGame,
                                     {"playerID"},
                                     {"gameID"}),
-                      "GET_STATUS": (TournamentSystem.getStatus,
+                      "GET_STATUS": (TournamentSystem.request_getStatus,
                                      {"gameID"},
                                      {"status"}),
-                      "GET_STATE": (TournamentSystem.getState,
+                      "GET_STATE": (TournamentSystem.request_getState,
                                     {"playerID", "gameID"},
                                     {"youAreColor", "isWhitesTurn",
                                      "board", "history"}),
-                      "MAKE_PLY": (TournamentSystem.makePly,
+                      "MAKE_PLY": (TournamentSystem.request_makePly,
                                    {"playerID", "gameID",
                                     "fromRank", "fromFile",
                                     "toRank", "toFile"},

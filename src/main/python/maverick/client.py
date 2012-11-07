@@ -17,6 +17,7 @@ from telnetlib import Telnet
 
 
 class MaverickClientException(Exception):
+    """Base class for Exceptions from the Maverick Network Client"""
     pass
 
 
@@ -97,7 +98,7 @@ class MaverickClient(object):
             MaverickClient._logger.warn(msg)
             raise MaverickClientException(msg)
 
-    def register(self, name):
+    def request_register(self, name):
         """Registers a player with the system, returning their playerID.
 
         This should be called before trying to join a player to a game.
@@ -107,28 +108,28 @@ class MaverickClient(object):
         response = self._makeRequest("REGISTER", name=name)
         return response["playerID"]
 
-    def joinGame(self, playerID):
+    def request_joinGame(self, playerID):
         """Adds the player to a new or pending game.
 
         @param playerID: playerID of the player joining a game"""
         response = self._makeRequest("JOIN_GAME", playerID=playerID)
         return response["gameID"]
 
-    def getStatus(self, gameID):
+    def request_getStatus(self, gameID):
         """Returns the status of the game with the given gameID, if it exists.
 
         @param gameID: the integer gameID of an in-progress game"""
         response = self._makeRequest("GET_STATUS", gameID=gameID)
         return response["status"]
 
-    def getState(self, playerID, gameID):
+    def request_getState(self, playerID, gameID):
         """
         Returns the current state of the game, containing information about
         the playerIDs of the black and white players, whose turn it is,
         the current board state, and the game history.
 
         @param playerID: the integer of the playerID of the player on which
-                         getState is being called
+                         request_getState is being called
         @param gameID: the integer gameID of an in-progress game"""
 
         response = self._makeRequest("GET_STATE",
@@ -142,7 +143,9 @@ class MaverickClient(object):
                 "board": response["board"],
                 "history": response["history"]}
 
-    def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
+    def request_makePly(self, playerID, gameID,
+                        fromRank, fromFile,
+                        toRank, toFile):
         """Makes the given ply in the given game on behalf of the given
         player, if it is legal to do so.
 

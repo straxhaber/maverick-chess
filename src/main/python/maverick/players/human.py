@@ -12,9 +12,8 @@ __version__ = "1.0"
 ###############################################################################
 
 import logging
-import time
 
-from maverick.server import ChessMatch
+from maverick.server import ChessBoard
 from maverick.players.common import MaverickPlayer
 
 
@@ -49,35 +48,33 @@ class HumanGamer(MaverickPlayer):
                 self.displayMessage("Invalid: too many or too few characters")
             elif playerMove[2] != " ":
                 self.displayMessage("Invalid: put a space between coordinates")
-            elif (playerMove[0] not in HumanGamer.HUMAN_FILE_LETTERS or
-                  playerMove[3] not in HumanGamer.HUMAN_FILE_LETTERS):
+            elif (playerMove[0] not in ChessBoard.HUMAN_FILE_LETTERS or
+                  playerMove[3] not in ChessBoard.HUMAN_FILE_LETTERS):
                 self.displayMessage("Invalid: rank not in 1 to 8")
-            elif (playerMove[1] not in HumanGamer.HUMAN_RANK_NUMBERS or
-                  playerMove[4] not in HumanGamer.HUMAN_RANK_NUMBERS):
+            elif (playerMove[1] not in ChessBoard.HUMAN_RANK_NUMBERS or
+                  playerMove[4] not in ChessBoard.HUMAN_RANK_NUMBERS):
                 self.displayMessage("Invalid: rank not in 1 to 8")
             else:
                 haveValidMove = True
 
-        fromFile = HumanGamer.HUMAN_FILE_LETTERS.index(playerMove[0])
-        fromRank = HumanGamer.HUMAN_RANK_NUMBERS.index(playerMove[1])
-        toFile = HumanGamer.HUMAN_FILE_LETTERS.index(playerMove[3])
-        toRank = HumanGamer.HUMAN_RANK_NUMBERS.index(playerMove[4])
+        fromFile = ChessBoard.HUMAN_FILE_LETTERS.index(playerMove[0])
+        fromRank = ChessBoard.HUMAN_RANK_NUMBERS.index(playerMove[1])
+        toFile = ChessBoard.HUMAN_FILE_LETTERS.index(playerMove[3])
+        toRank = ChessBoard.HUMAN_RANK_NUMBERS.index(playerMove[4])
 
         try:
-            self.makePly(fromFile, fromRank, toFile, toRank)
+            self.request_makePly(fromFile, fromRank, toFile, toRank)
         except MaverickClientException, msg:
             self.displayMessage("Server did not accept move - please retry.")
             self.displayMessage("Message from server: {0}".format(msg))
 
-    def run(self):
-        """Interact with the player, showing them the board and prompting them
-        for moves on their turn"""
-
-        #  Get the user's name and get into a game
+    def initName(self):
+        """Figure out the name of the class"""
+        # Get the user's name
         self.name = raw_input("Please enter your name:  ")
-        self.startPlaying()
 
-        # Display a welcome message to the player
+    def welcomePlayer(self):
+        """Display welcome messages if appropriate"""
         welcomeStrF = ("Welcome to Maverick Chess. You are playing as {0}. "
                        "Pieces are represented by letters on the board "
                         "as follows:\n"
@@ -100,38 +97,18 @@ class HumanGamer(MaverickPlayer):
         welcomeStr = welcomeStrF.format(colorStr)
         self.displayMessage(welcomeStr)
 
-        # While the game is in progress
-        while self.getStatus() == ChessMatch.STATUS_ONGOING:
+    def getNextMove(self, board):
+        """Calculate the next move based on the provided board"""
+        raise NotImplementedError("Must be overridden by the extending class")
 
-            # Wait until it is your turn
-            while self.getState()['isWhitesTurn'] != self.isWhite:
-                self.displayMessage("Waiting until it is your turn")
-
-                # Break if a game is stopped while waiting
-                if self.getStatus() != ChessMatch.STATUS_ONGOING:
-                    break
-
-                time.sleep(MaverickPlayer.SLEEP_TIME)
-
-            # Have the player make a move
-            self.playerMakeMove()
-
-        # When this is reached, game is over
-        status = self.getStatus()
-        if status == ChessMatch.STATUS_WHITE_WON:
-            self.displayMessage("GAME OVER - WHITE WON")
-        elif status == ChessMatch.STATUS_BLACK_WON:
-            self.displayMessage("GAME OVER - BLACK WON")
-        elif status == ChessMatch.STATUS_DRAWN:
-            self.displayMessage("GAME OVER - DRAWN")
-        elif status == ChessMatch.STATUS_CANCELLED:
-            self.displayMessage("GAME CANCELLED")
-        else:
-            self.displayMessage("ERROR: UNEXPECTED GAME STATUS TRANSITION")
+    def handleBadMove(self, errMsg, board, fromRank, fromFile, toRank, toFile):
+        """Calculate the next move based on the provided board"""
+        self.displayMessage("Server didn't accept move; please retry.")
+        self.displayMessage("Message from server: {0}".format(errMsg))
 
     def printBoard(self):
         """Print out an ASCII version of the chess board"""
-        board = self.getState()["board"]  # TODO: currently just a list
+        board = self.request_getState()["board"]  # TODO: currently just a list
         boardText = board.__str__()
         self.displayMessage(boardText)
 

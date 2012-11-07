@@ -15,8 +15,11 @@ import random
 import time
 
 from maverick.client import MaverickClient
+from maverick.client import MaverickClientException
 from maverick.server import ChessBoard
 from maverick.server import ChessMatch
+
+# TODO (mattsh): put more logging throughout this class
 
 
 class MaverickPlayer(MaverickClient):
@@ -56,39 +59,95 @@ class MaverickPlayer(MaverickClient):
         """Enters the player into an ongoing game (blocks until successful)
 
         @precondition: self.name must be set"""
-        self.playerID = self.register(self.name)
-        self.gameID = self.joinGame(self.playerID)
+        self.playerID = self.request_register(self.name)
+        self.gameID = self.request_joinGame(self.playerID)
 
         # Block until game has started
-        while self.getStatus() == ChessMatch.STATUS_PENDING:
+        while self.request_getStatus() == ChessMatch.STATUS_PENDING:
             self.displayMessage("Waiting until the game starts")
             time.sleep(MaverickPlayer.SLEEP_TIME)
 
         # NOTE: Player is now in a game that is not pending
 
-        if self.getState()["youAreColor"] == ChessBoard.WHITE:
+        if self.request_getState()["youAreColor"] == ChessBoard.WHITE:
             self.isWhite = True
         else:
             self.isWhite = False
 
     def run(self):
         """TODO (mattsh) method comment"""
+        self.initNameAndGame()
+        self.startPlaying()
+        self.welcomePlayer()
+
+        # While the game is in progress
+        while self.request_getStatus() == ChessMatch.STATUS_ONGOING:
+
+            # Wait until it is your turn
+            while self.request_getState()['isWhitesTurn'] != self.isWhite:
+                self.displayMessage("Waiting until turn")
+
+                # Break if a game is stopped while waiting
+                if self.request_getStatus() != ChessMatch.STATUS_ONGOING:
+                    break
+
+                time.sleep(MaverickPlayer.SLEEP_TIME)
+
+            curBoard = self.request_getState()["board"]
+            nextMove = self.getNextMove(curBoard)
+            (fromRank, fromFile, toRank, toFile) = nextMove
+
+            try:
+                self.request_makePly(fromRank, fromFile, toRank, toFile)
+            except MaverickClientException, msg:
+                self.handleBadMove(msg, curBoard,
+                                   fromRank, fromFile,
+                                   toRank, toFile)
+
+        # When this is reached, game is over
+        status = self.request_getStatus()
+        if status == ChessMatch.STATUS_WHITE_WON:
+            self.displayMessage("GAME OVER - WHITE WON")
+        elif status == ChessMatch.STATUS_BLACK_WON:
+            self.displayMessage("GAME OVER - BLACK WON")
+        elif status == ChessMatch.STATUS_DRAWN:
+            self.displayMessage("GAME OVER - DRAWN")
+        elif status == ChessMatch.STATUS_CANCELLED:
+            self.displayMessage("GAME CANCELLED")
+        else:
+            self.displayMessage("ERROR: UNEXPECTED GAME STATUS TRANSITION")
+
+    def initName(self):
+        """Figure out the name of the class"""
         raise NotImplementedError("Must be overridden by the extending class")
 
-    def getStatus(self):
-        """TODO (mattsh) __DETAILED__ docstring"""
-        return MaverickClient.getStatus(self, self.gameID)
+    def welcomePlayer(self):
+        """Display welcome messages if appropriate"""
+        raise NotImplementedError("Must be overridden by the extending class")
 
-    def getState(self):
-        """TODO (mattsh) __DETAILED__ docstring"""
-        return MaverickClient.getState(self, self.playerID, self.gameID)
+    def getNextMove(self, board):
+        """Calculate the next move based on the provided board"""
+        raise NotImplementedError("Must be overridden by the extending class")
 
-    def makePly(self, fromRank, fromFile, toRank, toFile):
+    def handleBadMove(self, errMsg, board, fromRank, fromFile, toRank, toFile):
+        """Calculate the next move based on the provided board"""
+        raise NotImplementedError("Must be overridden by the extending class")
+
+    def request_getStatus(self):
         """TODO (mattsh) __DETAILED__ docstring"""
-        MaverickClient.makePly(self,
-                               self.playerID, self.gameID,
-                               fromRank, fromFile,
-                               toRank, toFile)
+        return MaverickClient.request_getStatus(self, self.gameID)
+
+    def request_getState(self):
+        """TODO (mattsh) __DETAILED__ docstring"""
+        return MaverickClient.request_getState(self,
+                                               self.playerID, self.gameID)
+
+    def request_makePly(self, fromRank, fromFile, toRank, toFile):
+        """TODO (mattsh) __DETAILED__ docstring"""
+        MaverickClient.request_makePly(self,
+                                       self.playerID, self.gameID,
+                                       fromRank, fromFile,
+                                       toRank, toFile)
 
 
 def main():

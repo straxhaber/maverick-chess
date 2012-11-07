@@ -12,8 +12,12 @@ __version__ = "pre-alpha"
 
 import logging
 
-from maverick.data import ChessMatch
 from maverick.players.common import MaverickPlayer
+
+
+class MaverickAIException(Exception):
+    """Base class for Exceptions from Maverick AIs"""
+    pass
 
 
 class MaverickAI(MaverickPlayer):
@@ -22,18 +26,28 @@ class MaverickAI(MaverickPlayer):
     _logger = logging.getLogger("maverick.players.ais.stub.MaverickAI")
     logging.basicConfig(level=logging.INFO)
 
-    def runAI(self):
-        self.startPlaying()
+    CALCULATION_TIMEOUT = 5
+    """Maximum amount of time for the AI to take to make its move"""
+
+    def initName(self):
+        """Figure out the name of the class"""
+        pass  # Default name is appropriate
+
+    def welcomePlayer(self):
+        """Display welcome messages if appropriate"""
         MaverickAI._logger.info("I, {0} ({1}), have entered game {2}",
                                 self.name,
                                 self.playerID,
                                 self.gameID)
 
-        while self.getStatus() == ChessMatch.STATUS_ONGOING:
-            pass
+    def getNextMove(self, board):
+        """Calculate the next move based on the provided board"""
+        raise NotImplementedError("Must be overridden by the extending class")
+        # TODO (mattsh): write this
 
-        # TODO (mattsh): in concrete copy of this stub, play a game
-        # (probably some sort of loop)
+    def handleBadMove(self, errMsg, board, fromRank, fromFile, toRank, toFile):
+        """Calculate the next move based on the provided board"""
+        raise NotImplementedError("Must be overridden by the extending class")
 
 
 def main():
