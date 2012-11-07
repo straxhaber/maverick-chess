@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-"""stub.py: TODO (mattsh) write a description in concrete copy of this stub"""
+"""common.py: Common code shared between all AIs"""
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
@@ -23,7 +23,7 @@ class MaverickAIException(Exception):
 class MaverickAI(MaverickPlayer):
 
     # Initialize class _logger
-    _logger = logging.getLogger("maverick.players.ais.stub.MaverickAI")
+    _logger = logging.getLogger("maverick.players.ais.common.MaverickAI")
     logging.basicConfig(level=logging.INFO)
 
     CALCULATION_TIMEOUT = 5
@@ -40,19 +40,17 @@ class MaverickAI(MaverickPlayer):
                                 self.playerID,
                                 self.gameID)
 
+    def handleBadMove(self, errMsg, board, fromRank, fromFile, toRank, toFile):
+        """Calculate the next move based on the provided board"""
+        raise MaverickAIException(errMsg)
+
     def getNextMove(self, board):
         """Calculate the next move based on the provided board"""
         raise NotImplementedError("Must be overridden by the extending class")
-        # TODO (mattsh): write this
-
-    def handleBadMove(self, errMsg, board, fromRank, fromFile, toRank, toFile):
-        """Calculate the next move based on the provided board"""
-        raise NotImplementedError("Must be overridden by the extending class")
 
 
-def main():
-    ai = MaverickAI()
-    ai.runAI()
+def _main():
+    print "This class should not be run directly"
 
 if __name__ == '__main__':
-    main()
+    _main()
