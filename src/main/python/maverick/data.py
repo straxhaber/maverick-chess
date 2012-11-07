@@ -1,5 +1,6 @@
 #!/usr/bin/python
 """data.py: common data structures for chess games"""
+from twisted.words.test.test_basesupport import self
 
 __author__ = "Matthew Strax-Haber, James Magnarelli, and Brad Fournier"
 __version__ = "1.0"
@@ -214,10 +215,6 @@ class ChessBoard(object):
                                     fromRank, fromFile, toRank, toFile)
 
             return True
-
-        def getPossibleMoves(self, color):
-            """Enumerate all possible immediate moves for the given player"""
-            pass  # TODO (mattsh): write this method
 
     def getSquaresInPath(self, fromRank, fromFile, toRank, toFile):
         """Returns a list of squares in the straight-line path
@@ -795,6 +792,10 @@ class ChessBoard(object):
         else:
             (c, p) = piece
             return ChessBoard.HUMAN_PIECE_TEXT[p][c]
+
+    def getPossibleMoves(self, color):
+        """Enumerate all possible immediate moves for the given player"""
+        pass  # TODO (mattsh): write this method
 
 
 class ChessMatch(object):

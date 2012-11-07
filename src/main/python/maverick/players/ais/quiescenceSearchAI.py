@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-"""QLAI.py: AI that uses a quiescence search with a likability heuristic"""
+"""quiescenceSearchAI.py: AI that uses a quiescence search with heuristics"""
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
