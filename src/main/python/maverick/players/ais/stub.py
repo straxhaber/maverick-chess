@@ -12,6 +12,7 @@ __version__ = "pre-alpha"
 
 import logging
 
+from maverick.data import ChessMatch
 from maverick.players.common import MaverickPlayer
 
 
@@ -23,9 +24,13 @@ class MaverickAI(MaverickPlayer):
 
     def runAI(self):
         self.startPlaying()
-        MaverickAI._logger("I ({0}) have entered game {1}",
-                           self.playerID,
-                           self.gameID)
+        MaverickAI._logger.info("I, {0} ({1}), have entered game {2}",
+                                self.name,
+                                self.playerID,
+                                self.gameID)
+
+        while self.getStatus() == ChessMatch.STATUS_ONGOING:
+            pass
 
         # TODO (mattsh): in concrete copy of this stub, play a game
         # (probably some sort of loop)

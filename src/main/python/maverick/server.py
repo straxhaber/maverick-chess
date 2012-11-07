@@ -16,112 +16,13 @@ import pickle
 import random
 
 from maverick.data import ChessBoard
+from maverick.data import ChessMatch
 
 from twisted.internet import endpoints
 from twisted.internet import protocol
 from twisted.internet import reactor
 
 from twisted.protocols import basic as basicProtocols
-
-
-class ChessMatch(object):
-    """Represents a chess game in Maverick"""
-
-    # Initialize class logger
-    _logger = logging.getLogger("maverick.server.ChessMatch")
-    _logger.setLevel("INFO")
-
-    # Constants for game status
-    STATUS_PENDING = "PENDING"   # Game is waiting for players
-    STATUS_ONGOING = "ONGOING"   # Game is in progress
-    STATUS_BLACK_WON = "W_BLACK"   # Black won the game
-    STATUS_WHITE_WON = "W_WHITE"   # White won the game
-    STATUS_DRAWN = "W_DRAWN"   # White won the game
-    STATUS_CANCELLED = "CANCELD"   # Game was halted early
-
-    def __init__(self, firstPlayerID=None):
-        """Initialize a new chess match with initial state
-
-        @param firstPlayerID: if set, randomly assigned to black or white"""
-
-        # Initialize with a new chess board
-        self.board = ChessBoard()
-
-        # Initialize match without players (whose playerIDs can be added later)
-        self.players = {ChessBoard.WHITE: None, ChessBoard.BLACK: None}
-
-        # Randomly set black or white to firstPlayerID (no-op if not specified)
-        self.players[random.choice(self.players.keys())] = firstPlayerID
-
-        # Initialize match status
-        self.status = ChessMatch.STATUS_PENDING
-
-        # Initialize ply history -- a list of (moveFrom, moveTo) plies
-        self.history = []
-
-        # Log initialization
-        ChessMatch._logger.debug("Initialized")
-
-    def whoseTurn(self):
-        """Returns True if it is whites turn, False otherwise"""
-        if (len(self.history) % 2 == 0):
-            return ChessBoard.WHITE
-        else:
-            return ChessBoard.BLACK
-
-    def makePly(self, player, fromRank, fromFile, toRank, toFile):
-        """Makes a move if legal
-
-        @return: "SUCCESS" if move was successful, error message otherwise"""
-        if self.status == ChessMatch.STATUS_ONGOING:
-            if (self.players[ChessBoard.WHITE] == player):
-                color = ChessBoard.WHITE
-            elif (self.players[ChessBoard.BLACK] == player):
-                color = ChessBoard.BLACK
-            else:
-                return "You are not a player in this game"
-
-            if color != self.whoseTurn():
-                return "It is not your turn"
-
-            if self.board.makePly(color, fromRank, fromFile, toRank, toFile):
-                # Check for checkmates
-                if self.board.isCheckMated(ChessBoard.WHITE):
-                    self.status = ChessMatch.STATUS_BLACK_WON
-                elif self.board.isCheckMated(ChessBoard.BLACK):
-                    self.status = ChessMatch.STATUS_WHITE_WON
-
-                self.history.append(((fromRank, fromFile), (toRank, toFile)))
-
-                # Log this ply
-                logStrF = "Added ({0},{1}) -> ({2}, {3}) to match history"
-                ChessMatch._logger.debug(logStrF,
-                                         fromRank, fromFile, toRank, toFile)
-                return "SUCCESS"
-            else:
-                return "Illegal move"
-        else:
-            return "Game not in progress"
-
-    def join(self, playerID):
-        """Joins the match in an empty slot. If ready, game starts.
-
-        @param playerID: ID of the player being added
-        @return: color constant if successful, None otherwise"""
-
-        if self.status != ChessMatch.STATUS_PENDING:
-            return  # Can only join a pending game (no mid-game replacements)
-
-        if playerID in self.players.values():
-            return  # Don't allow a player to play both sides
-
-        for color in [ChessBoard.WHITE, ChessBoard.BLACK]:
-            if self.players[color] is None:
-                self.players[color] = playerID
-                if None not in self.players.values():
-                    self.status = ChessMatch.STATUS_ONGOING
-                return color
-        ChessMatch._logger.info("Joined player {0} to this game", playerID)
 
 
 class TournamentSystem(object):
@@ -277,6 +178,7 @@ class TournamentSystem(object):
 
             return (True, {"youAreColor": youAreColor,
                            "isWhitesTurn": (g.whoseTurn() == ChessBoard.WHITE),
+                           # TODO: this should serialize the full board state
                            "board": g.board.board,
                            "history": g.history})
         else:

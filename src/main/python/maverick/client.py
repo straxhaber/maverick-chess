@@ -134,7 +134,13 @@ class MaverickClient(object):
         response = self._makeRequest("GET_STATE",
                                      playerID=playerID,
                                      gameID=gameID)
-        return response
+        return {"playerID": response["playerID"],
+                "gameID": response["gameID"],
+                "youAreColor": response["youAreColor"],
+                "isWhitesTurn": response["isWhitesTurn"],
+                # TODO: this should pull out the full board state
+                "board": response["board"],
+                "history": response["history"]}
 
     def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
         """Makes the given ply in the given game on behalf of the given

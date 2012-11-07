@@ -11,6 +11,7 @@ __version__ = "1.0"
 
 import copy
 import logging
+import random
 
 
 class ChessBoard(object):
@@ -20,48 +21,72 @@ class ChessBoard(object):
     _logger = logging.getLogger("maverick.data.ChessBoard")
     logging.basicConfig(level=logging.INFO)
 
-    # Constants for the pieces
-    PAWN = "P"
-    ROOK = "R"
-    KNGT = "N"
-    BISH = "B"
-    QUEN = "Q"
-    KING = "K"
-
     BOARD_SIZE = 8
     """The width and height of a standard chess board."""
 
+    # Constants for the colors
     BLACK = "X"
     """Constant for the black player"""
 
     WHITE = "O"
     """Constant for the white player"""
 
-    PAWN_STARTING_RANKS = {WHITE: 2, BLACK: 7}
-    """Map of correct starting ranks for pawns
+    # Constants for the pieces
+    PAWN = "P"
+    """Constant for the pawn piece"""
 
-    Pawns have the special property that they only move up/down"""
+    ROOK = "R"
+    """Constant for the rook piece"""
 
-    # A constant board, created once, that represents the board's start state
-    STARTING_BOARD = [[(WHITE, ROOK), (WHITE, KNGT), (WHITE, BISH),
-                       (WHITE, QUEN), (WHITE, KING), (WHITE, BISH),
-                       (WHITE, KNGT), (WHITE, ROOK)],
-                      [(WHITE, PAWN), (WHITE, PAWN), (WHITE, PAWN),
-                       (WHITE, PAWN), (WHITE, PAWN), (WHITE, PAWN),
-                       (WHITE, PAWN), (WHITE, PAWN)],
-                      [None, None, None, None, None, None, None, None],
-                      [None, None, None, None, None, None, None, None],
-                      [None, None, None, None, None, None, None, None],
-                      [None, None, None, None, None, None, None, None],
-                      [(BLACK, PAWN), (BLACK, PAWN), (BLACK, PAWN),
-                       (BLACK, PAWN), (BLACK, PAWN), (BLACK, PAWN),
-                       (BLACK, PAWN), (BLACK, PAWN)],
-                      [(BLACK, ROOK), (BLACK, KNGT), (BLACK, BISH),
-                       (BLACK, QUEN), (BLACK, KING), (BLACK, BISH),
-                       (BLACK, KNGT), (BLACK, ROOK)]]
+    KNGT = "N"
+    """Constant for the knight piece"""
 
-    def __init__(self, startBoard=None):
-        """Initialize a new Chess game according to normal Chess rules
+    BISH = "B"
+    """Constant for the bishop piece"""
+
+    QUEN = "Q"
+    """Constant for the queen piece"""
+
+    KING = "K"
+    """Constant for the king piece"""
+
+    DEFAULT_STARTING_BOARD = [[(WHITE, ROOK),
+                               (WHITE, KNGT),
+                               (WHITE, BISH),
+                               (WHITE, QUEN),
+                               (WHITE, KING),
+                               (WHITE, BISH),
+                               (WHITE, KNGT),
+                               (WHITE, ROOK)],
+                              [(WHITE, PAWN),
+                               (WHITE, PAWN),
+                               (WHITE, PAWN),
+                               (WHITE, PAWN),
+                               (WHITE, PAWN),
+                               (WHITE, PAWN),
+                               (WHITE, PAWN),
+                               (WHITE, PAWN)],
+                              [None, None, None, None, None, None, None, None],
+                              [None, None, None, None, None, None, None, None],
+                              [None, None, None, None, None, None, None, None],
+                              [None, None, None, None, None, None, None, None],
+                              [(BLACK, PAWN),
+                               (BLACK, PAWN),
+                               (BLACK, PAWN),
+                               (BLACK, PAWN),
+                               (BLACK, PAWN),
+                               (BLACK, PAWN),
+                               (BLACK, PAWN),
+                               (BLACK, PAWN)],
+                              [(BLACK, ROOK),
+                               (BLACK, KNGT),
+                               (BLACK, BISH),
+                               (BLACK, QUEN),
+                               (BLACK, KING),
+                               (BLACK, BISH),
+                               (BLACK, KNGT),
+                               (BLACK, ROOK)]]
+    """A constant board that represents the board's start state
 
         NOTE: Board is represented as a list of rows and 0-indexed
                 be careful dereferencing!!!
@@ -75,7 +100,29 @@ class ChessBoard(object):
              ['.','.','.','.','.','.','.','.'],
              ['.','.','.','.','.','.','.','.'],
              ['p','p','p','p','p','p','p','p'],
-             ['r','n','b','q','k','b','n','r']]
+             ['r','n','b','q','k','b','n','r']]"""
+
+    PAWN_STARTING_RANKS = {WHITE: 2, BLACK: 7}
+    """Map of correct starting ranks for pawns
+
+    Pawns have the special property that they only move up/down"""
+
+    HUMAN_FILE_LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    """Ordered listing of valid files"""
+
+    HUMAN_RANK_NUMBERS = ["1", "2", "3", "4", "5", "6", "7", "8"]
+    """Ordered listing of valid ranks"""
+
+    HUMAN_PIECE_TEXT = {ROOK: {WHITE: 'R', BLACK: 'r'},
+                        KNGT: {WHITE: 'N', BLACK: 'n'},
+                        BISH: {WHITE: 'B', BLACK: 'b'},
+                        QUEN: {WHITE: 'Q', BLACK: 'q'},
+                        KING: {WHITE: 'K', BLACK: 'k'},
+                        PAWN: {WHITE: 'P', BLACK: 'p'}}
+    """Mapping of piece constants to their visual represenataion"""
+
+    def __init__(self, startBoard=None):
+        """Initialize a new Chess game according to normal Chess rules
 
         There are special states that must be kept track of:
             - En passant
@@ -85,7 +132,7 @@ class ChessBoard(object):
         ChessBoard._logger.debug("Initialized")
 
         # Perform deep copy of board start state into self.board
-        self.board = copy.deepcopy(ChessBoard.STARTING_BOARD)
+        self.board = copy.deepcopy(ChessBoard.DEFAULT_STARTING_BOARD)
 
         # Initialize en passant flags (True means en passant capture is
         # possible in the given column
@@ -625,8 +672,8 @@ class ChessBoard(object):
             # Check that destination rank is offeset by 1 and file is offset by
             # 2, or vice versa.
             if  ((rank_delta_abs == 2 and file_delta_abs != 1) or
-                (rank_delta_abs == 1 and file_delta_abs != 2) or
-                (rank_delta_abs != 1 and rank_delta_abs != 2)):
+                 (rank_delta_abs == 1 and file_delta_abs != 2) or
+                 (rank_delta_abs != 1 and rank_delta_abs != 2)):
                 return False
 
         elif origin_type == ChessBoard.BISH:
@@ -717,6 +764,133 @@ class ChessBoard(object):
             return False
 
         return True  # All of the error checks passed
+
+    def __str__(self):
+        """Prints out a human-readable ASCIII version of the board"""
+        header = "  {0}  ".format(" ".join(self.HUMAN_FILE_LETTERS))
+
+        s = []
+        s.append(header)
+        for rankNum in range(ChessBoard.BOARD_SIZE):
+            rank = self.board[rankNum]
+            rankStr = " ".join([ChessBoard.getPieceChar(c) for c in rank])
+            s.append("{0} {1} {0}".format(rankNum + 1, rankStr))
+        s.append(header)
+
+        return "\n".join(s)
+
+    @staticmethod
+    def getPieceChar(piece):
+        """Return a character representing the given piece
+
+        @param piece: A piece as defined in maverick.server.ChessBoard
+
+        @return: A character representing the given piece on the chess board"""
+        if piece is None:
+            return '.'
+        else:
+            (c, p) = piece
+            return ChessBoard.HUMAN_PIECE_TEXT[p][c]
+
+
+class ChessMatch(object):
+    """Represents a chess game in Maverick"""
+
+    # Initialize class logger
+    _logger = logging.getLogger("maverick.server.ChessMatch")
+    _logger.setLevel("INFO")
+
+    # Constants for game status
+    STATUS_PENDING = "PENDING"   # Game is waiting for players
+    STATUS_ONGOING = "ONGOING"   # Game is in progress
+    STATUS_BLACK_WON = "W_BLACK"   # Black won the game
+    STATUS_WHITE_WON = "W_WHITE"   # White won the game
+    STATUS_DRAWN = "W_DRAWN"   # White won the game
+    STATUS_CANCELLED = "CANCELD"   # Game was halted early
+
+    def __init__(self, firstPlayerID=None):
+        """Initialize a new chess match with initial state
+
+        @param firstPlayerID: if set, randomly assigned to black or white"""
+
+        # Initialize with a new chess board
+        self.board = ChessBoard()
+
+        # Initialize match without players (whose playerIDs can be added later)
+        self.players = {ChessBoard.WHITE: None, ChessBoard.BLACK: None}
+
+        # Randomly set black or white to firstPlayerID (no-op if not specified)
+        self.players[random.choice(self.players.keys())] = firstPlayerID
+
+        # Initialize match status
+        self.status = ChessMatch.STATUS_PENDING
+
+        # Initialize ply history -- a list of (moveFrom, moveTo) plies
+        self.history = []
+
+        # Log initialization
+        ChessMatch._logger.debug("Initialized")
+
+    def whoseTurn(self):
+        """Returns True if it is whites turn, False otherwise"""
+        if (len(self.history) % 2 == 0):
+            return ChessBoard.WHITE
+        else:
+            return ChessBoard.BLACK
+
+    def makePly(self, player, fromRank, fromFile, toRank, toFile):
+        """Makes a move if legal
+
+        @return: "SUCCESS" if move was successful, error message otherwise"""
+        if self.status == ChessMatch.STATUS_ONGOING:
+            if (self.players[ChessBoard.WHITE] == player):
+                color = ChessBoard.WHITE
+            elif (self.players[ChessBoard.BLACK] == player):
+                color = ChessBoard.BLACK
+            else:
+                return "You are not a player in this game"
+
+            if color != self.whoseTurn():
+                return "It is not your turn"
+
+            if self.board.makePly(color, fromRank, fromFile, toRank, toFile):
+                # Check for checkmates
+                if self.board.isCheckMated(ChessBoard.WHITE):
+                    self.status = ChessMatch.STATUS_BLACK_WON
+                elif self.board.isCheckMated(ChessBoard.BLACK):
+                    self.status = ChessMatch.STATUS_WHITE_WON
+
+                self.history.append(((fromRank, fromFile), (toRank, toFile)))
+
+                # Log this ply
+                logStrF = "Added ({0},{1}) -> ({2}, {3}) to match history"
+                ChessMatch._logger.debug(logStrF,
+                                         fromRank, fromFile, toRank, toFile)
+                return "SUCCESS"
+            else:
+                return "Illegal move"
+        else:
+            return "Game not in progress"
+
+    def join(self, playerID):
+        """Joins the match in an empty slot. If ready, game starts.
+
+        @param playerID: ID of the player being added
+        @return: color constant if successful, None otherwise"""
+
+        if self.status != ChessMatch.STATUS_PENDING:
+            return  # Can only join a pending game (no mid-game replacements)
+
+        if playerID in self.players.values():
+            return  # Don't allow a player to play both sides
+
+        for color in [ChessBoard.WHITE, ChessBoard.BLACK]:
+            if self.players[color] is None:
+                self.players[color] = playerID
+                if None not in self.players.values():
+                    self.status = ChessMatch.STATUS_ONGOING
+                return color
+        ChessMatch._logger.info("Joined player {0} to this game", playerID)
 
 
 def _main():
