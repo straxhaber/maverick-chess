@@ -1,6 +1,5 @@
 #!/usr/bin/python
 """data.py: common data structures for chess games"""
-from twisted.words.test.test_basesupport import self
 
 __author__ = "Matthew Strax-Haber, James Magnarelli, and Brad Fournier"
 __version__ = "1.0"
