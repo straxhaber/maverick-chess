@@ -798,13 +798,17 @@ class ChessBoard(object):
         @return: a set of tuples of the form:
             ListOf[(pieceType, (fromRank, fromFile), (toRank, toFile))]"""
 
-        pass  # TODO (mattsh): write this method
+        all_moves = []  # List of all possible moves. Starts empty.
+
+        for p in ChessBoard:
+            if p.color == color:
+                all_moves.extend(p.getPossibleMoves(self, p.fromRank,
+                                                    p.fromFile))
 
     def getPossibleMoves(self, fromRank, fromFile):
         """Return all possible moves for the specified piece on this board
 
         @return ListOf[(pieceType, (fromRank, fromFile), (toRank, toFile))]"""
-        pass  # TODO (mattsh): write this method
 
 
 class ChessMatch(object):
