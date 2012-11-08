@@ -793,8 +793,18 @@ class ChessBoard(object):
             (c, p) = piece
             return ChessBoard.HUMAN_PIECE_TEXT[p][c]
 
-    def getPossibleMoves(self, color):
-        """Enumerate all possible immediate moves for the given player"""
+    def enumerateAllMoves(self, color):
+        """Enumerate all possible immediate moves for the given player
+
+        @return: a set of tuples of the form:
+            ListOf[(pieceType, (fromRank, fromFile), (toRank, toFile))]"""
+
+        pass  # TODO (mattsh): write this method
+
+    def getPossibleMoves(self, fromRank, fromFile):
+        """Return all possible moves for the specified piece on this board
+
+        @return ListOf[(pieceType, (fromRank, fromFile), (toRank, toFile))]"""
         pass  # TODO (mattsh): write this method
 
 

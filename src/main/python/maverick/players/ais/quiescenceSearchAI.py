@@ -22,7 +22,12 @@ class QLAI(MaverickAI):
     logging.basicConfig(level=logging.INFO)
 
     def getNextMove(self, board):
-        pass  # TODO (mattsh): write this
+        moveChoices = board.enumerateAllMoves()
+
+        # TODO (mattsh): write this
+        fromRank, fromFile, toRank, toFile = None
+
+        return ((fromRank, fromFile), (toRank, toFile))
 
     def evaluateBoardLikability(self):
         """Returns a number in [-1,1] based on likability of the position
