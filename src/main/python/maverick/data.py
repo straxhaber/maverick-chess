@@ -915,7 +915,7 @@ class ChessBoard(object):
                                                              fromFile),
                                               (fromRank + j, fromFile + i)])
 
-        elif origin_type == ChessBoard.BISH:
+        elif origin_type == ChessBoard.BISH:  # If the piece is a Bishop
             for i in range(-7, 7):
                 if i == 0:
                     continue
@@ -936,7 +936,7 @@ class ChessBoard(object):
                                                              fromFile),
                                                (fromRank + j, fromFile + i)])
 
-        elif origin_type == ChessBoard.KING:
+        elif origin_type == ChessBoard.KING:  # If the piece is a King
             for i in range(-1, 1):
                 for j in range(-1, 1):
                     # Makes sure there is an actual move
@@ -955,7 +955,7 @@ class ChessBoard(object):
                                                              fromFile),
                                                (fromRank + j, fromFile + i)])
 
-        elif origin_type == ChessBoard.QUEN:
+        elif origin_type == ChessBoard.QUEN:  # If the piece is a King
             for i in range(-7, 7):
                 for j in range(-7, 7):
                     # Piece stays on the board
@@ -971,7 +971,7 @@ class ChessBoard(object):
                                                              fromFile),
                                                (fromRank + j, fromFile + i)])
 
-        elif origin_type == ChessBoard.KNGT:
+        elif origin_type == ChessBoard.KNGT:  # If the piece is a Knight
             for i in range(-2, 2):
                 for j in range(-2, 2):
                     # Piece stays on the board
@@ -991,7 +991,7 @@ class ChessBoard(object):
                                                              fromFile),
                                                (fromRank + j, fromFile + i)])
 
-        elif origin_type == ChessBoard.ROOK:
+        elif origin_type == ChessBoard.ROOK:  # If the piece is a Rook
             for i in range(-7, 7):
                 for j in range(-7, 7):
                     # Makes sure piece is only moving in Rank
