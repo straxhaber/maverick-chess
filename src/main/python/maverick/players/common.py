@@ -76,7 +76,7 @@ class MaverickPlayer(MaverickClient):
 
     def run(self):
         """TODO (mattsh) method comment"""
-        self.initName()
+        self.initNameAndGame()
         self.startPlaying()
         self.welcomePlayer()
 
@@ -126,7 +126,7 @@ class MaverickPlayer(MaverickClient):
         raise NotImplementedError("Must be overridden by the extending class")
 
     def getNextMove(self, board):
-        """Get the next move from the player"""
+        """Calculate the next move based on the provided board"""
         raise NotImplementedError("Must be overridden by the extending class")
 
     def handleBadMove(self, errMsg, board, fromRank, fromFile, toRank, toFile):

@@ -121,8 +121,7 @@ class ChessBoard(object):
                         PAWN: {WHITE: 'P', BLACK: 'p'}}
     """Mapping of piece constants to their visual represenataion"""
 
-    def __init__(self, startBoard=None, startEnpassantFlags=None,
-                 startCanCastleFlags=None):
+    def __init__(self, startBoard=None):
         """Initialize a new Chess game according to normal Chess rules
 
         There are special states that must be kept track of:
@@ -132,31 +131,20 @@ class ChessBoard(object):
         # Log initialization
         ChessBoard._logger.debug("Initialized")
 
-        # For all instance variables, assign values if supplied in constructor
+        # Perform deep copy of board start state into self.board
+        self.board = copy.deepcopy(ChessBoard.DEFAULT_STARTING_BOARD)
 
-        if startBoard is None:
-            # Perform deep copy of board start state into self.board
-            self.board = copy.deepcopy(ChessBoard.DEFAULT_STARTING_BOARD)
-        else:
-            self.board = copy.deepcopy(startBoard)
+        # Initialize en passant flags (True means en passant capture is
+        # possible in the given column
+        self.flag_enpassant = {
+            ChessBoard.WHITE: [False] * ChessBoard.BOARD_SIZE,
+            ChessBoard.BLACK: [False] * ChessBoard.BOARD_SIZE}
 
-        if startEnpassantFlags is None:
-            # Initialize en passant flags (True means en passant capture is
-            # possible in the given column
-            self.flag_enpassant = {
-                ChessBoard.WHITE: [False] * ChessBoard.BOARD_SIZE,
-                ChessBoard.BLACK: [False] * ChessBoard.BOARD_SIZE}
-        else:
-            self.flag_enpassant = copy.deepcopy(startEnpassantFlags)
-
-        if startCanCastleFlags is None:
-            # Initialize castle flags (queen-side ability, king-side ability)
-            # Does not account for pieces blocking or checking the castle
-            self.flag_canCastle = {
-                ChessBoard.WHITE: (True, True),
-                ChessBoard.BLACK: (True, True)}
-        else:
-            self.flag_canCastle = copy.deepcopy(startCanCastleFlags)
+        # Initialize castle flags (queen-side ability, king-side ability)
+        # Does not account for pieces blocking or checking the castle
+        self.flag_canCastle = {
+            ChessBoard.WHITE: (True, True),
+            ChessBoard.BLACK: (True, True)}
 
     def makePly(self, color, fromRank, fromFile, toRank, toFile):
         """Makes a ply if legal
@@ -227,20 +215,6 @@ class ChessBoard(object):
 
             return True
 
-    @staticmethod
-    def getOtherColor(color):
-        """Return the opposing color
-
-        @param color: one of ChessBoard.WHITE or ChessBoard.BLACK
-
-        @return: the opposing color, one of ChessBoard.WHITE or
-                ChessBoard.BLACK"""
-
-        if color == ChessBoard.WHITE:
-            return ChessBoard.BLACK
-        else:
-            return ChessBoard.WHITE
-
     def getSquaresInPath(self, fromRank, fromFile, toRank, toFile):
         """Returns a list of squares in the straight-line path
         from origin to destination (not including the origin or destination
@@ -307,36 +281,8 @@ class ChessBoard(object):
         pathSquares = zip(path_rank_values, path_file_values)
         return pathSquares
 
-    @staticmethod
-    def isCenterSquare(rankVal, fileVal):
-        """Return true if the given position is a center square
-
-        @param rankVal: rank of the position to evaluate, integer in ([0..7])
-        @param fileVal: file of the position to evaluate, integer in ([0..7])
-
-        @return: True if the given position is a center square, False
-                otherwise"""
-
-        # Boundaries of the center, declared outright for easy modification
-        # Values pulled from http://tinyurl.com/akl2n6r
-        maxCenterRank = 4
-        minCenterRank = 3
-        maxCenterFile = 4
-        minCenterFile = 3
-
-        # Check that rank is in proper range
-        if rankVal not in range(minCenterRank, maxCenterRank + 1):
-            return False
-
-        # Check that file is in proper range
-        if fileVal not in range(minCenterFile, maxCenterFile + 1):
-            return False
-
-        # All tests passed, given location is in center
-        return True
-
     def isClearLinearPath(self, fromRank, fromFile, toRank, toFile):
-        """Return true if the straight-line path from origin to destination
+        """Returns true if the straight-line path from origin to destination
         is not obstructed.  To be used for horizontal, vertical, or diagonal
         moves.
 
@@ -373,32 +319,7 @@ class ChessBoard(object):
                 return False  # There was a piece in one of the path squares
         return True  # None of the path squares contained a piece
 
-    @staticmethod
-    def findColorPieces(color, board):
-        """Returns a list of of all pieces of the given color.
-
-        @param color: The color of the pieces to find, ChessMatch.WHITE or
-        ChessMatch.BLACK
-        @param board: The board to use for this check.  A two dimensional array
-        of the same form as ChessBoard.board
-
-        @return: a list of tuples of form (piecetype, (rank, file) representing
-                the location of all pieces of the given color"""
-        pieceLocations = []
-
-        for r in range(len(board)):
-            row = board[r]
-            for f in range(len(row)):
-                piece = row[f]
-                if piece is not None:
-                    pieceColor = piece[0]
-                    pieceType = piece[1]
-                    if pieceColor == color:
-                        pieceLocations.append((pieceType, (r + 1, f + 1)))
-        return (pieceLocations)
-
-    @staticmethod
-    def findKingAndEnemies(color, board):
+    def findKingAndEnemies(self, color, board):
         """Returns the location of the king of the given color, and a list
         of locations of all non-king pieces of the opposite color.
 
@@ -414,8 +335,6 @@ class ChessBoard(object):
                 the location of all non-king enemy pieces
         """
 
-        ## TODO (James): rewrite this to use findColorPieces
-
         enemyPieceLocations = []  # List of (rank, file) non-king pieces
 
         # Locate given player's king, and opposing player's non-king pieces
@@ -427,9 +346,9 @@ class ChessBoard(object):
                     pieceColor = piece[0]
                     pieceType = piece[1]
                     if pieceColor == color and pieceType == ChessBoard.KING:
-                        kingLoc = (r, f)
+                        kingLoc = (r + 1, f + 1)  # output as 1-indexed values
                     elif pieceColor != color and pieceType != ChessBoard.KING:
-                        enemyPieceLocations.append((r, f))
+                        enemyPieceLocations.append((r + 1, f + 1))
         return (kingLoc, enemyPieceLocations)
 
     def getInterruptSquares(self, fromRank, fromFile, toRank, toFile):
@@ -488,7 +407,7 @@ class ChessBoard(object):
         else:
             otherColor = ChessBoard.WHITE
         # Get check information
-        checkInfo = self.isKingInCheck(color)
+        checkInfo = self.isKingInCheck(color, self.board)
 
         # Check that the king is in check
         if not checkInfo[0]:
@@ -499,7 +418,7 @@ class ChessBoard(object):
         checkingPieceFile = checkInfo[1][0]  # file of that same checking piece
 
         # Find the king whose checkmate status is in question
-        myKingLocation = ChessBoard.findKingAndEnemies(color, self.board)[0]
+        myKingLocation = self.findKingAndEnemies(color, self.board)[0]
         checkedKingRank = myKingLocation[0]
         checkedKingFile = myKingLocation[1]
 
@@ -509,8 +428,7 @@ class ChessBoard(object):
                                                        checkedKingRank,
                                                        checkedKingFile)
         # Get locations of all this player's non-king pieces
-        myNonKingPieceLocs = ChessBoard.findKingAndEnemies(otherColor,
-                                                           self.board)[1]
+        myNonKingPieceLocs = self.findKingAndEnemies(otherColor, self.board)[1]
 
         # Iterate through pieces, and see if any can move to potential check-
         # alleviating squares
@@ -533,7 +451,7 @@ class ChessBoard(object):
 
                     # Check if the given color is still in check in that board
                     # If not, that color is not in checkmate
-                    if not postMoveBoard.isKingInCheck(color):
+                    if not self.isKingInCheck(color, postMoveBoard):
                         return False
 
         possibleKingMoves = []  # List of tuples of possible king moves
@@ -557,7 +475,7 @@ class ChessBoard(object):
 
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
-                if not postMoveBoard.isKingInCheck(color):
+                if not self.isKingInCheck(color, postMoveBoard):
                     logStrF = "Found that {0} is not in checkmate"
                     ChessBoard._logger.info(logStrF, color)
                     return False
@@ -566,7 +484,7 @@ class ChessBoard(object):
         ChessBoard._logger.info("Found that {0} is in checkmate", color)
         return True
 
-    def isKingInCheck(self, color):
+    def isKingInCheck(self, color, board):
         """Determines whether the king of the given color is in check
         in the given board.
 
@@ -594,7 +512,7 @@ class ChessBoard(object):
             otherColor = ChessBoard.WHITE
 
         # Locate given player's king, and opposing player's non-king pieces
-        pieceLocations = ChessBoard.findKingAndEnemies(color, self.board)
+        pieceLocations = self.findKingAndEnemies(color, board)
         kingLocation = pieceLocations[0]
         kingRank = kingLocation[0]
         kingFile = kingLocation[1]
@@ -618,8 +536,8 @@ class ChessBoard(object):
         return (False, None)
 
     def getResultBoard(self, fromRank, fromFile, toRank, toFile):
-        """Returns the board object resulting from the given move
-
+        """Returns the board that would be produced if the piece on the current
+        board was moved from the given location to the given location.
         Assumes that the move is legal.
         Constructs the return value via a deep copy.
         NOTE: does not make the given move on the actual board, or modify game
@@ -630,16 +548,19 @@ class ChessBoard(object):
         @param toRank: the rank to which the piece is to be moved
         @param toFile: the file to which the piece is to be moved
 
-        @return: a ChessBoard object identical to that which would result from
-                the given ply being made on this board
+        @return: a two-dimensional array representing the board that would
+        result from the given move, in the form of ChessBoard.board
         """
 
         # Copy the board, so as not to modify anything real
-        postMoveBoard = copy.deepcopy(self)
+        postMoveBoard = copy.deepcopy(self.board)
 
-        # Make the proposed ply on the hypothetical board
-        postMoveBoard.makePly(fromRank, fromFile, toRank, toFile)
+        # Piece to be moved
+        origin_entry = postMoveBoard[fromRank - 1][fromFile - 1]
 
+        # Move the piece
+        postMoveBoard[fromRank - 1][fromFile - 1] = None
+        postMoveBoard[toRank - 1][toFile - 1] = origin_entry
         return postMoveBoard
 
     def isLegalMove(self, color, fromRank, fromFile, toRank, toFile):
@@ -839,7 +760,7 @@ class ChessBoard(object):
         postMoveBoard = self.getResultBoard(fromRank, fromFile, toRank, toFile)
 
         # Check that the king would not be in check after the move
-        if postMoveBoard.isKingInCheck(color)[0]:
+        if self.isKingInCheck(color, postMoveBoard)[0]:
             return False
 
         return True  # All of the error checks passed
@@ -890,126 +811,17 @@ class ChessBoard(object):
 
         @return ListOf[(pieceType, (fromRank, fromFile), (toRank, toFile))]"""
 
-        # Pull out the (color, origin_type) entry at the 'from' board position
-        origin_entry = self.board[fromRank - 1][fromFile - 1]
-
-        origin_type = origin_entry[1]  # the type of piece at the origin
+        # Pull out the color and piece type from the board
+        color, piece = self.board[fromRank - 1][fromFile - 1]
 
         possible_moves = []  # List of possible moves. Starts empty
 
-        if origin_type == ChessBoard.PAWN:  # If piece is a Pawn
-            for i in range(-1, 1):
-                if i == 0:
-                    continue
-                for j in range(-2, 2):
-                    # Piece stays on the board
-                    if fromRank + i < 0 or fromRank + i > 7:
-                        continue
-                    # Piece stays on the board
-                    if fromFile + j < 0 or fromFile + j > 7:
-                        continue
-                    # Is a legal move
-                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
-                                        (fromRank + j, fromFile + i)):
-                        possible_moves.append([origin_type, (fromRank,
-                                                             fromFile),
-                                              (fromRank + j, fromFile + i)])
+        for i in range(0, 7):
+            for j in range(0, 7):
+                if self.isLegalMove(color, fromRank - 1, fromFile - 1, i, j):
+                    possible_moves.append([piece, (fromRank - 1, fromFile - 1),
+                                           (i, j)])
 
-        elif origin_type == ChessBoard.BISH:  # If the piece is a Bishop
-            for i in range(-7, 7):
-                if i == 0:
-                    continue
-                for j in range(-7, 7):
-                    # Makes sure piece moves on a diagonal
-                    if i != j:
-                        continue
-                    # Piece stays on the board
-                    if fromRank + i < 0 or fromRank + i > 7:
-                        continue
-                    # Piece stays on the board
-                    if fromFile + j < 0 or fromFile + j > 7:
-                        continue
-                    # Is a legal move
-                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
-                                        (fromRank + j, fromFile + i)):
-                        possible_moves.append([origin_type, (fromRank,
-                                                             fromFile),
-                                               (fromRank + j, fromFile + i)])
-
-        elif origin_type == ChessBoard.KING:  # If the piece is a King
-            for i in range(-1, 1):
-                for j in range(-1, 1):
-                    # Makes sure there is an actual move
-                    if i == 0 and j == 0:
-                        continue
-                    # Piece stays on the board
-                    if fromRank + i < 0 or fromRank + i > 7:
-                        continue
-                    # Piece stays on the board
-                    if fromFile + j < 0 or fromFile + j > 7:
-                        continue
-                    # Is a legal move
-                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
-                                        (fromRank + j, fromFile + i)):
-                        possible_moves.append([origin_type, (fromRank,
-                                                             fromFile),
-                                               (fromRank + j, fromFile + i)])
-
-        elif origin_type == ChessBoard.QUEN:  # If the piece is a King
-            for i in range(-7, 7):
-                for j in range(-7, 7):
-                    # Piece stays on the board
-                    if fromRank + i < 0 or fromRank + i > 7:
-                        continue
-                    # Piece stays on the board
-                    if fromFile + j < 0 or fromFile + j > 7:
-                        continue
-                    # Is a legal move
-                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
-                                        (fromRank + j, fromFile + i)):
-                        possible_moves.append([origin_type, (fromRank,
-                                                             fromFile),
-                                               (fromRank + j, fromFile + i)])
-
-        elif origin_type == ChessBoard.KNGT:  # If the piece is a Knight
-            for i in range(-2, 2):
-                for j in range(-2, 2):
-                    # Piece stays on the board
-                    if fromRank + i < 0 or fromRank + i > 7:
-                        continue
-                    # Piece stays on the board
-                    if fromFile + j < 0 or fromFile + j > 7:
-                        continue
-                    # Makes sure the piece moves in the knight formation
-                    if not ((abs(i) == 1 and abs(j) == 2) or (abs(i) == 2 and
-                                                              abs(j) == 1)):
-                        continue
-                    # Is a legal move
-                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
-                                        (fromRank + j, fromFile + i)):
-                        possible_moves.append([origin_type, (fromRank,
-                                                             fromFile),
-                                               (fromRank + j, fromFile + i)])
-
-        elif origin_type == ChessBoard.ROOK:  # If the piece is a Rook
-            for i in range(-7, 7):
-                for j in range(-7, 7):
-                    # Makes sure piece is only moving in Rank
-                    if i == 0 and j != 0:
-                        possible_moves.append([origin_type,
-                                               (fromRank, fromFile),
-                                               (fromRank + j, fromFile + i)])
-                    # Makes sure piece is only moving in File
-                    if i != 0 and j == 0:
-                        possible_moves.append([origin_type,
-                                               (fromRank, fromFile),
-                                               (fromRank + j, fromFile + i)])
-                    # Is a legal move
-                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
-                                        (fromRank + j, fromFile + i)):
-                        possible_moves.append([origin_type, (fromRank,
-                                                             fromFile),
-                                               (fromRank + j, fromFile + i)])
         return possible_moves
 
 
