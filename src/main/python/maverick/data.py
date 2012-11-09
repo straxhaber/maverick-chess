@@ -804,11 +804,25 @@ class ChessBoard(object):
             if p.color == color:
                 all_moves.extend(p.getPossibleMoves(self, p.fromRank,
                                                     p.fromFile))
+        return all_moves
 
     def getPossibleMoves(self, fromRank, fromFile):
         """Return all possible moves for the specified piece on this board
 
         @return ListOf[(pieceType, (fromRank, fromFile), (toRank, toFile))]"""
+
+        # Pull out the (origin_type) entry at the from/to board position
+        color, piece = self.board[fromRank - 1][fromFile - 1]
+
+        possible_moves = []  # List of possible moves. Starts empty
+
+        for i in range(0, 7):
+            for j in range(0, 7):
+                if self.isLegalMove(color, fromRank - 1, fromFile - 1, i, j):
+                    possible_moves.append([piece, (fromRank - 1, fromFile - 1),
+                                           (i, j)])
+
+        return possible_moves
 
 
 class ChessMatch(object):
