@@ -163,6 +163,8 @@ class TournamentSystem(object):
         {"youAreColor": ChessBoard.WHITE or ChessBoard.BLACK,
          "isWhitesTurn": someBoolean,
          "board": someBoard,
+         "enPassantFlags": flags of form ChessBoard.flag_enpassant
+         "canCastleFlags": flags of form ChessBoard.flag_canCastle
          "history": listOfPlies})"""
 
         if gameID in self.games:
@@ -178,8 +180,9 @@ class TournamentSystem(object):
 
             return (True, {"youAreColor": youAreColor,
                            "isWhitesTurn": (g.whoseTurn() == ChessBoard.WHITE),
-                           # TODO: this should serialize the full board state
                            "board": g.board.board,
+                           "enPassantFlags": g.board.flag_enpassant,
+                           "canCastleFlags": g.board.flag_canCastle,
                            "history": g.history})
         else:
             return (False, {"error": "Invalid game ID"})
@@ -190,7 +193,7 @@ class TournamentSystem(object):
 
         @param playerID: The integer playerID of a registered player.
         @param gameID: The integer gameID of an in-progress game which
-        has been joined by the given player
+                       has been joined by the given player
         @param fromRank: The rank of the piece to be moved
         @param fromFile: The file of the piece to be moved
         @param toRank: The file to which the piece should be moved
@@ -267,6 +270,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
                       "GET_STATE": (TournamentSystem.getState,
                                     {"playerID", "gameID"},
                                     {"youAreColor", "isWhitesTurn",
+                                     "enPassantFlags", "canCastleFlags",
                                      "board", "history"}),
                       "MAKE_PLY": (TournamentSystem.makePly,
                                    {"playerID", "gameID",
@@ -315,7 +319,8 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         MaverickServerProtocol._logger.debug("Request received: {0}", line)
 
         # Pull out request name (e.g., "REGISTER") and arguments (unparsed)
-        (requestName, _, requestArgsString) = line.partition(" ")[0]
+        print line
+        (requestName, _, requestArgsString) = line.partition(" ")
 
         errMsg = None  # If this gets set, there was an error
         if requestName in MaverickServerProtocol.VALID_REQUESTS:

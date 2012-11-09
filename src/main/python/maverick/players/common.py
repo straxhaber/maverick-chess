@@ -76,7 +76,7 @@ class MaverickPlayer(MaverickClient):
 
     def run(self):
         """TODO (mattsh) method comment"""
-        self.initNameAndGame()
+        self.initName()
         self.startPlaying()
         self.welcomePlayer()
 

@@ -135,12 +135,11 @@ class MaverickClient(object):
         response = self._makeRequest("GET_STATE",
                                      playerID=playerID,
                                      gameID=gameID)
-        return {"playerID": response["playerID"],
-                "gameID": response["gameID"],
-                "youAreColor": response["youAreColor"],
+        return {"youAreColor": response["youAreColor"],
                 "isWhitesTurn": response["isWhitesTurn"],
-                # TODO: this should pull out the full board state
                 "board": response["board"],
+                "enPassantFlags": response["enPassantFlags"],
+                "canCastleFlags": response["canCastleFlags"],
                 "history": response["history"]}
 
     def request_makePly(self, playerID, gameID,

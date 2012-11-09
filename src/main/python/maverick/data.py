@@ -121,7 +121,8 @@ class ChessBoard(object):
                         PAWN: {WHITE: 'P', BLACK: 'p'}}
     """Mapping of piece constants to their visual represenataion"""
 
-    def __init__(self, startBoard=None):
+    def __init__(self, startBoard=None, startEnpassantFlags=None,
+                 startCanCastleFlags=None):
         """Initialize a new Chess game according to normal Chess rules
 
         There are special states that must be kept track of:
@@ -131,20 +132,31 @@ class ChessBoard(object):
         # Log initialization
         ChessBoard._logger.debug("Initialized")
 
-        # Perform deep copy of board start state into self.board
-        self.board = copy.deepcopy(ChessBoard.DEFAULT_STARTING_BOARD)
+        # For all instance variables, assign values if supplied in constructor
 
-        # Initialize en passant flags (True means en passant capture is
-        # possible in the given column
-        self.flag_enpassant = {
-            ChessBoard.WHITE: [False] * ChessBoard.BOARD_SIZE,
-            ChessBoard.BLACK: [False] * ChessBoard.BOARD_SIZE}
+        if startBoard is None:
+            # Perform deep copy of board start state into self.board
+            self.board = copy.deepcopy(ChessBoard.DEFAULT_STARTING_BOARD)
+        else:
+            self.board = copy.deepcopy(startBoard)
 
-        # Initialize castle flags (queen-side ability, king-side ability)
-        # Does not account for pieces blocking or checking the castle
-        self.flag_canCastle = {
-            ChessBoard.WHITE: (True, True),
-            ChessBoard.BLACK: (True, True)}
+        if startEnpassantFlags is None:
+            # Initialize en passant flags (True means en passant capture is
+            # possible in the given column
+            self.flag_enpassant = {
+                ChessBoard.WHITE: [False] * ChessBoard.BOARD_SIZE,
+                ChessBoard.BLACK: [False] * ChessBoard.BOARD_SIZE}
+        else:
+            self.flag_enpassant = copy.deepcopy(startEnpassantFlags)
+
+        if startCanCastleFlags is None:
+            # Initialize castle flags (queen-side ability, king-side ability)
+            # Does not account for pieces blocking or checking the castle
+            self.flag_canCastle = {
+                ChessBoard.WHITE: (True, True),
+                ChessBoard.BLACK: (True, True)}
+        else:
+            self.flag_canCastle = copy.deepcopy(startCanCastleFlags)
 
     def makePly(self, color, fromRank, fromFile, toRank, toFile):
         """Makes a ply if legal
@@ -215,6 +227,20 @@ class ChessBoard(object):
 
             return True
 
+    @staticmethod
+    def getOtherColor(color):
+        """Return the opposing color
+
+        @param color: one of ChessBoard.WHITE or ChessBoard.BLACK
+
+        @return: the opposing color, one of ChessBoard.WHITE or
+                ChessBoard.BLACK"""
+
+        if color == ChessBoard.WHITE:
+            return ChessBoard.BLACK
+        else:
+            return ChessBoard.WHITE
+
     def getSquaresInPath(self, fromRank, fromFile, toRank, toFile):
         """Returns a list of squares in the straight-line path
         from origin to destination (not including the origin or destination
@@ -281,8 +307,36 @@ class ChessBoard(object):
         pathSquares = zip(path_rank_values, path_file_values)
         return pathSquares
 
+    @staticmethod
+    def isCenterSquare(rankVal, fileVal):
+        """Return true if the given position is a center square
+
+        @param rankVal: rank of the position to evaluate, integer in ([0..7])
+        @param fileVal: file of the position to evaluate, integer in ([0..7])
+
+        @return: True if the given position is a center square, False
+                otherwise"""
+
+        # Boundaries of the center, declared outright for easy modification
+        # Values pulled from http://tinyurl.com/akl2n6r
+        maxCenterRank = 4
+        minCenterRank = 3
+        maxCenterFile = 4
+        minCenterFile = 3
+
+        # Check that rank is in proper range
+        if rankVal not in range(minCenterRank, maxCenterRank + 1):
+            return False
+
+        # Check that file is in proper range
+        if fileVal not in range(minCenterFile, maxCenterFile + 1):
+            return False
+
+        # All tests passed, given location is in center
+        return True
+
     def isClearLinearPath(self, fromRank, fromFile, toRank, toFile):
-        """Returns true if the straight-line path from origin to destination
+        """Return true if the straight-line path from origin to destination
         is not obstructed.  To be used for horizontal, vertical, or diagonal
         moves.
 
@@ -319,7 +373,32 @@ class ChessBoard(object):
                 return False  # There was a piece in one of the path squares
         return True  # None of the path squares contained a piece
 
-    def findKingAndEnemies(self, color, board):
+    @staticmethod
+    def findColorPieces(color, board):
+        """Returns a list of of all pieces of the given color.
+
+        @param color: The color of the pieces to find, ChessMatch.WHITE or
+        ChessMatch.BLACK
+        @param board: The board to use for this check.  A two dimensional array
+        of the same form as ChessBoard.board
+
+        @return: a list of tuples of form (piecetype, (rank, file) representing
+                the location of all pieces of the given color"""
+        pieceLocations = []
+
+        for r in range(len(board)):
+            row = board[r]
+            for f in range(len(row)):
+                piece = row[f]
+                if piece is not None:
+                    pieceColor = piece[0]
+                    pieceType = piece[1]
+                    if pieceColor == color:
+                        pieceLocations.append((pieceType, (r + 1, f + 1)))
+        return (pieceLocations)
+
+    @staticmethod
+    def findKingAndEnemies(color, board):
         """Returns the location of the king of the given color, and a list
         of locations of all non-king pieces of the opposite color.
 
@@ -335,6 +414,8 @@ class ChessBoard(object):
                 the location of all non-king enemy pieces
         """
 
+        ## TODO (James): rewrite this to use findColorPieces
+
         enemyPieceLocations = []  # List of (rank, file) non-king pieces
 
         # Locate given player's king, and opposing player's non-king pieces
@@ -346,9 +427,9 @@ class ChessBoard(object):
                     pieceColor = piece[0]
                     pieceType = piece[1]
                     if pieceColor == color and pieceType == ChessBoard.KING:
-                        kingLoc = (r + 1, f + 1)  # output as 1-indexed values
+                        kingLoc = (r, f)
                     elif pieceColor != color and pieceType != ChessBoard.KING:
-                        enemyPieceLocations.append((r + 1, f + 1))
+                        enemyPieceLocations.append((r, f))
         return (kingLoc, enemyPieceLocations)
 
     def getInterruptSquares(self, fromRank, fromFile, toRank, toFile):
@@ -407,7 +488,7 @@ class ChessBoard(object):
         else:
             otherColor = ChessBoard.WHITE
         # Get check information
-        checkInfo = self.isKingInCheck(color, self.board)
+        checkInfo = self.isKingInCheck(color)
 
         # Check that the king is in check
         if not checkInfo[0]:
@@ -418,7 +499,7 @@ class ChessBoard(object):
         checkingPieceFile = checkInfo[1][0]  # file of that same checking piece
 
         # Find the king whose checkmate status is in question
-        myKingLocation = self.findKingAndEnemies(color, self.board)[0]
+        myKingLocation = ChessBoard.findKingAndEnemies(color, self.board)[0]
         checkedKingRank = myKingLocation[0]
         checkedKingFile = myKingLocation[1]
 
@@ -428,7 +509,8 @@ class ChessBoard(object):
                                                        checkedKingRank,
                                                        checkedKingFile)
         # Get locations of all this player's non-king pieces
-        myNonKingPieceLocs = self.findKingAndEnemies(otherColor, self.board)[1]
+        myNonKingPieceLocs = ChessBoard.findKingAndEnemies(otherColor,
+                                                           self.board)[1]
 
         # Iterate through pieces, and see if any can move to potential check-
         # alleviating squares
@@ -451,7 +533,7 @@ class ChessBoard(object):
 
                     # Check if the given color is still in check in that board
                     # If not, that color is not in checkmate
-                    if not self.isKingInCheck(color, postMoveBoard):
+                    if not postMoveBoard.isKingInCheck(color):
                         return False
 
         possibleKingMoves = []  # List of tuples of possible king moves
@@ -475,7 +557,7 @@ class ChessBoard(object):
 
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
-                if not self.isKingInCheck(color, postMoveBoard):
+                if not postMoveBoard.isKingInCheck(color):
                     logStrF = "Found that {0} is not in checkmate"
                     ChessBoard._logger.info(logStrF, color)
                     return False
@@ -484,7 +566,7 @@ class ChessBoard(object):
         ChessBoard._logger.info("Found that {0} is in checkmate", color)
         return True
 
-    def isKingInCheck(self, color, board):
+    def isKingInCheck(self, color):
         """Determines whether the king of the given color is in check
         in the given board.
 
@@ -512,7 +594,7 @@ class ChessBoard(object):
             otherColor = ChessBoard.WHITE
 
         # Locate given player's king, and opposing player's non-king pieces
-        pieceLocations = self.findKingAndEnemies(color, board)
+        pieceLocations = ChessBoard.findKingAndEnemies(color, self.board)
         kingLocation = pieceLocations[0]
         kingRank = kingLocation[0]
         kingFile = kingLocation[1]
@@ -536,8 +618,8 @@ class ChessBoard(object):
         return (False, None)
 
     def getResultBoard(self, fromRank, fromFile, toRank, toFile):
-        """Returns the board that would be produced if the piece on the current
-        board was moved from the given location to the given location.
+        """Returns the board object resulting from the given move
+
         Assumes that the move is legal.
         Constructs the return value via a deep copy.
         NOTE: does not make the given move on the actual board, or modify game
@@ -548,19 +630,16 @@ class ChessBoard(object):
         @param toRank: the rank to which the piece is to be moved
         @param toFile: the file to which the piece is to be moved
 
-        @return: a two-dimensional array representing the board that would
-        result from the given move, in the form of ChessBoard.board
+        @return: a ChessBoard object identical to that which would result from
+                the given ply being made on this board
         """
 
         # Copy the board, so as not to modify anything real
-        postMoveBoard = copy.deepcopy(self.board)
+        postMoveBoard = copy.deepcopy(self)
 
-        # Piece to be moved
-        origin_entry = postMoveBoard[fromRank - 1][fromFile - 1]
+        # Make the proposed ply on the hypothetical board
+        postMoveBoard.makePly(fromRank, fromFile, toRank, toFile)
 
-        # Move the piece
-        postMoveBoard[fromRank - 1][fromFile - 1] = None
-        postMoveBoard[toRank - 1][toFile - 1] = origin_entry
         return postMoveBoard
 
     def isLegalMove(self, color, fromRank, fromFile, toRank, toFile):
@@ -760,7 +839,7 @@ class ChessBoard(object):
         postMoveBoard = self.getResultBoard(fromRank, fromFile, toRank, toFile)
 
         # Check that the king would not be in check after the move
-        if self.isKingInCheck(color, postMoveBoard)[0]:
+        if postMoveBoard.isKingInCheck(color)[0]:
             return False
 
         return True  # All of the error checks passed
