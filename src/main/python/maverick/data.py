@@ -811,7 +811,7 @@ class ChessBoard(object):
 
         @return ListOf[(pieceType, (fromRank, fromFile), (toRank, toFile))]"""
 
-        # Pull out the (origin_type) entry at the from/to board position
+        # Pull out the color and piece type from the board
         color, piece = self.board[fromRank - 1][fromFile - 1]
 
         possible_moves = []  # List of possible moves. Starts empty
