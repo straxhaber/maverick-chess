@@ -890,17 +890,126 @@ class ChessBoard(object):
 
         @return ListOf[(pieceType, (fromRank, fromFile), (toRank, toFile))]"""
 
-        # Pull out the color and piece type from the board
-        color, piece = self.board[fromRank - 1][fromFile - 1]
+        # Pull out the (color, origin_type) entry at the 'from' board position
+        origin_entry = self.board[fromRank - 1][fromFile - 1]
+
+        origin_type = origin_entry[1]  # the type of piece at the origin
 
         possible_moves = []  # List of possible moves. Starts empty
 
-        for i in range(0, 7):
-            for j in range(0, 7):
-                if self.isLegalMove(color, fromRank - 1, fromFile - 1, i, j):
-                    possible_moves.append([piece, (fromRank - 1, fromFile - 1),
-                                           (i, j)])
+        if origin_type == ChessBoard.PAWN:  # If piece is a Pawn
+            for i in range(-1, 1):
+                if i == 0:
+                    continue
+                for j in range(-2, 2):
+                    # Piece stays on the board
+                    if fromRank + i < 0 or fromRank + i > 7:
+                        continue
+                    # Piece stays on the board
+                    if fromFile + j < 0 or fromFile + j > 7:
+                        continue
+                    # Is a legal move
+                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
+                                        (fromRank + j, fromFile + i)):
+                        possible_moves.append([origin_type, (fromRank,
+                                                             fromFile),
+                                              (fromRank + j, fromFile + i)])
 
+        elif origin_type == ChessBoard.BISH:
+            for i in range(-7, 7):
+                if i == 0:
+                    continue
+                for j in range(-7, 7):
+                    # Makes sure piece moves on a diagonal
+                    if i != j:
+                        continue
+                    # Piece stays on the board
+                    if fromRank + i < 0 or fromRank + i > 7:
+                        continue
+                    # Piece stays on the board
+                    if fromFile + j < 0 or fromFile + j > 7:
+                        continue
+                    # Is a legal move
+                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
+                                        (fromRank + j, fromFile + i)):
+                        possible_moves.append([origin_type, (fromRank,
+                                                             fromFile),
+                                               (fromRank + j, fromFile + i)])
+
+        elif origin_type == ChessBoard.KING:
+            for i in range(-1, 1):
+                for j in range(-1, 1):
+                    # Makes sure there is an actual move
+                    if i == 0 and j == 0:
+                        continue
+                    # Piece stays on the board
+                    if fromRank + i < 0 or fromRank + i > 7:
+                        continue
+                    # Piece stays on the board
+                    if fromFile + j < 0 or fromFile + j > 7:
+                        continue
+                    # Is a legal move
+                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
+                                        (fromRank + j, fromFile + i)):
+                        possible_moves.append([origin_type, (fromRank,
+                                                             fromFile),
+                                               (fromRank + j, fromFile + i)])
+
+        elif origin_type == ChessBoard.QUEN:
+            for i in range(-7, 7):
+                for j in range(-7, 7):
+                    # Piece stays on the board
+                    if fromRank + i < 0 or fromRank + i > 7:
+                        continue
+                    # Piece stays on the board
+                    if fromFile + j < 0 or fromFile + j > 7:
+                        continue
+                    # Is a legal move
+                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
+                                        (fromRank + j, fromFile + i)):
+                        possible_moves.append([origin_type, (fromRank,
+                                                             fromFile),
+                                               (fromRank + j, fromFile + i)])
+
+        elif origin_type == ChessBoard.KNGT:
+            for i in range(-2, 2):
+                for j in range(-2, 2):
+                    # Piece stays on the board
+                    if fromRank + i < 0 or fromRank + i > 7:
+                        continue
+                    # Piece stays on the board
+                    if fromFile + j < 0 or fromFile + j > 7:
+                        continue
+                    # Makes sure the piece moves in the knight formation
+                    if not ((abs(i) == 1 and abs(j) == 2) or (abs(i) == 2 and
+                                                              abs(j) == 1)):
+                        continue
+                    # Is a legal move
+                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
+                                        (fromRank + j, fromFile + i)):
+                        possible_moves.append([origin_type, (fromRank,
+                                                             fromFile),
+                                               (fromRank + j, fromFile + i)])
+
+        elif origin_type == ChessBoard.ROOK:
+            for i in range(-7, 7):
+                for j in range(-7, 7):
+                    # Makes sure piece is only moving in Rank
+                    if i == 0 and j != 0:
+                        possible_moves.append([origin_type,
+                                               (fromRank, fromFile),
+                                               (fromRank + j, fromFile + i)])
+                    # Makes sure piece is only moving in File
+                    if i != 0 and j == 0:
+                        possible_moves.append([origin_type,
+                                               (fromRank, fromFile),
+                                               (fromRank + j, fromFile + i)])
+                    # Is a legal move
+                    if self.isLegalMove(origin_entry[0], (fromRank, fromFile),
+                                        (fromRank + j, fromFile + i)):
+                        possible_moves.append([origin_type, (fromRank,
+                                                             fromFile),
+                                               (fromRank + j, fromFile + i)])
         return possible_moves
 
 
