@@ -126,7 +126,7 @@ class MaverickPlayer(MaverickClient):
         raise NotImplementedError("Must be overridden by the extending class")
 
     def getNextMove(self, board):
-        """Calculate the next move based on the provided board"""
+        """Get the next move from the player"""
         raise NotImplementedError("Must be overridden by the extending class")
 
     def handleBadMove(self, errMsg, board, fromRank, fromFile, toRank, toFile):

@@ -20,6 +20,26 @@ from maverick.players.common import MaverickPlayer
 class HumanGamer(MaverickPlayer):
     """Represents a human player connecting to the Maverick chess system."""
 
+    FILE_LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    """Ordered listing of valid files"""
+
+    RANK_NUMBERS = ["1", "2", "3", "4", "5", "6", "7", "8"]
+    """Ordered listing of valid ranks"""
+
+    PIECE_TEXTUAL_REPR = {ChessBoard.ROOK: {ChessBoard.WHITE: 'R',
+                                        ChessBoard.BLACK: 'r'},
+                      ChessBoard.KNGT: {ChessBoard.WHITE: 'N',
+                                        ChessBoard.BLACK: 'n'},
+                      ChessBoard.BISH: {ChessBoard.WHITE: 'B',
+                                        ChessBoard.BLACK: 'b'},
+                      ChessBoard.QUEN: {ChessBoard.WHITE: 'Q',
+                                        ChessBoard.BLACK: 'q'},
+                      ChessBoard.KING: {ChessBoard.WHITE: 'K',
+                                        ChessBoard.BLACK: 'k'},
+                      ChessBoard.PAWN: {ChessBoard.WHITE: 'P',
+                                        ChessBoard.BLACK: 'p'}}
+    """Mapping of piece constants to their visual represenataion"""
+
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.human.HumanGamer")
     logging.basicConfig(level=logging.INFO)
@@ -30,11 +50,11 @@ class HumanGamer(MaverickPlayer):
         """Initialize a human player"""
         MaverickPlayer.__init__(self)
 
-    def playerMakeMove(self):
-        """Ask the player for a move and make it"""
+    def getNextMove(self, board):
+        """Ask the player for a move and return it"""
 
         # Show the user the board
-        self.printBoard()
+        self.printBoard(board)
 
         haveValidMove = False
         while not haveValidMove:
@@ -62,11 +82,7 @@ class HumanGamer(MaverickPlayer):
         toFile = ChessBoard.HUMAN_FILE_LETTERS.index(playerMove[3])
         toRank = ChessBoard.HUMAN_RANK_NUMBERS.index(playerMove[4])
 
-        try:
-            self.request_makePly(fromFile, fromRank, toFile, toRank)
-        except MaverickClientException, msg:
-            self.displayMessage("Server did not accept move - please retry.")
-            self.displayMessage("Message from server: {0}".format(msg))
+        return (fromRank, fromFile, toRank, toFile)
 
     def initName(self):
         """Figure out the name of the class"""
@@ -97,20 +113,32 @@ class HumanGamer(MaverickPlayer):
         welcomeStr = welcomeStrF.format(colorStr)
         self.displayMessage(welcomeStr)
 
-    def getNextMove(self, board):
-        """Calculate the next move based on the provided board"""
-        raise NotImplementedError("Must be overridden by the extending class")
-
     def handleBadMove(self, errMsg, board, fromRank, fromFile, toRank, toFile):
         """Calculate the next move based on the provided board"""
         self.displayMessage("Server didn't accept move; please retry.")
         self.displayMessage("Message from server: {0}".format(errMsg))
 
-    def printBoard(self):
+    def getPieceChar(self, piece):
+        """Return a character representing the given piece
+
+        @param piece: A piece as defined in maverick.server.ChessBoard
+
+        @return: A character representing the given piece on the chess board"""
+        if piece is None:
+            return '.'
+        else:
+            (c, p) = piece
+            return HumanGamer.PIECE_TEXTUAL_REPR[p][c]
+
+    def printBoard(self, board):
         """Print out an ASCII version of the chess board"""
-        board = self.request_getState()["board"]  # TODO: currently just a list
-        boardText = board.__str__()
-        self.displayMessage(boardText)
+
+        self.displayMessage("  {0}  ".format(" ".join(self.FILE_LETTERS)))
+        for rankNum in range(ChessBoard.BOARD_SIZE):
+            rank = board[rankNum]
+            rankStr = " ".join([self.getPieceChar(c) for c in rank])
+            self.displayMessage("{0} {1} {0}".format(rankNum + 1, rankStr))
+        self.displayMessage("  {0}  ".format(" ".join(self.FILE_LETTERS)))
 
 
 def main(host='127.0.0.1', port=7782):
