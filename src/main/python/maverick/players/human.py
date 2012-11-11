@@ -30,7 +30,7 @@ class HumanGamer(MaverickPlayer):
         """Initialize a human player"""
         MaverickPlayer.__init__(self)
 
-    def playerMakeMove(self):
+    def getNextMove(self, board):
         """Ask the player for a move and make it"""
 
         # Show the user the board
@@ -96,10 +96,6 @@ class HumanGamer(MaverickPlayer):
 
         welcomeStr = welcomeStrF.format(colorStr)
         self.displayMessage(welcomeStr)
-
-    def getNextMove(self, board):
-        """Calculate the next move based on the provided board"""
-        raise NotImplementedError("Must be overridden by the extending class")
 
     def handleBadMove(self, errMsg, board, fromRank, fromFile, toRank, toFile):
         """Calculate the next move based on the provided board"""

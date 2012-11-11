@@ -14,6 +14,7 @@ import logging
 
 from maverick.players.ais.common import MaverickAI
 from maverick.data import ChessBoard
+from maverick.data import ChessBoardUtils
 
 
 class QLAI(MaverickAI):
@@ -32,7 +33,14 @@ class QLAI(MaverickAI):
                     ChessBoard.QUEN: 9}
 
     def getNextMove(self, board):
-        moveChoices = board.enumerateAllMoves()
+
+        # Figure out our color
+        if self.isWhite:
+            color = ChessBoard.WHITE
+        else:
+            color = ChessBoard.BLACK
+
+        moveChoices = ChessBoardUtils.enumerateAllMoves(board, color)
 
         # TODO (mattsh): write this
         fromRank, fromFile, toRank, toFile = None
@@ -50,7 +58,7 @@ class QLAI(MaverickAI):
         king's capture will be incorporated in other heuristics."""
 
         # Get a list of non-king pieces for this color
-        friendlyPieces = ChessBoard.findColorPieces(color, board.board)
+        friendlyPieces = ChessBoardUtils.findColorPieces(board, color)
 
         # Loop through this color's pieces, adding to total value
         totalValue = 0
@@ -71,7 +79,7 @@ class QLAI(MaverickAI):
         @return: 1 if the given color is in check on the given board, 0
                 otherwise"""
 
-        if board.isKingInCheck(color):
+        if ChessBoardUtils.isKingInCheck(board, color):
             return 1
         else:
             return 0
@@ -90,10 +98,10 @@ class QLAI(MaverickAI):
         otherColor = ChessBoard.getOtherColor(color)
 
         # Get friendly pieces
-        friendlyPieces = ChessBoard.findColorPieces(color, board)
+        friendlyPieces = ChessBoardUtils.findColorPieces(board, color)
 
         # Get enemy pieces
-        enemyPieces = ChessBoard.findColorPieces(otherColor, board)
+        enemyPieces = ChessBoardUtils.findColorPieces(board, otherColor)
 
         # Record which enemy pieces are under attack
         enemyPiecesUnderAttack = []
@@ -112,8 +120,8 @@ class QLAI(MaverickAI):
                 friendFile = friendlyPiece[1][1]
 
                 # Check if this piece can capture the enemy piece
-                if board.isLegalMove(friendRank, friendFile,
-                                     enemyRank, enemyFile):
+                if ChessBoardUtils.isLegalMove(board, friendRank, friendFile,
+                                               enemyRank, enemyFile):
 
                     # Note that this enemyPiece is under attack
                     enemyPiecesUnderAttack.append(enemyPiece)
@@ -150,17 +158,17 @@ class QLAI(MaverickAI):
         # Build up a list of all piece locations as tuples
 
         pieceLocations = []
-        otherColor = ChessBoard.getOtherColor(color)
+        otherColor = ChessBoardUtils.getOtherColor(color)
 
         # Find friendly piece locations and add to pieceLocations
-        friendlyPieces = board.findColorPieces(color, board.board)
+        friendlyPieces = ChessBoardUtils.findColorPieces(board, color)
 
         for piece in friendlyPieces:
             pieceLoc = piece[1]
             pieceLocations.append(pieceLoc)
 
         # Find enemy piece locations and add to pieceLocations
-        enemyPieces = board.findColorPieces(otherColor, board.board)
+        enemyPieces = ChessBoardUtils.findColorPieces(board, otherColor)
 
         for piece in enemyPieces:
             pieceLoc = piece[1]
@@ -179,7 +187,7 @@ class QLAI(MaverickAI):
                     emptyLocations.append(testLoc)
 
         # Build list of possible friendly piece moves
-        friendlyMoves = board.enumerateAllMoves(color)
+        friendlyMoves = ChessBoardUtils.enumerateAllMoves(board, color)
 
         # Find possible moves to empty squares and build up return value
 
@@ -193,7 +201,7 @@ class QLAI(MaverickAI):
             if moveDst in emptyLocations:
 
                 #Check if it is a center square
-                if ChessBoard.isCenterSquare(moveDst[0], moveDst[1]):
+                if ChessBoardUtils.isCenterSquare(moveDst[0], moveDst[1]):
                     weightedReturn += centerSquareValue
                 else:
                     weightedReturn += squareValue
@@ -212,7 +220,7 @@ class QLAI(MaverickAI):
                 weighted by piece value"""
 
         # Construct list of friendly pieces
-        friendlyPieces = ChessBoard.findColorPieces(color, board.board)
+        friendlyPieces = ChessBoardUtils.findColorPieces(board, color)
 
         # Accumulator for return value
         weightedReturn = 0
@@ -230,7 +238,7 @@ class QLAI(MaverickAI):
             board.board[lostPieceRank][lostPieceFile] = None
 
             # Build list of possible friendly moves
-            friendlyMoves = board.enumerateAllMoves(color)
+            friendlyMoves = ChessBoardUtils.enumerateAllMoves(board, color)
 
             # Test whether any move includes a move to the square in question
             for move in friendlyMoves:
