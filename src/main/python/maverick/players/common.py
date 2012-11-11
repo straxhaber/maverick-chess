@@ -139,8 +139,29 @@ class MaverickPlayer(MaverickClient):
 
     def request_getState(self):
         """TODO (mattsh) __DETAILED__ docstring"""
-        return MaverickClient.request_getState(self,
-                                               self.playerID, self.gameID)
+
+        ## TODO (James): check constants to validate received data
+        curState = MaverickClient.request_getState(self,
+                                                   self.playerID, self.gameID)
+
+        # Construct board object from serialized data
+
+        curBoardArray = curState["board"]
+        curEPFlags = curState["enPassantFlags"]
+        curCastleFlags = curState["canCastleFlags"]
+
+        curBoardObj = ChessBoard(startBoard=curBoardArray,
+                                 startEnpassantFlags=curEPFlags,
+                                 startCanCastleFlags=curCastleFlags)
+
+        # Build up return dictionary
+        stateDict = {}
+        stateDict["youAreColor"] = curState["youAreColor"]
+        stateDict["isWhitesTurn"] = curState["isWhitesTurn"]
+        stateDict["board"] = curBoardObj
+        stateDict["history"] = curState["history"]
+
+        return stateDict
 
     def request_makePly(self, fromRank, fromFile, toRank, toFile):
         """TODO (mattsh) __DETAILED__ docstring"""

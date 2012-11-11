@@ -162,9 +162,11 @@ class TournamentSystem(object):
         error message"}).  On success, returns a tuple of form (True,
         {"youAreColor": ChessBoard.WHITE or ChessBoard.BLACK,
          "isWhitesTurn": someBoolean,
-         "board": someBoard,
-         "enPassantFlags": flags of form ChessBoard.flag_enpassant
-         "canCastleFlags": flags of form ChessBoard.flag_canCastle
+         "boardState": {"board": 2d board array, or form ChessBoard.board,
+                         "enPassantFlags": flags of form
+                         ChessBoard.flag_enpassant,
+                         "canCastleFlags": flags of form
+                         ChessBoard.flag_canCastle"},
          "history": listOfPlies})"""
 
         if gameID in self.games:
@@ -270,8 +272,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
                       "GET_STATE": (TournamentSystem.getState,
                                     {"playerID", "gameID"},
                                     {"youAreColor", "isWhitesTurn",
-                                     "enPassantFlags", "canCastleFlags",
-                                     "board", "history"}),
+                                     "boardState", "history"}),
                       "MAKE_PLY": (TournamentSystem.makePly,
                                    {"playerID", "gameID",
                                     "fromRank", "fromFile",

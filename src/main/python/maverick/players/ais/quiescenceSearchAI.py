@@ -265,12 +265,9 @@ class QLAI(MaverickAI):
     def evaluateBoardLikability(self, color, board):
         """Return a number in [-1,1] based on likability of the position
 
-        @param color: one of maverick.data.ChessBoard.WHITE or
-                    maverick.data.ChessBoard.BLACK
-        @param board: a board state as a 3-tuple of form
-                    (boardState, in form maverick.data.ChessBoard.board,
-                    enPassantFlags, in form ChessBoard.flag_enpassant,
-                    canCastleFlags, in form ChessBoard.flag_canCastle,
+        @param color: One of maverick.data.ChessBoard.WHITE or
+                       maverick.data.ChessBoard.BLACK
+        @param board: A ChessBoard Object
 
         @return: a number in [-1,1] indicating the likability of the given
         board state for the given color, where -1 is least likable and 1 is
@@ -291,12 +288,6 @@ class QLAI(MaverickAI):
         emptySpaceCoverageWeight = 1
         piecesCoveredWeight = 1
 
-        # Instantiate ChessBoard with given state to use for non-static method
-        # ChessBoard method calls
-        boardObj = ChessBoard(startBoard=board[0],
-                              startEnpassantFlags=board[1],
-                              startCanCastleFlage=board[2])
-
         # Determine opposing player color
         otherColor = ChessBoard.getOtherColor(color)
 
@@ -305,21 +296,21 @@ class QLAI(MaverickAI):
         opinions = []
 
         # Add piece value opinion
-        pieceValueFriend = self._heuristicPieceValue(color, boardObj)
+        pieceValueFriend = self._heuristicPieceValue(color, board)
         pieceValueFoe = self._heuristicPieceValue(otherColor, board)
         pieceValueRes = self.combineHeuristicValues(pieceValueFriend,
                                                     pieceValueFoe)
         opinions.append("PieceValue", pieceValueWeight, pieceValueRes)
 
         # Add in check opinion
-        inCheckFriend = self._heuristicInCheck(color, boardObj)
+        inCheckFriend = self._heuristicInCheck(color, board)
         inCheckFoe = self._heuristicInCheck(otherColor, board)
         inCheckRes = self.combineHeuristicValues(inCheckFriend,
                                                     inCheckFoe)
         opinions.append("InCheck", inCheckWeight, inCheckRes)
 
         # Add pieces under attack opinion
-        pcsUnderAtkFriend = self._heuristicPiecesUnderAttack(color, boardObj)
+        pcsUnderAtkFriend = self._heuristicPiecesUnderAttack(color, board)
         pcsUnderAtkFoe = self._heuristicPiecesUnderAttack(otherColor, board)
         pcsUnderAtkRes = self.combineHeuristicValues(pcsUnderAtkFriend,
                                                      pcsUnderAtkFoe)
@@ -327,7 +318,7 @@ class QLAI(MaverickAI):
                         pcsUnderAtkRes)
 
         # Add empty space coverage opinion
-        emptySpcsCvdFriend = self._heuristicEmptySpaceCoverage(color, boardObj)
+        emptySpcsCvdFriend = self._heuristicEmptySpaceCoverage(color, board)
         emptySpcsCvdFoe = self._heuristicEmptySpaceCoverage(otherColor, board)
         emptySpcsCvdRes = self.combineHeuristicValues(emptySpcsCvdFriend,
                                                       emptySpcsCvdFoe)
@@ -335,7 +326,7 @@ class QLAI(MaverickAI):
                         emptySpcsCvdRes)
 
         # Add pieces covered opinion
-        pcsCoveredFriend = self._heuristicPiecesCovered(color, boardObj)
+        pcsCoveredFriend = self._heuristicPiecesCovered(color, board)
         pcsCoveredFoe = self._heuristicPiecesCovered(otherColor, board)
         pcsCoveredRes = self.combineHeuristicValues(pcsCoveredFriend,
                                                     pcsCoveredFoe)

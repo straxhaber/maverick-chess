@@ -62,11 +62,7 @@ class HumanGamer(MaverickPlayer):
         toFile = ChessBoard.HUMAN_FILE_LETTERS.index(playerMove[3])
         toRank = ChessBoard.HUMAN_RANK_NUMBERS.index(playerMove[4])
 
-        try:
-            self.request_makePly(fromFile, fromRank, toFile, toRank)
-        except MaverickClientException, msg:
-            self.displayMessage("Server did not accept move - please retry.")
-            self.displayMessage("Message from server: {0}".format(msg))
+        return (fromRank, fromFile, toRank, toFile)
 
     def initName(self):
         """Figure out the name of the class"""
@@ -106,7 +102,7 @@ class HumanGamer(MaverickPlayer):
         """Print out an ASCII version of the chess board"""
         board = self.request_getState()["board"]  # TODO: currently just a list
         boardText = board.__str__()
-        self.displayMessage(boardText)
+        print(boardText)
 
 
 def main(host='127.0.0.1', port=7782):
