@@ -65,7 +65,7 @@ class HumanGamer(MaverickPlayer):
         return (fromRank, fromFile, toRank, toFile)
 
     def initName(self):
-        """Figure out the name of the class"""
+        """Figure out the name of the player"""
         # Get the user's name
         self.name = raw_input("Please enter your name:  ")
 
@@ -100,7 +100,7 @@ class HumanGamer(MaverickPlayer):
 
     def printBoard(self):
         """Print out an ASCII version of the chess board"""
-        board = self.request_getState()["board"]  # TODO: currently just a list
+        board = self.request_getState()["board"]
         boardText = board.__str__()
         print(boardText)
 

@@ -75,7 +75,7 @@ class MaverickPlayer(MaverickClient):
             self.isWhite = False
 
     def run(self):
-        """TODO (mattsh) method comment"""
+        """Registers user, connects to game, and starts gameplay loop"""
         self.initName()
         self.startPlaying()
         self.welcomePlayer()
@@ -134,11 +134,29 @@ class MaverickPlayer(MaverickClient):
         raise NotImplementedError("Must be overridden by the extending class")
 
     def request_getStatus(self):
-        """TODO (mattsh) __DETAILED__ docstring"""
+        """Requests the status of this game from the Maverick server
+
+        @return: one of ChessMatch.STATUS_PENDING,
+                        ChessMatch.STATUS_ONGOING,
+                        ChessMatch.STATUS_BLACK_WON,
+                        ChessMatch.STATUS_WHITE_WON,
+                        ChessMatch.STATUS_DRAWN,
+                        ChessMatch.STATUS_CANCELLED,"""
+
         return MaverickClient.request_getStatus(self, self.gameID)
 
     def request_getState(self):
-        """TODO (mattsh) __DETAILED__ docstring"""
+        """Retrieves the current game state from the server
+
+        @return: A dictionary of the following form:
+                {"youAreColor": ChessBoard.WHITE or ChessBoard.BLACK,
+                "isWhitesTurn": True or False,
+                "board": {"board": 2d board array,
+                          "enPassantFlags": flags of form
+                                              ChessBoard.flag_enpassant,
+                          "canCastleFlags": flags of form
+                                              ChessBoard.flag_canCastle},
+                "history": list of plies}"""
 
         ## TODO (James): check constants to validate received data
         curState = MaverickClient.request_getState(self,
@@ -164,7 +182,7 @@ class MaverickPlayer(MaverickClient):
         return stateDict
 
     def request_makePly(self, fromRank, fromFile, toRank, toFile):
-        """TODO (mattsh) __DETAILED__ docstring"""
+        """Sends a makePly request to the server for the given ply"""
         MaverickClient.request_makePly(self,
                                        self.playerID, self.gameID,
                                        fromRank, fromFile,
