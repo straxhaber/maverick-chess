@@ -445,13 +445,13 @@ class ChessBoard(object):
                                     interruptRank, interruptFile):
 
                     # Generate the board that such a move would produce
-                    postMoveBoard = self.getResultBoard(pieceRank, pieceFile,
+                    boardAfterMove = self.getResultBoard(pieceRank, pieceFile,
                                                         interruptRank,
                                                         interruptFile)
 
                     # Check if the given color is still in check in that board
                     # If not, that color is not in checkmate
-                    if not self.isKingInCheck(color, postMoveBoard):
+                    if not self.isKingInCheck(color, boardAfterMove):
                         return False
 
         possibleKingMoves = []  # List of tuples of possible king moves
@@ -470,12 +470,12 @@ class ChessBoard(object):
             if self.isLegalMove(color, checkedKingRank, checkedKingFile,
                                 toRank, toFile):
                 # Generate the board that such a move would produce
-                postMoveBoard = self.getResultBoard(pieceRank, pieceFile,
+                boardAfterMove = self.getResultBoard(pieceRank, pieceFile,
                                                     toRank, toFile)
 
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
-                if not self.isKingInCheck(color, postMoveBoard):
+                if not self.isKingInCheck(color, boardAfterMove):
                     logStrF = "Found that {0} is not in checkmate"
                     ChessBoard._logger.info(logStrF, color)
                     return False
@@ -553,15 +553,15 @@ class ChessBoard(object):
         """
 
         # Copy the board, so as not to modify anything real
-        postMoveBoard = copy.deepcopy(self.board)
+        boardAfterMove = copy.deepcopy(self.board)
 
         # Piece to be moved
-        origin_entry = postMoveBoard[fromRank - 1][fromFile - 1]
+        origin_entry = boardAfterMove[fromRank - 1][fromFile - 1]
 
         # Move the piece
-        postMoveBoard[fromRank - 1][fromFile - 1] = None
-        postMoveBoard[toRank - 1][toFile - 1] = origin_entry
-        return postMoveBoard
+        boardAfterMove[fromRank - 1][fromFile - 1] = None
+        boardAfterMove[toRank - 1][toFile - 1] = origin_entry
+        return boardAfterMove
 
     def isLegalMove(self, color, fromRank, fromFile, toRank, toFile):
         """Returns true if the specified move is legal
@@ -757,10 +757,11 @@ class ChessBoard(object):
             return False
 
         # Create the board that the proposed move would result in
-        postMoveBoard = self.getResultBoard(fromRank, fromFile, toRank, toFile)
+        boardAfterMove = self.getResultBoard(fromRank, fromFile,
+                                             toRank, toFile)
 
         # Check that the king would not be in check after the move
-        if self.isKingInCheck(color, postMoveBoard)[0]:
+        if self.isKingInCheck(color, boardAfterMove)[0]:
             return False
 
         return True  # All of the error checks passed
