@@ -83,7 +83,8 @@ class MaverickPlayer(MaverickClient):
         while self._request_getStatus() == ChessMatch.STATUS_ONGOING:
 
             # Wait until it is your turn
-            while self._request_getState()['isWhitesTurn'] != self.isWhite:
+            while not self._request_isMyTurn():
+#            while self._request_getState()['isWhitesTurn'] != self.isWhite:
                 self.displayMessage("Waiting until turn")
 
                 # Break if a game is stopped while waiting
@@ -126,6 +127,14 @@ class MaverickPlayer(MaverickClient):
     def _getNextMove(self, board):
         """Calculate the next move based on the provided board"""
         raise NotImplementedError("Must be overridden by the extending class")
+
+    def _request_isMyTurn(self):
+        """Requests the player's turn status from the Maverick server
+
+        @return: True if it is my turn, False otherwise"""
+        return MaverickClient._request_isMyTurn(self,
+                                                self.gameID,
+                                                self.playerID)
 
     def _request_getStatus(self):
         """Requests the status of this game from the Maverick server
