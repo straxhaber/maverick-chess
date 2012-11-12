@@ -21,8 +21,8 @@ class ChessBoard(object):
     _logger = logging.getLogger("maverick.data.ChessBoard")
     logging.basicConfig(level=logging.INFO)
 
-    BOARD_SIZE = 8
-    """The width and height of a standard chess board."""
+    BOARD_LAYOUT_SIZE = 8
+    """The width and height of a standard chess board layout."""
 
     # Constants for the colors
     BLACK = "X"
@@ -50,47 +50,47 @@ class ChessBoard(object):
     KING = "K"
     """Constant for the king piece"""
 
-    DEFAULT_STARTING_BOARD = [[(WHITE, ROOK),
-                               (WHITE, KNGT),
-                               (WHITE, BISH),
-                               (WHITE, QUEN),
-                               (WHITE, KING),
-                               (WHITE, BISH),
-                               (WHITE, KNGT),
-                               (WHITE, ROOK)],
-                              [(WHITE, PAWN),
-                               (WHITE, PAWN),
-                               (WHITE, PAWN),
-                               (WHITE, PAWN),
-                               (WHITE, PAWN),
-                               (WHITE, PAWN),
-                               (WHITE, PAWN),
-                               (WHITE, PAWN)],
-                              [None, None, None, None, None, None, None, None],
-                              [None, None, None, None, None, None, None, None],
-                              [None, None, None, None, None, None, None, None],
-                              [None, None, None, None, None, None, None, None],
-                              [(BLACK, PAWN),
-                               (BLACK, PAWN),
-                               (BLACK, PAWN),
-                               (BLACK, PAWN),
-                               (BLACK, PAWN),
-                               (BLACK, PAWN),
-                               (BLACK, PAWN),
-                               (BLACK, PAWN)],
-                              [(BLACK, ROOK),
-                               (BLACK, KNGT),
-                               (BLACK, BISH),
-                               (BLACK, QUEN),
-                               (BLACK, KING),
-                               (BLACK, BISH),
-                               (BLACK, KNGT),
-                               (BLACK, ROOK)]]
-    """A constant board that represents the board's start state
+    DEFAULT_STARTING_LAYOUT = [[(WHITE, ROOK),
+                                (WHITE, KNGT),
+                                (WHITE, BISH),
+                                (WHITE, QUEN),
+                                (WHITE, KING),
+                                (WHITE, BISH),
+                                (WHITE, KNGT),
+                                (WHITE, ROOK)],
+                               [(WHITE, PAWN),
+                                (WHITE, PAWN),
+                                (WHITE, PAWN),
+                                (WHITE, PAWN),
+                                (WHITE, PAWN),
+                                (WHITE, PAWN),
+                                (WHITE, PAWN),
+                                (WHITE, PAWN)],
+                               [None] * 8,
+                               [None] * 8,
+                               [None] * 8,
+                               [None] * 8,
+                               [(BLACK, PAWN),
+                                (BLACK, PAWN),
+                                (BLACK, PAWN),
+                                (BLACK, PAWN),
+                                (BLACK, PAWN),
+                                (BLACK, PAWN),
+                                (BLACK, PAWN),
+                                (BLACK, PAWN)],
+                               [(BLACK, ROOK),
+                                (BLACK, KNGT),
+                                (BLACK, BISH),
+                                (BLACK, QUEN),
+                                (BLACK, KING),
+                                (BLACK, BISH),
+                                (BLACK, KNGT),
+                                (BLACK, ROOK)]]
+    """A constant board layout that represents the board layout's initial state
 
-        NOTE: Board is represented as a list of rows and 0-indexed
+        NOTE: Board layout is represented as a list of rows and 0-indexed
                 be careful dereferencing!!!
-            i.e., "d1" is self.board[0][3]
+            i.e., "d1" is self.layout[0][3]
 
         The start state corresponds roughly to this:
             [['R','N','B','Q','K','B','N','R'],
@@ -121,7 +121,7 @@ class ChessBoard(object):
                         PAWN: {WHITE: 'P', BLACK: 'p'}}
     """Mapping of piece constants to their visual represenataion"""
 
-    def __init__(self, startBoard=None, startEnpassantFlags=None,
+    def __init__(self, startLayout=None, startEnpassantFlags=None,
                  startCanCastleFlags=None):
         """Initialize a new Chess game according to normal Chess rules
 
@@ -134,11 +134,11 @@ class ChessBoard(object):
 
         # For all instance variables, assign values if supplied in constructor
 
-        if startBoard is None:
-            # Perform deep copy of board start state into self.board
-            self.board = copy.deepcopy(ChessBoard.DEFAULT_STARTING_BOARD)
+        if startLayout is None:
+            # Perform deep copy of board start state into self.layout
+            self.layout = copy.deepcopy(ChessBoard.DEFAULT_STARTING_LAYOUT)
         else:
-            self.board = copy.deepcopy(startBoard)
+            self.layout = copy.deepcopy(startLayout)
 
         if startEnpassantFlags is None:
             # Initialize en passant flags (True means en passant capture is
@@ -181,8 +181,8 @@ class ChessBoard(object):
             return False
         else:
             # Remove moving piece from starting position
-            movedPiece = self.board[fromRank - 1][fromFile - 1]
-            self.board[fromRank - 1][fromFile - 1] = None
+            movedPiece = self.layout[fromRank - 1][fromFile - 1]
+            self.layout[fromRank - 1][fromFile - 1] = None
 
             # Reset en passant flags to false
             self.flag_enpassant[color] = [False] * ChessBoard.BOARD_SIZE
@@ -215,10 +215,10 @@ class ChessBoard(object):
                 toRank == pawnStartRank):
                 # Check if a black pawn is taken via en passant
                 if color == ChessBoard.WHITE:
-                    self.board[pawnStartRank - 2][toFile - 1] = None
+                    self.layout[pawnStartRank - 2][toFile - 1] = None
                 # Check if a white pawn is taken via en passant
                 elif color == ChessBoard.BLACK:
-                    self.board[pawnStartRank][toFile - 1] = None
+                    self.layout[pawnStartRank][toFile - 1] = None
 
             # Log the successful move
             logStrF = "Moved piece from ({0},{1}), to ({2},{3})"
@@ -234,7 +234,7 @@ class ChessBoard(object):
         s = []
         s.append(header)
         for rankNum in range(ChessBoard.BOARD_SIZE):
-            rank = self.board[rankNum]
+            rank = self.layout[rankNum]
             rankStr = " ".join([ChessBoardUtils.getPieceChar(c) for c in rank])
             s.append("{0} {1} {0}".format(rankNum + 1, rankStr))
         s.append(header)
@@ -256,16 +256,20 @@ class ChessBoardUtils(object):
         @param color: one of ChessBoard.WHITE or ChessBoard.BLACK
 
         @return: the opposing color, one of ChessBoard.WHITE or
-                ChessBoard.BLACK"""
+                ChessBoard.BLACK. None if provided an invalid color."""
 
         if color == ChessBoard.WHITE:
             return ChessBoard.BLACK
-        else:
+        elif color == ChessBoard.BLACK:
             return ChessBoard.WHITE
+        else:
+            raise ValueError("Invalid color code")
 
     @staticmethod
     def isCenterSquare(rankVal, fileVal):
         """Return true if the given position is a center square
+
+        Center squares are those that are one of D4,D5,E4,E5
 
         @param rankVal: rank of the position to evaluate, integer in ([0..7])
         @param fileVal: file of the position to evaluate, integer in ([0..7])
@@ -273,23 +277,7 @@ class ChessBoardUtils(object):
         @return: True if the given position is a center square, False
                 otherwise"""
 
-        # Boundaries of the center, declared outright for easy modification
-        # Values pulled from http://tinyurl.com/akl2n6r
-        maxCenterRank = 4
-        minCenterRank = 3
-        maxCenterFile = 4
-        minCenterFile = 3
-
-        # Check that rank is in proper range
-        if rankVal not in range(minCenterRank, maxCenterRank + 1):
-            return False
-
-        # Check that file is in proper range
-        if fileVal not in range(minCenterFile, maxCenterFile + 1):
-            return False
-
-        # All tests passed, given location is in center
-        return True
+        return rankVal in [3, 4] and fileVal in [3, 4]
 
     @staticmethod
     def getSquaresInPath(fromRank, fromFile, toRank, toFile):
@@ -395,7 +383,7 @@ class ChessBoardUtils(object):
         for square in pathSquares:
             posnRank = square[0]
             posnFile = square[1]
-            if board.board[posnRank - 1][posnFile - 1] is not None:
+            if board.layout[posnRank - 1][posnFile - 1] is not None:
                 return False  # There was a piece in one of the path squares
         return True  # None of the path squares contained a piece
 
@@ -411,9 +399,9 @@ class ChessBoardUtils(object):
                 the location of all pieces of the given color"""
         pieceLocations = []
 
-        for r in range(len(board.board)):
-            row = board.board[r]
-            for f in range(len(row)):
+        for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
+            row = board.layout[r]
+            for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
                 piece = row[f]
                 if piece is not None:
                     pieceColor = piece[0]
@@ -443,9 +431,9 @@ class ChessBoardUtils(object):
         enemyPieceLocations = []  # List of (rank, file) non-king pieces
 
         # Locate given player's king, and opposing player's non-king pieces
-        for r in range(len(board.board)):
-            row = board.board[r]
-            for f in range(len(row)):
+        for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
+            row = board.layout[r]
+            for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
                 piece = row[f]
                 if piece is not None:
                     pieceColor = piece[0]
@@ -458,9 +446,9 @@ class ChessBoardUtils(object):
 
     @staticmethod
     def getInterruptSquares(fromRank, fromFile, toRank, toFile):
-        """ Returns a list of squares that, if moved to, would inhibit the
+        """Returns a list of squares that, if moved to, would inhibit the
         piece at fromRank, fromFile from being able to move to toRank, toFile.
-        This list will always  include (fromRank, fromFile)
+        This list will always include (fromRank, fromFile)
 
         @param fromRank: the rank of the starting position  (integer in [0,7])
         @param fromFile: the file of the starting position  (integer in [0,7])
@@ -520,21 +508,23 @@ class ChessBoardUtils(object):
         if not checkInfo[0]:
             return False
 
-        checkingPieceRank = checkInfo[1][0]  # rank of a piece checking
-                                            #the king
-        checkingPieceFile = checkInfo[1][0]  # file of that same checking piece
+        # TODO (mattsh): I don't think this is what you meant to do, James
+        # I re-factored it, but this is the same function as your old code
+        # It doesn't seem right, though
+
+        # Pull out the rank and file of the piece putting the king in check
+        # TODO (mattsh): James please check that the comment above is correct
+        (checkPieceR, checkPieceF) = (checkInfo[1][0], checkInfo[1][0])
 
         # Find the king whose checkmate status is in question
         myKingLocation = ChessBoardUtils.findKingAndEnemies(board, color)[0]
-        checkedKingRank = myKingLocation[0]
-        checkedKingFile = myKingLocation[1]
+        (checkedKingR, checkedKingF) = (myKingLocation[0], myKingLocation[1])
 
         # Get a list of locations that, if moved to, might alleviate check
-        interruptLocations = ChessBoardUtils.getInterruptSquares(
-                                                    checkingPieceRank,
-                                                      checkingPieceFile,
-                                                       checkedKingRank,
-                                                       checkedKingFile)
+        interruptLocations = ChessBoardUtils.getInterruptSquares(checkPieceR,
+                                                                 checkPieceF,
+                                                                 checkedKingR,
+                                                                 checkedKingF)
         # Get locations of all this player's non-king pieces
         myNonKingPieceLocs = ChessBoardUtils.findKingAndEnemies(board,
                                                                 otherColor)[1]
@@ -569,9 +559,9 @@ class ChessBoardUtils(object):
         possibleKingMoves = []  # List of tuples of possible king moves
 
         # If no alleviating moves found, enumerate king's possible moves
-        for r in range(checkedKingRank - 1, checkedKingRank + 1):
-            for f in range(checkedKingFile - 1, checkedKingFile + 1):
-                if r != checkedKingRank or f != checkedKingFile:
+        for r in range(checkedKingR - 1, checkedKingR + 1):
+            for f in range(checkedKingF - 1, checkedKingF + 1):
+                if r != checkedKingR or f != checkedKingF:
                     possibleKingMoves.append((r, f))
 
         # For each possible king move, test if it is legal.
@@ -579,8 +569,8 @@ class ChessBoardUtils(object):
             toRank = move[0]
             toFile = move[1]
 
-            if ChessBoardUtils.isLegalMove(board, color, checkedKingRank,
-                                           checkedKingFile, toRank, toFile):
+            if ChessBoardUtils.isLegalMove(board, color, checkedKingR,
+                                           checkedKingF, toRank, toFile):
                 # Generate the board that such a move would produce
                 boardAfterMove = ChessBoardUtils.getResultBoard(board,
                                                                 pieceRank,
@@ -669,7 +659,7 @@ class ChessBoardUtils(object):
                 the given ply being made on this board
         """
 
-        # Copy the board, so as not to modify anything real
+        # Copy the board, so as not to modify the previous data
         postMoveBoard = copy.deepcopy(board)
 
         # Make the proposed ply on the hypothetical board
@@ -719,8 +709,8 @@ class ChessBoardUtils(object):
          direction ("a" file or "h" file) is True"""
 
         # Pull out the (color, origin_type) entry at the from/to board position
-        origin_entry = board.board[fromRank - 1][fromFile - 1]
-        destin_entry = board.board[toRank - 1][toFile - 1]
+        origin_entry = board.layout[fromRank - 1][fromFile - 1]
+        destin_entry = board.layout[toRank - 1][toFile - 1]
 
         # Check if:
         #  - there is no piece at the position
@@ -924,7 +914,7 @@ class ChessBoardUtils(object):
         ## TODO (James): Rewrite this function
 
         # Pull out the color and piece type from the board
-        color, piece = board.board[fromRank - 1][fromFile - 1]
+        (color, piece) = board.layout[fromRank - 1][fromFile - 1]
 
         possible_moves = []  # List of possible moves. Starts empty
 
