@@ -272,13 +272,28 @@ class ChessBoard(object):
 
         return isLegal
 
-    def __str__(self):
-        """Prints out a human-readable ASCII version of the board"""
+    def __str__(self, whitePerspective=True):
+        """Prints out a human-readable ASCII version of the board
+
+        if whitePerspective is True (default), print the board with the 1-row
+        on bottom and the 8-row on top
+
+        if whitePerspective if False, print the board with the 8-row
+        on bottom and the 1-row on top"""
         header = "  {0}  ".format(" ".join(self.HUMAN_FILE_LETTERS))
+
+        if whitePerspective:
+            iterStart = ChessBoard.BOARD_LAYOUT_SIZE - 1
+            iterStop = -1
+            iterStep = -1
+        else:
+            iterStart = 0
+            iterStop = ChessBoard.BOARD_LAYOUT_SIZE
+            iterStep = 1
 
         s = []
         s.append(header)
-        for rankN in range(ChessBoard.BOARD_LAYOUT_SIZE):
+        for rankN in xrange(iterStart, iterStop, iterStep):
             rank = self.layout[rankN]
             rankStr = " ".join([ChessBoard._getPieceChar(c) for c in rank])
             s.append("{0} {1} {0}".format(rankN + 1, rankStr))

@@ -84,19 +84,19 @@ class HumanGamer(MaverickPlayer):
 
     def _welcomePlayer(self):
         """Display welcome messages if appropriate"""
-        welcomeStrF = ("\nWelcome to Maverick Chess. You are playing as {0}. "
-                       "Pieces are represented by letters on the board "
-                        "as follows:\n"
-                        "P = pawn\n"
-                        "R = rook\n"
-                        "N = knight\n"
-                        "B = bishop\n"
-                        "Q = queen\n"
-                        "K = king\n"
-                        ". = no piece\n\n"
-
-                        "Upper-case letters are white pieces, and lower-case "
-                        "letters are black pieces.  Have fun. \n\n")
+        welStrFArray = ("", "",
+                        "Welcome to Maverick Chess. You are playing as {0}.",
+                        "Pieces are represented by letters on the board ",
+                        "as follows:\n",
+                        "PieceType    White    Black",
+                        "pawn         X        O",
+                        "rook         R        r",
+                        "bishop       B        b",
+                        "queen        Q        q",
+                        "king         K        k",
+                        "no piece         .",
+                        "", "")
+        welcomeStrF = "\n".join(welStrFArray)
 
         if self.isWhite:
             colorStr = "white"
@@ -114,7 +114,8 @@ class HumanGamer(MaverickPlayer):
     def printBoard(self):
         """Print out an ASCII version of the chess board"""
         board = self._request_getState()["board"]
-        print(board.__str__())
+        print
+        print(board.__str__(whitePerspective=self.isWhite))
         print
 
 
