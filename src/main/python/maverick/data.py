@@ -189,9 +189,9 @@ class ChessBoard(object):
 
         # Update castle flags
         prevCastleFlag = self.flag_canCastle[color]
-        if movedPiece == self.KING:
+        if movedPiece == ChessBoard.KING:
             self.flag_canCastle[color] = (False, False)
-        elif movedPiece == self.ROOK:
+        elif movedPiece == ChessBoard.ROOK:
             if fromPosn.fileNum == 0:  # Queen-side rook was moved
                 self.flag_canCastle[color] = (False, prevCastleFlag[1])
             elif fromPosn.fileNum == 7:  # King-side rook was moved
@@ -203,7 +203,7 @@ class ChessBoard(object):
         pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
 
         # If we've moved a pawn for the first time, set en passant flags
-        if (movedPiece == self.PAWN and
+        if (movedPiece == ChessBoard.PAWN and
             fromPosn.rankNum == pawnStartRank and
             rankDeltaAbs == 2):
             self.flag_enpassant[color][fromPosn.fileNum] = True
@@ -466,7 +466,7 @@ class ChessBoard(object):
                 rank_delta_abs != file_delta_abs):
                 return False
 
-            #Check that path between origin and destination is clear
+            # Check that path between origin and destination is clear
             if not ChessBoard.__isClearLinearPath(self, fromPosn, toPosn):
                 return False
 
