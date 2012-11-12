@@ -27,6 +27,13 @@ class ChessPosn(object):
         self.rankN = rankN
         self.fileN = fileN
 
+    def __eq__(self, other):
+        if isinstance(other, ChessPosn):
+            return (self.rankN == other.rankN and
+                    self.fileN == other.fileN)
+        else:
+            return False
+
     def __repr__(self):
         return "({0},{1})".format(self.rankN, self.fileN)
 
