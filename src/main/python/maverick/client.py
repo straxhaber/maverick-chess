@@ -27,7 +27,7 @@ class MaverickClient(object):
     # Initialize class _logger
     _logger = logging.getLogger("maverick.client.MaverickClient")
     # Initialize if not already initialized
-    logging.basicConfig(level=logging.INFO, style="{")
+    logging.basicConfig(level=logging.INFO)
 
     TIMEOUT = 2
     """Timeout (in seconds) for the telnet connections"""
@@ -68,9 +68,8 @@ class MaverickClient(object):
             elif status != "WAITING_FOR_REQUEST\r\n":
                 err = "bad_status"
         if err != None:
-            MaverickClient._logger.warn("Invalid server welcome ({0}): {1}",
-                                        err,
-                                        welcome)
+            MaverickClient._logger.warn("Invalid server welcome (%s): %s",
+                                        err, welcome)
             raise MaverickClientException("Invalid server welcome")
 
         # Send the request
@@ -92,7 +91,7 @@ class MaverickClient(object):
             return result
         elif statusString == "ERROR":
             errMsg = value[:]
-            MaverickClient._logger.warn("Received error response: {0}", errMsg)
+            MaverickClient._logger.warn("Received error response: %s", errMsg)
             raise MaverickClientException(errMsg)
         else:
             msg = "Invalid status string received"

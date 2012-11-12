@@ -31,7 +31,8 @@ class TournamentSystem(object):
 
     # Initialize class logger
     _logger = logging.getLogger("maverick.server.TournamentSystem")
-    _logger.setLevel("INFO")
+    # Initialize if not already initialized
+    logging.basicConfig(level=logging.INFO)
 
     def __init__(self):
         """Initializes a new tournament system with no games"""
@@ -49,7 +50,7 @@ class TournamentSystem(object):
         @param fileName: The file to save state to"""
         fd = open(fileName)
         pickle.dump(tournament, fd)
-        TournamentSystem._logger.debug("Dumped game state to {0}", fileName)
+        TournamentSystem._logger.debug("Dumped game state to %s", fileName)
 
     @staticmethod
     def loadTS(tournament, fileName):
@@ -63,7 +64,7 @@ class TournamentSystem(object):
         if (tournament._version != __version__):
             raise TypeError("Attempted loading of an incompatible version")
 
-        logStrF = "Loaded game state from pickle file at {0}"
+        logStrF = "Loaded game state from pickle file at "
         TournamentSystem._logger.debug(logStrF, fileName)
 
         return tournament
@@ -84,7 +85,7 @@ class TournamentSystem(object):
         else:
             newID = _getUniqueInt(self.players.keys())
             self.players[newID] = name
-            TournamentSystem._logger.info("Registered {0} with playerID {1}",
+            TournamentSystem._logger.info("Registered %s with playerID %d",
                                           name, newID)
             return (True, {"playerID": newID})
 
@@ -98,7 +99,7 @@ class TournamentSystem(object):
         {"gameID": someInteger})"""
 
         # Log the join attempt
-        TournamentSystem._logger.debug("joinGame called with playerID {0}",
+        TournamentSystem._logger.debug("joinGame called with playerID %d",
                                        playerID)
 
         # Add the player to a pending game if one exists
@@ -106,7 +107,7 @@ class TournamentSystem(object):
             if game.status == ChessMatch.STATUS_PENDING:
                 color = game.join(playerID)
                 if color:
-                    logStrF = "Added player {0} to existing game {1}"
+                    logStrF = "Added player %d to existing game %d"
                     TournamentSystem._logger.debug(logStrF, playerID, gameID)
                     return (True, {"gameID": gameID})
 
@@ -114,7 +115,7 @@ class TournamentSystem(object):
         newGame = ChessMatch(playerID)
         newID = _getUniqueInt(self.games.keys())
         self.games[newID] = newGame
-        TournamentSystem._logger.info("Added player {0} to new game {1}",
+        TournamentSystem._logger.info("Added player %d to new game %d",
                                       playerID, newID)
         return (True, {"gameID": newID})
 
@@ -128,7 +129,7 @@ class TournamentSystem(object):
         if gameID in self.games:
             if (self.games[gameID].status in [ChessMatch.STATUS_ONGOING,
                                               ChessMatch.STATUS_PENDING]):
-                TournamentSystem._logger("Canceled game {0}", gameID)
+                TournamentSystem._logger("Canceled game %d", gameID)
                 self.games[gameID].status = ChessMatch.STATUS_CANCELLED
             else:
                 return (False, {"error": "Game not active"})
@@ -146,7 +147,7 @@ class TournamentSystem(object):
 
         if gameID in self.games:
             status = self.games[gameID].status
-            TournamentSystem._logger.info("Found status of game {0} to be {1}",
+            TournamentSystem._logger.info("Found status of game %d to be %s",
                                           gameID, status)
             return (True, {"status": status})
         else:
@@ -261,7 +262,8 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
 
     # Initialize class logger
     _logger = logging.getLogger("maverick.server.MaverickServerProtocol")
-    _logger.setLevel("INFO")
+    # Initialize if not already initialized
+    logging.basicConfig(level=logging.INFO)
 
     name = "MaverickChessServer"
     """The name of this server, as reported in its response headers"""
@@ -312,7 +314,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         fStr = "{0}/{1} WAITING_FOR_REQUEST"  # Template for welcome message
         welcomeMsg = fStr.format(MaverickServerProtocol.name,
                                  MaverickServerProtocol.version)
-        MaverickServerProtocol._logger.debug("Sending welcome message: {0}",
+        MaverickServerProtocol._logger.debug("Sending welcome message: %s",
                                              welcomeMsg)
         self.sendLine(welcomeMsg)
 
@@ -326,7 +328,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         """Take input line-by-line and redirect it to the core"""
 
         # Log request
-        MaverickServerProtocol._logger.debug("Request received: {0}", line)
+        MaverickServerProtocol._logger.debug("Request received: %s", line)
 
         # Pull out request name (e.g., "REGISTER") and arguments (unparsed)
         print line
@@ -376,7 +378,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
             # Provide client with the response
 
             # Log successful response
-            logStrF = "RESPONSE [query=\"{0}\"]: {1}"
+            logStrF = "RESPONSE [query=\"%s\"]: %s"
             MaverickServerProtocol._logger.info(logStrF, line, response)
 
             # Send successful response
@@ -385,7 +387,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
             # Provide client with the error
 
             # Compute error response
-            response = "ERROR {1} [query=\"{0}\"]".format(line, errMsg)
+            response = "ERROR %s [query=\"%s\"]".format(errMsg, line)
 
             # Log error response
             MaverickServerProtocol._logger.info(response)

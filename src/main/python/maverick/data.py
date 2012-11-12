@@ -9,6 +9,18 @@ __version__ = "1.0"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+## TODO (James): For ALL files in this project, make sure that "piece" refers
+#                to a piece and not just a piece type
+
+## TODO (James): For ALL files in this project, modify logging so that it uses
+#                the old style of string formatting
+
+## TODO (James): For ALL files in this project, make sure that you're properly
+#                referencing positions on the board. NO self.board[fromPosn]
+
+## TODO (James): For ALL files in this project, make sure that documentation
+#                has more than just type information
+
 import copy
 import logging
 import random
@@ -42,7 +54,7 @@ class ChessBoard(object):
     # Initialize class logger
     _logger = logging.getLogger("maverick.data.ChessBoard")
     # Initialize if not already initialized
-    logging.basicConfig(level=logging.INFO, style="{")
+    logging.basicConfig(level=logging.INFO)
 
     BOARD_LAYOUT_SIZE = 8
     """The width and height of a standard chess board layout."""
@@ -226,7 +238,7 @@ class ChessBoard(object):
                 self.board[pawnStartRank - 2][toPosn.fileNum] = None
 
         # Log the successful move
-        logStrF = "Moved piece from ({0},{1}), to ({2},{3})"
+        logStrF = "Moved piece from (%d, %d), to (%d, %d)"
         ChessBoard._logger.info(logStrF,
                                 fromPosn.rankNum, fromPosn.fileNum,
                                 toPosn.rankNum, toPosn.fileNum)
@@ -581,13 +593,13 @@ class ChessBoard(object):
 
             # If a move to the king's location is legal, the king is in check
             if self.isLegalMove(otherColor, pieceLoc, kingLoc):
-                ChessBoard._logger.info("Found that {0} is in check",
+                ChessBoard._logger.info("Found that %s is in check",
                                              color)
                 return (True, pieceLoc)
 
         # If none of the enemy pieces could move to the king's location, the
         # king is not in check
-        ChessBoard._logger.info("Found that {0} is not in check", color)
+        ChessBoard._logger.info("Found that %s is not in check", color)
         return (False, None)
 
     def isCheckMated(self, board, color):
@@ -676,12 +688,12 @@ class ChessBoard(object):
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
                 if not boardAfterMove.isKingInCheck(color):
-                    logStrF = "Found that {0} is not in checkmate"
+                    logStrF = "Found that %s is not in checkmate"
                     ChessBoard._logger.info(logStrF, color)
                     return False
 
         # All tests passed - given color is in checkmate
-        ChessBoard._logger.info("Found that {0} is in checkmate", color)
+        ChessBoard._logger.info("Found that %s is in checkmate", color)
         return True
 
     def _findKingAndEnemies(self, color):
@@ -884,7 +896,7 @@ class ChessMatch(object):
                     self.history.append((fromPosn, toPosn))
 
                     # Log this ply
-                    logStrF = "Added ({0},{1}) -> ({2}, {3}) to match history"
+                    logStrF = "Added (%d, %d) -> (%d, %d) to match history"
                     ChessMatch._logger.debug(logStrF,
                                              fromPosn.rankNum,
                                              fromPosn.fileNum,
@@ -914,7 +926,7 @@ class ChessMatch(object):
                     if None not in self.players.itervalues():
                         self.status = ChessMatch.STATUS_ONGOING
                     return color
-            ChessMatch._logger.info("Joined player {0} to this game", playerID)
+            ChessMatch._logger.info("Joined player %d to this game", playerID)
 
 
 def _main():

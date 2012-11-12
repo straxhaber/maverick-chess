@@ -24,7 +24,7 @@ class QLAI(MaverickAI):
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.ais.quiescenceSearchAI.QLAI")
     # Initialize if not already initialized
-    logging.basicConfig(level=logging.INFO, style="{")
+    logging.basicConfig(level=logging.INFO)
 
     # Standard piece values, from
     # http://en.wikipedia.org/wiki/Chess_piece_values
@@ -46,7 +46,7 @@ class QLAI(MaverickAI):
         moveChoices = ChessBoardUtils._enumerateAllMoves(board, color)
 
         # TODO (mattsh): write this
-        fromPosn, toPosn = None
+        (fromPosn, toPosn) = (None, None)
 
         return (fromPosn, toPosn)
 
@@ -104,8 +104,8 @@ class QLAI(MaverickAI):
         friendlyPieces = QLAI._findPiecePosnsByColor(board, color)
 
         # Loop through this color's pieces, adding to total value
-        foundPieceVals = map(lambda x: QLAI._pieceValues[board[x].pieceType],
-                             board.getPiecesOfColor(color))
+        foundPieceVals = sum([QLAI.pieceValues[board[posn].pieceType]
+                              for posn in board.getPiecesOfColor(color)])
         totalValue = sum(foundPieceVals)
 
         return totalValue

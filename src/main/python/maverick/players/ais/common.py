@@ -27,7 +27,7 @@ class MaverickAI(MaverickPlayer):
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.ais.common.MaverickAI")
     # Initialize if not already initialized
-    logging.basicConfig(level=logging.INFO, style="{")
+    logging.basicConfig(level=logging.INFO)
 
     CALCULATION_TIMEOUT = 5
     """Maximum amount of time for the AI to take to make its move"""
@@ -38,7 +38,7 @@ class MaverickAI(MaverickPlayer):
 
     def _welcomePlayer(self):
         """Display welcome messages if appropriate"""
-        MaverickAI._logger.info("I, {0} ({1}), have entered game {2}",
+        MaverickAI._logger.info("I, %s (%d), have entered game %d",
                                 self.name,
                                 self.playerID,
                                 self.gameID)
