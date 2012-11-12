@@ -26,9 +26,6 @@ import random
 #  def getResultOfPly(board, fromPosn, toPosn):
 #    reference rank/file as fromPosn.rankN and toPosn.fileN
 
-# TODO (James): Fix this in ALL project Python code before removing TODO
-# Change all short-links to something that doesn't expire
-
 # TODO (mattsh): Fix this in ALL project Python code before removing TODO
 # TODO (mattsh): If-elif clauses properly structured
 # TODO: - if it is basically a "switch" statement, have an else with an error
@@ -39,9 +36,6 @@ import random
 #  Helper methods are __funcHelping_helperName
 #  _name is private
 #  __name is REALLY private (very dependent on internal representations)
-
-# TODO (mattsh): Fix this in ALL project Python code before removing TODO
-# TODO (mattsh): Change (color, pieceType) to a dict
 
 
 class ChessPosn(object):
