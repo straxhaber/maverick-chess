@@ -126,11 +126,10 @@ class MaverickClient(object):
         return response["status"]
 
     @staticmethod
-    def __request_getState_deserializeLayout(layout):
-        """Deserialize a board layout as received over the network
+    def __request_getState_deserializeLayout(layoutRaw):
+        """De-serialize a board layoutRaw as received over the network
 
-        @param layout: The textual input, as output by
-                       TournamentSystem.__getState._serializeLayout()
+        @param layoutRaw: The textual input
 
         @return: A list of rows of pieces, each either None or a
                 ChessPiece object"""
@@ -139,7 +138,7 @@ class MaverickClient(object):
         rowsList = []
 
         # Iterate through each row, constructing ChessPiece objects
-        for row in layout:
+        for row in layoutRaw:
             rowPieceList = []
             for pieceTuple in row:
                 if pieceTuple is None:
@@ -154,10 +153,10 @@ class MaverickClient(object):
         return rowsList
 
     @staticmethod
-    def __request_getState_deserializeHistory(history):
-        """Deserealize a ChessMatch history as received over the network
+    def __request_getState_deserializeHistory(rawHistory):
+        """De-serialize a ChessMatch rawHistory as received over the network
 
-        @param history: The textual input, as produced by
+        @param rawHistory: The textual input, as produced by
                         TournamentSystem.__getState._serializeHistory()
 
         @return: A list of plies as tuples of ChessPosn objects of form
@@ -166,7 +165,7 @@ class MaverickClient(object):
         # Accumulate retur value
         plyList = []
 
-        for plyDict in history:
+        for plyDict in rawHistory:
             # Construct ply of from, to tuples and append it to the accumulator
 
             fromPosn = ChessPosn(plyDict['fromRank'], plyDict['fromFile'])
