@@ -757,8 +757,8 @@ class ChessBoard(object):
 
         # Determine step values to use in range finding
         # TODO: check code below to see if it deals with equal/0-case
-        rankStep = cmp(fromPosn.rankN, toPosn.rankN)
-        fileStep = cmp(fromPosn.fileN, toPosn.fileN)
+        rankStep = cmp(toPosn.rankN, fromPosn.rankN)
+        fileStep = cmp(toPosn.fileN, fromPosn.fileN)
 
         # Check if the path is diagonal
         if rank_delta_abs == file_delta_abs:
