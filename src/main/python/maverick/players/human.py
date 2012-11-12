@@ -30,7 +30,7 @@ class HumanGamer(MaverickPlayer):
         """Initialize a human player"""
         MaverickPlayer.__init__(self)
 
-    def getNextMove(self, board):
+    def _getNextMove(self, board):
         """Ask the player for a move and return it
 
         @return: a tuple whose first element is the origin ChessPosn and whose
@@ -71,12 +71,12 @@ class HumanGamer(MaverickPlayer):
 
         return (fromPosn, toPosn)
 
-    def initName(self):
+    def _initName(self):
         """Figure out the name of the player"""
         # Get the user's name
         self.name = raw_input("Please enter your name:  ")
 
-    def welcomePlayer(self):
+    def _welcomePlayer(self):
         """Display welcome messages if appropriate"""
         welcomeStrF = ("Welcome to Maverick Chess. You are playing as {0}. "
                        "Pieces are represented by letters on the board "
@@ -100,14 +100,14 @@ class HumanGamer(MaverickPlayer):
         welcomeStr = welcomeStrF.format(colorStr)
         self.displayMessage(welcomeStr)
 
-    def handleBadMove(self, errMsg, board, fromPosn, toPosn):
+    def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Calculate the next move based on the provided board"""
         self.displayMessage("Server didn't accept move; please retry.")
         self.displayMessage("Message from server: {0}".format(errMsg))
 
     def printBoard(self):
         """Print out an ASCII version of the chess board"""
-        board = self.request_getState()["board"]
+        board = self._request_getState()["board"]
         print(board.__str__())
 
 

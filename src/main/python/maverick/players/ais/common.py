@@ -12,6 +12,7 @@ __version__ = "pre-alpha"
 
 import logging
 
+from maverick.data import ChessBoard
 from maverick.data import ChessPosn
 from maverick.players.common import MaverickPlayer
 
@@ -31,24 +32,62 @@ class MaverickAI(MaverickPlayer):
     CALCULATION_TIMEOUT = 5
     """Maximum amount of time for the AI to take to make its move"""
 
-    def initName(self):
+    def _initName(self):
         """Figure out the name of the class"""
         pass  # Default name is appropriate
 
-    def welcomePlayer(self):
+    def _welcomePlayer(self):
         """Display welcome messages if appropriate"""
         MaverickAI._logger.info("I, {0} ({1}), have entered game {2}",
                                 self.name,
                                 self.playerID,
                                 self.gameID)
 
-    def handleBadMove(self, errMsg, board, fromPosn, toPosn):
+    def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Calculate the next move based on the provided board"""
         raise MaverickAIException(errMsg)
 
-    def getNextMove(self, board):
+    def _getNextMove(self, board):
         """Calculate the next move based on the provided board"""
         raise NotImplementedError("Must be overridden by the extending class")
+
+    @staticmethod
+    def _enumerateAllMoves(board, color):
+        """Enumerate all possible immediate moves for the given player
+
+        @return: a set of tuples of the form:
+            ListOf[(ChessPiece, ChessPosn)]"""
+
+        ## TODO (James): rewrite this function
+
+        all_moves = []  # List of all possible moves. Starts empty.
+
+        for p in ChessBoard:
+            if p.color == color:
+                all_moves.extend(p._getPossibleMoves(board, p.fromRank,
+                                                    p.fromFile))
+        return all_moves
+
+    @staticmethod
+    def _getPossibleMoves(board, fromRank, fromFile):
+        """Return all possible moves for the specified piece on this board
+
+        @return ListOf[(ChessPiece, ChessPosn, ChessPosn)]"""
+
+        ## TODO (James): Rewrite this function
+
+        # Pull out the color and piece type from the board
+        (color, piece) = board.layout[fromRank - 1][fromFile - 1]
+
+        possible_moves = []  # List of possible moves. Starts empty
+
+        for i in range(0, 7):
+            for j in range(0, 7):
+                if board.isLegalMove(color, fromRank - 1, fromFile - 1, i, j):
+                    possible_moves.append([piece, (fromRank - 1, fromFile - 1),
+                                           (i, j)])
+
+        return possible_moves
 
 
 def _main():

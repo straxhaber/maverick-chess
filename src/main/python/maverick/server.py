@@ -188,7 +188,7 @@ class TournamentSystem(object):
                           "canCastleFlags": g.board.flag_canCastle}
 
             return (True, {"youAreColor": youAreColor,
-                           "isWhitesTurn": (g.whoseTurn() == ChessBoard.WHITE),
+                           "isWhitesTurn": (g._whoseTurn() == ChessBoard.WHITE),
                            "boardState": boardState,
                            "history": g.history})
         else:

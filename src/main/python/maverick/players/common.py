@@ -60,52 +60,52 @@ class MaverickPlayer(MaverickClient):
         """Enters the player into an ongoing game (blocks until successful)
 
         @precondition: self.name must be set"""
-        self.playerID = self.request_register(self.name)
-        self.gameID = self.request_joinGame(self.playerID)
+        self.playerID = self._request_register(self.name)
+        self.gameID = self._request_joinGame(self.playerID)
 
         # Block until game has started
-        while self.request_getStatus() == ChessMatch.STATUS_PENDING:
+        while self._request_getStatus() == ChessMatch.STATUS_PENDING:
             self.displayMessage("Waiting until the game starts")
             time.sleep(MaverickPlayer.SLEEP_TIME)
 
         # NOTE: Player is now in a game that is not pending
 
-        if self.request_getState()["youAreColor"] == ChessBoard.WHITE:
+        if self._request_getState()["youAreColor"] == ChessBoard.WHITE:
             self.isWhite = True
         else:
             self.isWhite = False
 
     def run(self):
         """Registers user, connects to game, and starts gameplay loop"""
-        self.initName()
+        self._initName()
         self.startPlaying()
-        self.welcomePlayer()
+        self._welcomePlayer()
 
         # While the game is in progress
-        while self.request_getStatus() == ChessMatch.STATUS_ONGOING:
+        while self._request_getStatus() == ChessMatch.STATUS_ONGOING:
 
             # Wait until it is your turn
-            while self.request_getState()['isWhitesTurn'] != self.isWhite:
+            while self._request_getState()['isWhitesTurn'] != self.isWhite:
                 self.displayMessage("Waiting until turn")
 
                 # Break if a game is stopped while waiting
-                if self.request_getStatus() != ChessMatch.STATUS_ONGOING:
+                if self._request_getStatus() != ChessMatch.STATUS_ONGOING:
                     break
 
                 time.sleep(MaverickPlayer.SLEEP_TIME)
 
-            curBoard = self.request_getState()["board"]
-            nextMove = self.getNextMove(curBoard)
+            curBoard = self._request_getState()["board"]
+            nextMove = self._getNextMove(curBoard)
             (fromPosn, toPosn) = nextMove
 
             try:
-                self.request_makePly(fromPosn, toPosn)
+                self._request_makePly(fromPosn, toPosn)
             except MaverickClientException, msg:
-                self.handleBadMove(msg, curBoard,
+                self._handleBadMove(msg, curBoard,
                                    fromPosn, toPosn)
 
         # When this is reached, game is over
-        status = self.request_getStatus()
+        status = self._request_getStatus()
         if status == ChessMatch.STATUS_WHITE_WON:
             self.displayMessage("GAME OVER - WHITE WON")
         elif status == ChessMatch.STATUS_BLACK_WON:
@@ -117,23 +117,23 @@ class MaverickPlayer(MaverickClient):
         else:
             self.displayMessage("ERROR: UNEXPECTED GAME STATUS TRANSITION")
 
-    def initName(self):
+    def _initName(self):
         """Figure out the name of the class"""
         raise NotImplementedError("Must be overridden by the extending class")
 
-    def welcomePlayer(self):
+    def _welcomePlayer(self):
         """Display welcome messages if appropriate"""
         raise NotImplementedError("Must be overridden by the extending class")
 
-    def getNextMove(self, board):
+    def _getNextMove(self, board):
         """Calculate the next move based on the provided board"""
         raise NotImplementedError("Must be overridden by the extending class")
 
-    def handleBadMove(self, errMsg, board, fromPosn, toPosn):
+    def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Calculate the next move based on the provided board"""
         raise NotImplementedError("Must be overridden by the extending class")
 
-    def request_getStatus(self):
+    def _request_getStatus(self):
         """Requests the status of this game from the Maverick server
 
         @return: one of ChessMatch.STATUS_PENDING,
@@ -143,9 +143,9 @@ class MaverickPlayer(MaverickClient):
                         ChessMatch.STATUS_DRAWN,
                         ChessMatch.STATUS_CANCELLED,"""
 
-        return MaverickClient.request_getStatus(self, self.gameID)
+        return MaverickClient._request_getStatus(self, self.gameID)
 
-    def request_getState(self):
+    def _request_getState(self):
         """Retrieves the current game state from the server
 
         @return: A dictionary of the following form:
@@ -159,7 +159,7 @@ class MaverickPlayer(MaverickClient):
                 "history": list of plies}"""
 
         ## TODO (James): check constants to validate received data
-        curState = MaverickClient.request_getState(self,
+        curState = MaverickClient._request_getState(self,
                                                    self.playerID, self.gameID)
 
         # Construct board object from serialized data
@@ -181,9 +181,9 @@ class MaverickPlayer(MaverickClient):
 
         return stateDict
 
-    def request_makePly(self, fromPosn, toPosn):
+    def _request_makePly(self, fromPosn, toPosn):
         """Sends a makePly request to the server for the given ply"""
-        MaverickClient.request_makePly(self,
+        MaverickClient._request_makePly(self,
                                        self.playerID, self.gameID,
                                        fromPosn, toPosn)
 
