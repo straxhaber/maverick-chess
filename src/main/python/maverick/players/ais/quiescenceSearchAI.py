@@ -64,9 +64,8 @@ class QLAI(MaverickAI):
         # Loop through this color's pieces, adding to total value
         totalValue = 0
         for piece in friendlyPieces:
-            pieceType = piece[0]
-            if pieceType in QLAI._pieceValues:
-                totalValue += QLAI._pieceValues[pieceType]
+            if piece.type in QLAI._pieceValues:
+                totalValue += QLAI._pieceValues[piece.type]
 
         return totalValue
 
@@ -131,11 +130,10 @@ class QLAI(MaverickAI):
         # Sum weighted values of under-attack pieces
         weightedTotal = 0
         for piece in enemyPiecesUnderAttack:
-            pieceType = piece[0]
 
             # Check if there is a value for this piece in the mappings
-            if pieceType in QLAI._pieceValues:
-                weightedTotal += QLAI._pieceValues[pieceType]
+            if piece.type in QLAI._pieceValues:
+                weightedTotal += QLAI._pieceValues[piece.type]
 
         return weightedTotal
 
@@ -243,12 +241,12 @@ class QLAI(MaverickAI):
 
             # Test whether any move includes a move to the square in question
             for move in friendlyMoves:
-                movedPieceType = move[0]
+                movedPiece = move[0]
                 moveDst = move[3]
                 if lostPieceLoc == moveDst:
                     # Add piece value, if it exists, to accumulator
-                    if movedPieceType in QLAI._pieceValues:
-                        weightedReturn += QLAI._pieceValues[movedPieceType]
+                    if movedPiece.type in QLAI._pieceValues:
+                        weightedReturn += QLAI._pieceValues[movedPiece.type]
 
         return weightedReturn
 

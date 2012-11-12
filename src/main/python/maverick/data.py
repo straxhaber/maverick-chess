@@ -55,6 +55,14 @@ class ChessPosn(object):
         return "({0},{1})".format(self.rankN, self.fileN)
 
 
+class ChessPiece(object):
+    """Represents chess piece in Maverick"""
+
+    def __init__(self, color, type):
+        self.color = color
+        self.type = type
+
+
 class ChessBoard(object):
     """Represents a chess game in Maverick"""
 
@@ -95,28 +103,28 @@ class ChessBoard(object):
     KING = "K"
     """Constant for the king piece"""
 
-    DEFAULT_INITIAL_LAYOUT = [[(WHITE, ROOK),
-                               (WHITE, KNGT),
-                               (WHITE, BISH),
-                               (WHITE, QUEN),
-                               (WHITE, KING),
-                               (WHITE, BISH),
-                               (WHITE, KNGT),
-                               (WHITE, ROOK)],
-                              [(WHITE, PAWN)] * 8,
+    DEFAULT_INITIAL_LAYOUT = [[ChessPiece(WHITE, ROOK),
+                               ChessPiece(WHITE, KNGT),
+                               ChessPiece(WHITE, BISH),
+                               ChessPiece(WHITE, QUEN),
+                               ChessPiece(WHITE, KING),
+                               ChessPiece(WHITE, BISH),
+                               ChessPiece(WHITE, KNGT),
+                               ChessPiece(WHITE, ROOK)],
+                              [ChessPiece(WHITE, PAWN)] * 8,
                               [None] * 8,
                               [None] * 8,
                               [None] * 8,
                               [None] * 8,
-                              [(BLACK, PAWN)] * 8,
-                              [(BLACK, ROOK),
-                               (BLACK, KNGT),
-                               (BLACK, BISH),
-                               (BLACK, QUEN),
-                               (BLACK, KING),
-                               (BLACK, BISH),
-                               (BLACK, KNGT),
-                               (BLACK, ROOK)]]
+                              [ChessPiece(BLACK, PAWN)] * 8,
+                              [ChessPiece(BLACK, ROOK),
+                               ChessPiece(BLACK, KNGT),
+                               ChessPiece(BLACK, BISH),
+                               ChessPiece(BLACK, QUEN),
+                               ChessPiece(BLACK, KING),
+                               ChessPiece(BLACK, BISH),
+                               ChessPiece(BLACK, KNGT),
+                               ChessPiece(BLACK, ROOK)]]
     """A constant board layout that represents the board layout's initial state
 
         NOTE: Board layout is represented as a list of rows and 0-indexed
@@ -194,7 +202,7 @@ class ChessBoard(object):
     def __getitem__(self, posn):
         """x.__gt__(y) <==> x>y
 
-        Gets the (owner, pieceType) tuple for the given position"""
+        Gets the piece object for the given position"""
         return self.layout[posn.fileN][posn.rankN]
 
     def _executePly(self, color, fromRank, fromFile, toRank, toFile):
@@ -454,7 +462,7 @@ class ChessBoardUtils(object):
         @param color: The color of the pieces to find, ChessMatch.WHITE or
         ChessMatch.BLACK
 
-        @return: a list of tuples of form (piecetype, (rank, file) representing
+        @return: a list of tuples of form (piece, (rank, file) representing
                 the location of all pieces of the given color"""
         pieceLocations = []
 
@@ -463,10 +471,8 @@ class ChessBoardUtils(object):
             for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
                 piece = row[f]
                 if piece is not None:
-                    pieceColor = piece[0]
-                    pieceType = piece[1]
-                    if pieceColor == color:
-                        pieceLocations.append((pieceType, (r + 1, f + 1)))
+                    if piece.color == color:
+                        pieceLocations.append((piece.type, (r + 1, f + 1)))
         return (pieceLocations)
 
     @staticmethod
@@ -494,11 +500,10 @@ class ChessBoardUtils(object):
             for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
                 piece = row[f]
                 if piece is not None:
-                    pieceColor = piece[0]
-                    pieceType = piece[1]
-                    if pieceColor == color and pieceType == ChessBoard.KING:
+                    if piece.color == color and piece.type == ChessBoard.KING:
                         kingLoc = (r, f)
-                    elif pieceColor != color and pieceType != ChessBoard.KING:
+                    elif (piece.color != color and
+                          piece.type != ChessBoard.KING):
                         enemyPieceLocations.append((r, f))
         return (kingLoc, enemyPieceLocations)
 
@@ -926,7 +931,7 @@ class ChessBoardUtils(object):
         """Enumerate all possible immediate moves for the given player
 
         @return: a set of tuples of the form:
-            ListOf[(pieceType, (fromRank, fromFile), (toRank, toFile))]"""
+            ListOf[(piece, (fromRank, fromFile), (toRank, toFile))]"""
 
         ## TODO (James): rewrite this function
 
