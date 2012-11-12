@@ -13,17 +13,6 @@ import copy
 import logging
 import random
 
-# TODO (mattsh): Fix this in ALL project Python code before removing TODO
-# TODO (mattsh): If-elif clauses properly structured
-# TODO: - if it is basically a "switch" statement, have an else with an error
-# TODO: - no if cond1 then; if cond2 then. Do if cond1 then; elif cond2 then
-
-# TODO (mattsh): Fix this in ALL project Python code before removing TODO
-# TODO (mattsh): Use privacy properly (__name and _name)
-#  Helper methods are __funcHelping_helperName
-#  _name is private
-#  __name is REALLY private (very dependent on internal representations)
-
 
 class ChessPosn(object):
     """Represents a position on a chess board"""
@@ -202,7 +191,7 @@ class ChessBoard(object):
         prevCastleFlag = self.flag_canCastle[color]
         if movedPiece == self.KING:
             self.flag_canCastle[color] = (False, False)
-        if movedPiece == self.ROOK:
+        elif movedPiece == self.ROOK:
             if fromPosn.fileN == 0:  # Queen-side rook was moved
                 self.flag_canCastle[color] = (False, prevCastleFlag[1])
             elif fromPosn.fileN == 7:  # King-side rook was moved
@@ -519,21 +508,25 @@ class ChessBoard(object):
             return False
 
         # Check that a move is being made
-        if fromPosn == toPosn:
+        elif fromPosn == toPosn:
             return False
 
         # Check that the proposed move is to a square on the board
-        if toPosn.rankN not in range(0, 8) or toPosn.fileN not in range(0, 8):
+        elif (toPosn.rankN not in range(0, 8) or
+              toPosn.fileN not in range(0, 8)):
             return False
 
-        # Create the board that the proposed move would result in
-        boardAfterMove = self.getResultOfPly(self, fromPosn, toPosn)
+        # The ply could be made, but may result in a check
+        else:
 
-        # Check that the king would not be in check after the move
-        if boardAfterMove.isKingInCheck(color)[0]:
-            return False
+            # Create the board that the proposed move would result in
+            boardAfterMove = self.getResultOfPly(self, fromPosn, toPosn)
 
-        return True  # All of the error checks passed
+            # Check that the king would not be in check after the move
+            if boardAfterMove.isKingInCheck(color)[0]:
+                return False
+            else:
+                return True  # All of the error checks passed
 
     def getResultOfPly(self, fromPosn, toPosn):
         """Returns the board object resulting from the given move
@@ -722,6 +715,8 @@ class ChessBoard(object):
                         # Create a ChessPosn to append to the return list
                         piecePosn = ChessPosn(r, f)
                         enemyPiecePosns.append(piecePosn)
+                    else:
+                        pass  # This is not one of the requested pieces
         return (kingLoc, enemyPiecePosns)
 
     @staticmethod
@@ -884,14 +879,14 @@ class ChessMatch(object):
                     self.status = ChessMatch.STATUS_BLACK_WON
                 elif self.isCheckMated(ChessBoard.BLACK):
                     self.status = ChessMatch.STATUS_WHITE_WON
+                else:
+                    self.history.append((fromPosn, toPosn))
 
-                self.history.append((fromPosn, toPosn))
-
-                # Log this ply
-                logStrF = "Added ({0},{1}) -> ({2}, {3}) to match history"
-                ChessMatch._logger.debug(logStrF,
-                                         fromPosn.rankN, fromPosn.fileN,
-                                         toPosn.rankN, toPosn.fileN)
+                    # Log this ply
+                    logStrF = "Added ({0},{1}) -> ({2}, {3}) to match history"
+                    ChessMatch._logger.debug(logStrF,
+                                             fromPosn.rankN, fromPosn.fileN,
+                                             toPosn.rankN, toPosn.fileN)
                 return "SUCCESS"
             else:
                 return "Illegal move"
@@ -907,16 +902,16 @@ class ChessMatch(object):
         if self.status != ChessMatch.STATUS_PENDING:
             return  # Can only join a pending game (no mid-game replacements)
 
-        if playerID in self.players.values():
+        elif playerID in self.players.itervalues():
             return  # Don't allow a player to play both sides
-
-        for color in [ChessBoard.WHITE, ChessBoard.BLACK]:
-            if self.players[color] is None:
-                self.players[color] = playerID
-                if None not in self.players.values():
-                    self.status = ChessMatch.STATUS_ONGOING
-                return color
-        ChessMatch._logger.info("Joined player {0} to this game", playerID)
+        else:
+            for color in [ChessBoard.WHITE, ChessBoard.BLACK]:
+                if self.players[color] is None:
+                    self.players[color] = playerID
+                    if None not in self.players.itervalues():
+                        self.status = ChessMatch.STATUS_ONGOING
+                    return color
+            ChessMatch._logger.info("Joined player {0} to this game", playerID)
 
 
 def _main():

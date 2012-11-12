@@ -79,7 +79,7 @@ class TournamentSystem(object):
         error message"}).  On success, returns a tuple of form (True,
         {"PlayerID": someInteger})"""
 
-        if name in self.players.values():
+        if name in self.players.itervalues():
             return (False, {"error": "player with this name already exists"})
         else:
             newID = _getUniqueInt(self.players.keys())
@@ -188,7 +188,8 @@ class TournamentSystem(object):
                           "canCastleFlags": g.board.flag_canCastle}
 
             return (True, {"youAreColor": youAreColor,
-                           "isWhitesTurn": (g._whoseTurn() == ChessBoard.WHITE),
+                           "isWhitesTurn": (g._whoseTurn() == 
+                                            ChessBoard.WHITE),
                            "boardState": boardState,
                            "history": g.history})
         else:

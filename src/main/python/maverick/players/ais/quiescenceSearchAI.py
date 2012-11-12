@@ -267,7 +267,8 @@ class QLAI(MaverickAI):
             hypoBoard[lostPiecePosn] = None
 
             # Build list of possible friendly moves
-            friendlyMoves = ChessBoardUtils._enumerateAllMoves(hypoBoard, color)
+            friendlyMoves = ChessBoardUtils._enumerateAllMoves(hypoBoard,
+                                                               color)
 
             # Test whether any move includes a move to the square in question
             for move in friendlyMoves:
