@@ -162,7 +162,7 @@ class MaverickClient(object):
         @return: A list of plies as tuples of ChessPosn objects of form
                 (fromPosn, toPosn)"""
 
-        # Accumulate retur value
+        # Accumulate return value
         plyList = []
 
         for plyDict in rawHistory:
