@@ -253,7 +253,7 @@ def _asciify_json_list(data):
         elif isinstance(item, list):
             item = _asciify_json_list(item)
         elif isinstance(item, dict):
-            item = _asciify_json_list(item)
+            item = _asciify_json_dict(item)
         rv.append(item)
     return rv
 
