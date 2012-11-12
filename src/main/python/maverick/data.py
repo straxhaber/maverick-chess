@@ -42,7 +42,7 @@ class ChessBoard(object):
     # Initialize class logger
     _logger = logging.getLogger("maverick.data.ChessBoard")
     # Initialize if not already initialized
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, style="{")
 
     BOARD_LAYOUT_SIZE = 8
     """The width and height of a standard chess board layout."""

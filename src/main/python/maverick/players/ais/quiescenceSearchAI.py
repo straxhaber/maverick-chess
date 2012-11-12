@@ -24,7 +24,7 @@ class QLAI(MaverickAI):
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.ais.quiescenceSearchAI.QLAI")
     # Initialize if not already initialized
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, style="{")
 
     # Standard piece values, from
     # http://en.wikipedia.org/wiki/Chess_piece_values

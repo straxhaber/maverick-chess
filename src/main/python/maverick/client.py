@@ -27,7 +27,7 @@ class MaverickClient(object):
     # Initialize class _logger
     _logger = logging.getLogger("maverick.client.MaverickClient")
     # Initialize if not already initialized
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, style="{")
 
     TIMEOUT = 2
     """Timeout (in seconds) for the telnet connections"""

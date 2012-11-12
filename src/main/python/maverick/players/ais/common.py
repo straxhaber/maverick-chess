@@ -27,7 +27,7 @@ class MaverickAI(MaverickPlayer):
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.ais.common.MaverickAI")
     # Initialize if not already initialized
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, style="{")
 
     CALCULATION_TIMEOUT = 5
     """Maximum amount of time for the AI to take to make its move"""

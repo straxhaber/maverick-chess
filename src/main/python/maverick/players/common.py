@@ -28,7 +28,7 @@ class MaverickPlayer(MaverickClient):
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.common.MaverickPlayer")
     # Initialize if not already initialized
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, "{")
 
     SLEEP_TIME = 1
     """Amount of time to wait between requests when polling"""
