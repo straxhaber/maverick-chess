@@ -13,7 +13,6 @@ __version__ = "pre-alpha"
 import logging
 
 from maverick.data import ChessBoard
-from maverick.data import ChessPosn
 from maverick.players.common import MaverickPlayer
 
 
@@ -45,7 +44,8 @@ class MaverickAI(MaverickPlayer):
 
     def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Calculate the next move based on the provided board"""
-        raise MaverickAIException(errMsg)
+        raise MaverickAIException("Invalid move made: {}->{}".format(fromPosn,
+                                                                     toPosn))
 
     def _getNextMove(self, board):
         """Calculate the next move based on the provided board"""

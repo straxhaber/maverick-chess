@@ -415,10 +415,11 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
             # Provide client with the error
 
             # Compute error response
-            response = "ERROR %s [query=\"%s\"]".format(errMsg, line)
+            response = "ERROR {0}".format(errMsg, line)
 
             # Log error response
-            MaverickServerProtocol._logger.info(response)
+            logStrF = "RESPONSE [query=\"%s\"]: %s"
+            MaverickServerProtocol._logger.info(logStrF, line, response)
 
             # Send error response
             self.sendLine(response)

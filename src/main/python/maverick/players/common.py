@@ -98,9 +98,9 @@ class MaverickPlayer(MaverickClient):
 
             try:
                 self._request_makePly(fromPosn, toPosn)
-            except MaverickClientException, msg:
-                self._handleBadMove(msg, curBoard,
-                                   fromPosn, toPosn)
+            except MaverickClientException, e:
+                self._handleBadMove(e.message, curBoard,
+                                    fromPosn, toPosn)
 
         # When this is reached, game is over
         status = self._request_getStatus()
@@ -124,10 +124,6 @@ class MaverickPlayer(MaverickClient):
         raise NotImplementedError("Must be overridden by the extending class")
 
     def _getNextMove(self, board):
-        """Calculate the next move based on the provided board"""
-        raise NotImplementedError("Must be overridden by the extending class")
-
-    def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Calculate the next move based on the provided board"""
         raise NotImplementedError("Must be overridden by the extending class")
 
