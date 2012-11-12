@@ -165,7 +165,7 @@ class TournamentSystem(object):
         error message"}).  On success, returns a tuple of form (True,
         {"youAreColor": ChessBoard.WHITE or ChessBoard.BLACK,
          "isWhitesTurn": someBoolean,
-         "boardState": {"board": 2d board array, or form ChessBoard.board,
+         "boardState": {"board": 2d board array, or form ChessBoard.layout,
                          "enPassantFlags": flags of form
                          ChessBoard.flag_enpassant,
                          "canCastleFlags": flags of form
@@ -183,12 +183,12 @@ class TournamentSystem(object):
             else:
                 return (False, {"error": "You are not a player in this game"})
 
-            boardState = {"board": g.board.board,
+            boardState = {"board": g.board.layout,
                           "enPassantFlags": g.board.flag_enpassant,
                           "canCastleFlags": g.board.flag_canCastle}
 
             return (True, {"youAreColor": youAreColor,
-                           "isWhitesTurn": (g._whoseTurn() == 
+                           "isWhitesTurn": (g._whoseTurn() ==
                                             ChessBoard.WHITE),
                            "boardState": boardState,
                            "history": g.history})

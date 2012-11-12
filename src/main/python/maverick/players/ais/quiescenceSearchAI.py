@@ -208,8 +208,8 @@ class QLAI(MaverickAI):
         emptyLocations = []
 
         # Check each location to see if it is occupied
-        for r in range(0, ChessBoard.BOARD_SIZE):
-            for f in range(0, ChessBoard.BOARD_SIZE):
+        for r in range(0, ChessBoard.BOARD_LAYOUT_SIZE):
+            for f in range(0, ChessBoard.BOARD_LAYOUT_SIZE):
                 testLoc = (r, f)
 
                 if testLoc not in pieceLocations:
