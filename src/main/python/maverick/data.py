@@ -629,19 +629,16 @@ class ChessBoard(object):
         if not checkInfo[0]:
             return False
 
-        # TODO (mattsh): I don't think this is what you meant to do, James
-        # I re-factored it, but this is the same function as your old code
-        # It doesn't seem right, though
+        # TODO (James): Verify this function's functionality
 
         # Pull out the rank and file of the piece putting the king in check
-        # TODO (mattsh): James please check that the comment above is correct
-        checkPieceLoc = checkInfo[1]
+        checkPiecePosn = checkInfo[1]
 
         # Find the king whose checkmate status is in question
         chkdKingLoc = self._findKingAndEnemies(color)[0]
 
         # Get a list of locations that, if moved to, might alleviate check
-        interruptLocations = ChessBoard._getInterruptSquares(checkPieceLoc,
+        interruptLocations = ChessBoard._getInterruptSquares(checkPiecePosn,
                                                              chkdKingLoc)
         # Get locations of all this player's non-king pieces
         myNonKingPieceLocs = self._findKingAndEnemies(otherColor)[1]
@@ -704,8 +701,6 @@ class ChessBoard(object):
                 Element 1: A list of ChessTuples representing
                 the location of all non-king enemy pieces"""
 
-        ## TODO (James): rewrite this to use findPiecePosnsByColor
-
         enemyPiecePosns = []  # List of ChessPosns of non-king pieces
 
         # Locate given player's king, and opposing player's non-king pieces
@@ -763,9 +758,16 @@ class ChessBoard(object):
         path_file_values = []  # File values of squares that must be open
 
         # Determine step values to use in range finding
-        # TODO: check code below to see if it deals with equal/0-case
-        rankStep = cmp(toPosn.rankN, fromPosn.rankN)
-        fileStep = cmp(toPosn.fileN, fromPosn.fileN)
+
+        if toPosn.rankN > fromPosn.rankN:
+            rankStep = 1
+        else:
+            rankStep = -1
+
+        if toPosn.fileN > fromPosn.fileN:
+            fileStep = 1
+        else:
+            fileStep = -1
 
         # Check if the path is diagonal
         if rank_delta_abs == file_delta_abs:
