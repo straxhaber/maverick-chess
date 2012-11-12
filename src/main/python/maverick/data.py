@@ -13,6 +13,54 @@ import copy
 import logging
 import random
 
+# TODO (mattsh): Fix this in ALL project Python code before removing TODO
+# TODO (mattsh): all position information should be of the form:
+#  TODO: - Positions are ChessPosn structure
+#  TODO: - Getting the value at a position can be done like so: board[posn]
+#           See ChessBoard.__getitem(posn) for more info
+#  TODO: - All positions 0-delimited (except for user inputs)
+#  TODO: - Return move pair values as 2-tuple (fromPosn, toPosn)
+#  TODO: - don't use variable name "file": it is the name of a built-in module
+#  TODO: - Arguments to functions named one of:  posn, fromPosn, toPosn
+#  TODO: - Structure of return values clearly documented in PyDocs
+# Reason behind these changes: too much variation in posn data representation
+# Example:
+#  def getResultBoard(board, fromPosn, toPosn):
+#    reference rank/file as fromPosn.rankN and toPosn.fileN
+
+# TODO (mattsh): Fix this in ALL project Python code before removing TODO
+# TODO (mattsh): Fix multi-line comments
+# Correct:
+#     code[code] = code, code.code code  # Single-line comment (simple)
+#
+#     # Single-line comment  # Single-line comment (more visible)
+#     code[code] = code, code.code code
+#
+#     # Multi-line
+#     # comment
+#     code[code] = code, code.code code
+#
+#
+# Not okay:
+#     code[code] = code, code.code code  # Multi-line
+#                                        # comment
+
+# TODO (mattsh): Fix this in ALL project Python code before removing TODO
+# TODO (mattsh): If-elif clauses properly structured
+#  TODO: - if it is basically a "switch" statement, have an else with an error
+#  TODO: - no if cond1 then; if cond2 then. Do if cond1 then; elif cond2 then
+
+
+class ChessPosn(object):
+    """Represents a position on a chess board"""
+
+    def __init__(self, rankN, fileN):
+        self.rankNum = rankN
+        self.fileNum = fileN
+
+    def __repr__(self):
+        return "({0},{1})".format(self.rankN, self.fileN)
+
 
 class ChessBoard(object):
     """Represents a chess game in Maverick"""
@@ -121,7 +169,9 @@ class ChessBoard(object):
                         PAWN: {WHITE: 'P', BLACK: 'p'}}
     """Mapping of piece constants to their visual represenataion"""
 
-    def __init__(self, startLayout=None, startEnpassantFlags=None,
+    def __init__(self,
+                 startLayout=None,
+                 startEnpassantFlags=None,
                  startCanCastleFlags=None):
         """Initialize a new Chess game according to normal Chess rules
 
@@ -157,6 +207,12 @@ class ChessBoard(object):
                 ChessBoard.BLACK: (True, True)}
         else:
             self.flag_canCastle = copy.deepcopy(startCanCastleFlags)
+
+    def __getitem__(self, posn):
+        """x.__gt__(y) <==> x>y
+
+        Gets the (owner, pieceType) tuple for the given position"""
+        return self.layout[posn.fileN][posn.rankN]
 
     def makePly(self, color, fromRank, fromFile, toRank, toFile):
         """Makes a ply if legal

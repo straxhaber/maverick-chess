@@ -1,8 +1,6 @@
 #!/usr/bin/python
 
 """human.py: A simple chess client for human users to play games"""
-from maverick.client import MaverickClientException
-
 __author__ = "James Magnarelli, Matthew Strax-Haber, and Brad Fournier"
 __version__ = "1.0"
 
@@ -101,8 +99,7 @@ class HumanGamer(MaverickPlayer):
     def printBoard(self):
         """Print out an ASCII version of the chess board"""
         board = self.request_getState()["board"]
-        boardText = board.__str__()
-        print(boardText)
+        print(board.__str__())
 
 
 def main(host='127.0.0.1', port=7782):
