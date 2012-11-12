@@ -154,10 +154,10 @@ class MaverickClient(object):
         self._makeRequest("MAKE_PLY",
                           playerID=playerID,
                           gameID=gameID,
-                          fromRank=fromPosn.rankNum,
-                          fromFile=fromPosn.fileNum,
-                          toRank=toPosn.rankNum,
-                          toFile=toPosn.fileNum)
+                          fromRank=fromPosn.rankN,
+                          fromFile=fromPosn.fileN,
+                          toRank=toPosn.rankN,
+                          toFile=toPosn.fileN)
 
 
 def _asciify_json_list(data):

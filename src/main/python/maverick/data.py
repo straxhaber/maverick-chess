@@ -18,11 +18,11 @@ class ChessPosn(object):
     """Represents a position on a chess board"""
 
     def __init__(self, rankN, fileN):
-        self.rankNum = rankN
-        self.fileNum = fileN
+        self.rankN = rankN
+        self.fileN = fileN
 
     def __repr__(self):
-        return "({0},{1})".format(self.rankNum, self.fileNum)
+        return "({0},{1})".format(self.rankN, self.fileN)
 
 
 class ChessPiece(object):
@@ -173,7 +173,7 @@ class ChessBoard(object):
         """x.__gt__(y) <==> x>y
 
         Gets the piece object for the given position"""
-        return self.layout[posn.fileNum][posn.rankNum]
+        return self.layout[posn.fileN][posn.rankN]
 
     def _executePly(self, color, fromPosn, toPosn):
         """Make a ply, assuming that it is legal
@@ -192,21 +192,21 @@ class ChessBoard(object):
         if movedPiece == ChessBoard.KING:
             self.flag_canCastle[color] = (False, False)
         elif movedPiece == ChessBoard.ROOK:
-            if fromPosn.fileNum == 0:  # Queen-side rook was moved
+            if fromPosn.fileN == 0:  # Queen-side rook was moved
                 self.flag_canCastle[color] = (False, prevCastleFlag[1])
-            elif fromPosn.fileNum == 7:  # King-side rook was moved
+            elif fromPosn.fileN == 7:  # King-side rook was moved
                 self.flag_canCastle[color] = (prevCastleFlag[0], False)
 
         # Change in rank from origin to destination
-        rankDeltaAbs = abs(toPosn.rankNum - fromPosn.rankNum)
+        rankDeltaAbs = abs(toPosn.rankN - fromPosn.rankN)
 
         pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
 
         # If we've moved a pawn for the first time, set en passant flags
         if (movedPiece == ChessBoard.PAWN and
-            fromPosn.rankNum == pawnStartRank and
+            fromPosn.rankN == pawnStartRank and
             rankDeltaAbs == 2):
-            self.flag_enpassant[color][fromPosn.fileNum] = True
+            self.flag_enpassant[color][fromPosn.fileN] = True
 
         # Move piece to destination
         self.board[toPosn] = movedPiece
@@ -216,20 +216,20 @@ class ChessBoard(object):
 
         # Remove en passant pawns, if relevant
 
-        if (self.flag_enpassant[otherColor][toPosn.fileNum] and
-            toPosn.rankNum == otherPawnStartRank):
+        if (self.flag_enpassant[otherColor][toPosn.fileN] and
+            toPosn.rankN == otherPawnStartRank):
             # Check if a black pawn is taken via en passant
             if otherColor == ChessBoard.WHITE:
-                self.board[pawnStartRank + 2][toPosn.fileNum] = None
+                self.board[pawnStartRank + 2][toPosn.fileN] = None
             # Check if a white pawn is taken via en passant
             elif otherColor == ChessBoard.BLACK:
-                self.board[pawnStartRank - 2][toPosn.fileNum] = None
+                self.board[pawnStartRank - 2][toPosn.fileN] = None
 
         # Log the successful move
         logStrF = "Moved piece from ({0},{1}), to ({2},{3})"
         ChessBoard._logger.info(logStrF,
-                                fromPosn.rankNum, fromPosn.fileNum,
-                                toPosn.rankNum, toPosn.fileNum)
+                                fromPosn.rankN, fromPosn.fileN,
+                                toPosn.rankN, toPosn.fileN)
 
     def makePly(self, color, fromPosn, toPosn):
         """Make a ply if legal
@@ -260,10 +260,10 @@ class ChessBoard(object):
 
         s = []
         s.append(header)
-        for rankNum in range(ChessBoard.BOARD_LAYOUT_SIZE):
-            rank = self.layout[rankNum]
+        for rankN in range(ChessBoard.BOARD_LAYOUT_SIZE):
+            rank = self.layout[rankN]
             rankStr = " ".join([ChessBoard._getPieceChar(c) for c in rank])
-            s.append("{0} {1} {0}".format(rankNum + 1, rankStr))
+            s.append("{0} {1} {0}".format(rankN + 1, rankStr))
         s.append(header)
 
         return "\n".join(s)
@@ -303,10 +303,10 @@ class ChessBoard(object):
         pathSquares = ChessBoard.__getSquaresInPath(fromPosn, toPosn)
 
         # Number spaces moved vertically
-        rank_delta_abs = abs(toPosn.rankNum - fromPosn.rankNum)
+        rank_delta_abs = abs(toPosn.rankN - fromPosn.rankN)
 
         # Number of spaces moved horizontally
-        file_delta_abs = abs(toPosn.fileNum - fromPosn.fileNum)
+        file_delta_abs = abs(toPosn.fileN - fromPosn.fileN)
 
         # Check if squares are adjacent or, if not, if there is a path between
         # the two
@@ -398,10 +398,10 @@ class ChessBoard(object):
             return False
 
         # Number of spaces moved vertically
-        rank_delta_abs = abs(toPosn.rankNum - fromPosn.rankNum)
+        rank_delta_abs = abs(toPosn.rankN - fromPosn.rankN)
 
         # Number of spaces moved horizontally
-        file_delta_abs = abs(toPosn.fileNum - fromPosn.fileNum)
+        file_delta_abs = abs(toPosn.fileN - fromPosn.fileN)
 
         # Check move legality for individual piece types
         if origin_entry.pieceType == ChessBoard.PAWN:
@@ -426,7 +426,7 @@ class ChessBoard(object):
             elif rank_delta_abs == 2:
                 if file_delta_abs != 0:
                     return False  # Pawns cannot move up 2 and left/right
-                elif fromPosn.rankNum != pawnStartRank:
+                elif fromPosn.rankN != pawnStartRank:
                     return False  # Pawns can move two spaces only on 1st move
 
         elif origin_entry.pieceType == ChessBoard.ROOK:
@@ -488,14 +488,14 @@ class ChessBoard(object):
             if file_delta_abs != 1 and rank_delta_abs != 1:
 
                 # Check for illegal kingside castle
-                if (toPosn.fileNum == castleFileKingside and
-                    toPosn.rankNum == kingStartRank):
+                if (toPosn.fileN == castleFileKingside and
+                    toPosn.rankN == kingStartRank):
                     if not castleFlagKingside:
                         return False
 
                 # Check for illegal queenside castle
-                elif (toPosn.fileNum == castleFileQueenside and
-                      toPosn.rankNum == kingStartRank):
+                elif (toPosn.fileN == castleFileQueenside and
+                      toPosn.rankN == kingStartRank):
                     if not castleFlagQueenside:
                         return False
 
@@ -512,8 +512,8 @@ class ChessBoard(object):
             return False
 
         # Check that the proposed move is to a square on the board
-        elif (toPosn.rankNum not in range(0, 8) or
-              toPosn.fileNum not in range(0, 8)):
+        elif (toPosn.rankN not in range(0, 8) or
+              toPosn.fileN not in range(0, 8)):
             return False
 
         # The ply could be made, but may result in a check
@@ -658,9 +658,9 @@ class ChessBoard(object):
         possibleKingMoves = []  # List of tuples of possible king moves
 
         # If no alleviating moves found, enumerate king's possible moves
-        for r in range(chkdKingLoc.rankNum - 1, chkdKingLoc.rankNum + 1):
-            for f in range(chkdKingLoc.fileNum - 1, chkdKingLoc.fileNum + 1):
-                if r != chkdKingLoc.rankNum or f != chkdKingLoc.fileNum:
+        for r in range(chkdKingLoc.rankN - 1, chkdKingLoc.rankN + 1):
+            for f in range(chkdKingLoc.fileN - 1, chkdKingLoc.fileN + 1):
+                if r != chkdKingLoc.rankN or f != chkdKingLoc.fileN:
 
                     # Build ChessPosn object to append to list
                     kingMove = ChessPosn(r, f)
@@ -748,53 +748,47 @@ class ChessBoard(object):
         from origin to destination, not including the origin or destination"""
 
         # Number of spaces moved vertically
-        rank_delta_abs = abs(toPosn.rankNum - fromPosn.rankNum)
+        rank_delta_abs = abs(toPosn.rankN - fromPosn.rankN)
 
         # Number of spaces moved horizontally
-        file_delta_abs = abs(toPosn.fileNum - fromPosn.fileNum)
+        file_delta_abs = abs(toPosn.fileN - fromPosn.fileN)
         path_rank_values = []  # Rank values of squares that must be open
         path_file_values = []  # File values of squares that must be open
 
-        #Determine step values to use in range finding
-        if fromPosn.rankNum < toPosn.rankNum:
-            rankStep = 1
-        else:
-            rankStep = -1
-
-        if fromPosn.fileNum < toPosn.fileNum:
-            fileStep = 1
-        else:
-            fileStep = -1
+        # Determine step values to use in range finding
+        # TODO: check code below to see if it deals with equal/0-case
+        rankStep = cmp(fromPosn.rankN, toPosn.rankN)
+        fileStep = cmp(fromPosn.fileN, toPosn.fileN)
 
         # Check if the path is diagonal
         if rank_delta_abs == file_delta_abs:
             # Build up lists of rank and file values to be included in path
-            for r in range(fromPosn.rankNum, toPosn.rankNum, rankStep):
+            for r in range(fromPosn.rankN, toPosn.rankN, rankStep):
                 # Check that include origin or dest is not included
-                if r not in [fromPosn.rankNum, toPosn.rankNum]:
+                if r not in [fromPosn.rankN, toPosn.rankN]:
                     path_rank_values.append(r)
 
-            for f in range(fromPosn.fileNum, toPosn.fileNum, fileStep):
-                if f not in [fromPosn.fileNum, toPosn.fileNum]:
+            for f in range(fromPosn.fileN, toPosn.fileN, fileStep):
+                if f not in [fromPosn.fileN, toPosn.fileN]:
                     path_file_values.append(f)
 
         #Check if the path is horizontal
         elif rank_delta_abs == 0:
             # Build up lists of rank and file values to be included in path
-            for f in range(fromPosn.fileNum, toPosn.fileNum, fileStep):
+            for f in range(fromPosn.fileN, toPosn.fileN, fileStep):
                 # Check that origin and destination are not included
-                if f not in [fromPosn.fileNum, toPosn.fileNum]:
+                if f not in [fromPosn.fileN, toPosn.fileN]:
                     path_file_values.append(f)
-            path_rank_values = [fromPosn.rankNum] * len(path_file_values)
+            path_rank_values = [fromPosn.rankN] * len(path_file_values)
 
         #Check if the path is vertical
         elif rank_delta_abs != 0:
             #Build up lists of rank and file values to be included in path
-            for r in range(fromPosn.rankNum, toPosn.rankNum, rankStep):
+            for r in range(fromPosn.rankN, toPosn.rankN, rankStep):
                 # Check that origin and destination aren't included
-                if r not in [fromPosn.rankNum, toPosn.rankNum]:
+                if r not in [fromPosn.rankN, toPosn.rankN]:
                     path_rank_values.append(r)
-            path_file_values = [fromPosn.fileNum] * len(path_file_values)
+            path_file_values = [fromPosn.fileN] * len(path_file_values)
 
         # If the path is not straight-line, return the empty list
         else:
@@ -886,10 +880,10 @@ class ChessMatch(object):
                     # Log this ply
                     logStrF = "Added ({0},{1}) -> ({2}, {3}) to match history"
                     ChessMatch._logger.debug(logStrF,
-                                             fromPosn.rankNum,
-                                             fromPosn.fileNum,
-                                             toPosn.rankNum,
-                                             toPosn.fileNum)
+                                             fromPosn.rankN,
+                                             fromPosn.fileN,
+                                             toPosn.rankN,
+                                             toPosn.fileN)
                 return "SUCCESS"
             else:
                 return "Illegal move"
