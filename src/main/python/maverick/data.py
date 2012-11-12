@@ -21,11 +21,11 @@ import random
 #  TODO: - All positions 0-delimited (except for user inputs)
 #  TODO: - Return move pair values as 2-tuple (fromPosn, toPosn)
 #  TODO: - don't use variable name "file": it is the name of a built-in module
-#  TODO: - Arguments to functions named one of:  posn, fromPosn, toPosn
+#  TODO: - Arguments to functions named one of: posn, fromPosn, toPosn
 #  TODO: - Structure of return values clearly documented in PyDocs
 # Reason behind these changes: too much variation in posn data representation
 # Example:
-#  def getResultBoard(board, fromPosn, toPosn):
+#  def getResultOfPly(board, fromPosn, toPosn):
 #    reference rank/file as fromPosn.rankN and toPosn.fileN
 
 # TODO (mattsh): Fix this in ALL project Python code before removing TODO
@@ -47,14 +47,20 @@ import random
 
 # TODO (mattsh): Fix this in ALL project Python code before removing TODO
 # TODO (mattsh): If-elif clauses properly structured
-#  TODO: - if it is basically a "switch" statement, have an else with an error
-#  TODO: - no if cond1 then; if cond2 then. Do if cond1 then; elif cond2 then
+# TODO: - if it is basically a "switch" statement, have an else with an error
+# TODO: - no if cond1 then; if cond2 then. Do if cond1 then; elif cond2 then
 
 # TODO (mattsh): Fix this in ALL project Python code before removing TODO
 # TODO (mattsh): Use privacy properly (__name and _name)
 #  Helper methods are __funcHelping_helperName
 #  _name is private
 #  __name is REALLY private (very dependent on internal representations)
+
+# TODO (mattsh): Fix this in ALL project Python code before removing TODO
+# TODO (mattsh): Pydoc first line cannot be multi-line
+
+# TODO (mattsh): Fix this in ALL project Python code before removing TODO
+# TODO (mattsh): Change (color, pieceType) to a dict
 
 
 class ChessPosn(object):
@@ -70,6 +76,9 @@ class ChessPosn(object):
 
 class ChessBoard(object):
     """Represents a chess game in Maverick"""
+
+    # TODO (mattsh): Represent 50-move draw rule
+    # TODO (mattsh): Represent threefold repetition draw rule
 
     # Initialize class logger
     _logger = logging.getLogger("maverick.data.ChessBoard")
@@ -210,7 +219,7 @@ class ChessBoard(object):
     def _executePly(self, color, fromRank, fromFile, toRank, toFile):
         """Make a ply, assuming that it is legal
 
-        Arguments and return values are the same as makePly for a legal move"""
+        Arguments and are the same as makePly for a legal move"""
 
         # Remove moving piece from starting position
         movedPiece = self.board[fromRank][fromFile]
@@ -261,8 +270,6 @@ class ChessBoard(object):
         ChessBoard._logger.info(logStrF,
                                 fromRank, fromFile, toRank, toFile)
 
-        return True
-
     def makePly(self, color, fromRank, fromFile, toRank, toFile):
         """Make a ply if legal
 
@@ -282,12 +289,14 @@ class ChessBoard(object):
         - Moves the rook as well if the king is castling"""
 
         # Check if the move is legal
-        if not ChessBoardUtils.isLegalMove(self, color, fromRank,
-                                           fromFile, toRank, toFile):
-            return False
-        else:
+        isLegal = ChessBoardUtils.isLegalMove(self,
+                                              color,
+                                              fromRank, fromFile,
+                                              toRank, toFile)
+        if isLegal:
             self._executePly(color, fromRank, fromFile, toRank, toFile)
-            return True
+
+        return isLegal
 
     def __str__(self):
         """Prints out a human-readable ASCIII version of the board"""
@@ -314,6 +323,7 @@ class ChessBoardUtils(object):
 
     @staticmethod
     def getOtherColor(color):
+        # TODO (mattsh): to ChessBoard
         """Return the opposing color
 
         @param color: one of ChessBoard.WHITE or ChessBoard.BLACK
@@ -330,6 +340,7 @@ class ChessBoardUtils(object):
 
     @staticmethod
     def isCenterSquare(rankVal, fileVal):
+        # TODO (mattsh): to QSAI
         """Return true if the given position is a center square
 
         Center squares are those that are one of D4,D5,E4,E5
@@ -344,6 +355,7 @@ class ChessBoardUtils(object):
 
     @staticmethod
     def getSquaresInPath(fromRank, fromFile, toRank, toFile):
+        # TODO (mattsh): helper function
         """Returns a list of squares in the straight-line path
         from origin to destination (not including the origin or destination
         squares.)  Returns an empty list if no straight-line path exists.
@@ -411,6 +423,7 @@ class ChessBoardUtils(object):
 
     @staticmethod
     def isClearLinearPath(board, fromRank, fromFile, toRank, toFile):
+        # TODO (mattsh): helper function
         """Returns true if the straight-line path from origin to destination
         is not obstructed.  To be used for horizontal, vertical, or diagonal
         moves.
@@ -452,6 +465,7 @@ class ChessBoardUtils(object):
 
     @staticmethod
     def findColorPieces(board, color):
+        # TODO (mattsh): helper function
         """Returns a list of of all pieces of the given color.
 
         @param board: The board to use for this check.
@@ -475,6 +489,7 @@ class ChessBoardUtils(object):
 
     @staticmethod
     def findKingAndEnemies(board, color):
+        # TODO (mattsh): helper function
         """Returns the location of the king of the given color, and a list
         of locations of all non-king pieces of the opposite color.
 
@@ -509,14 +524,15 @@ class ChessBoardUtils(object):
 
     @staticmethod
     def getInterruptSquares(fromRank, fromFile, toRank, toFile):
+        # TODO (mattsh): helper function
         """Returns a list of squares that, if moved to, would inhibit the
         piece at fromRank, fromFile from being able to move to toRank, toFile.
         This list will always include (fromRank, fromFile)
 
-        @param fromRank: the rank of the starting position  (integer in [0,7])
-        @param fromFile: the file of the starting position  (integer in [0,7])
-        @param toRank: the rank of the ending position  (integer in [0,7])
-        @param toFile: the file of the ending position  (integer in [0,7])
+        @param fromRank: the rank of the starting position (integer in [0,7])
+        @param fromFile: the file of the starting position (integer in [0,7])
+        @param toRank: the rank of the ending position (integer in [0,7])
+        @param toFile: the file of the ending position (integer in [0,7])
 
         @return: A list of (rank, file) tuples representing squares that, if
         moved to, would inhibit the piece at fromRank, fromFile from being able
@@ -538,7 +554,8 @@ class ChessBoardUtils(object):
 
     @staticmethod
     def isCheckMated(board, color):
-        """ Returns True if the given color is in checkmate given the current
+        # TODO (mattsh): to ChessBoard
+        """Returns True if the given color is in checkmate given the current
         board state.
 
         @param board: The board to use for this check
@@ -608,7 +625,7 @@ class ChessBoardUtils(object):
                                                intruptFil):
 
                     # Generate the board that such a move would produce
-                    boardAfterMove = ChessBoardUtils.getResultBoard(board,
+                    boardAfterMove = ChessBoardUtils.getResultOfPly(board,
                                                                     pieceRank,
                                                                     pieceFile,
                                                                     intruptRnk,
@@ -635,7 +652,7 @@ class ChessBoardUtils(object):
             if ChessBoardUtils.isLegalMove(board, color, checkedKingR,
                                            checkedKingF, toRank, toFile):
                 # Generate the board that such a move would produce
-                boardAfterMove = ChessBoardUtils.getResultBoard(board,
+                boardAfterMove = ChessBoardUtils.getResultOfPly(board,
                                                                 pieceRank,
                                                                 pieceFile,
                                                                 toRank,
@@ -654,6 +671,7 @@ class ChessBoardUtils(object):
 
     @staticmethod
     def isKingInCheck(board, color):
+        # TODO (mattsh): to ChessBoard
         """Determines whether the king of the given color is in check
         in the given board.
 
@@ -705,13 +723,11 @@ class ChessBoardUtils(object):
         return (False, None)
 
     @staticmethod
-    def getResultBoard(board, fromRank, fromFile, toRank, toFile):
+    def getResultOfPly(board, fromRank, fromFile, toRank, toFile):
+        # TODO: move to ChessBoard
         """Returns the board object resulting from the given move
 
-        Assumes that the move is legal.
-        Constructs the return value via a deep copy.
-        NOTE: does not make the given move on the actual board, or modify game
-        state.
+        NOTE: Does not check legality of move, and creates a copy for operation
 
         @param fromRank: the rank of the piece to be moved
         @param fromFile: the file of the piece to be moved
@@ -719,8 +735,7 @@ class ChessBoardUtils(object):
         @param toFile: the file to which the piece is to be moved
 
         @return: a ChessBoard object identical to that which would result from
-                the given ply being made on this board
-        """
+                the given ply being made on this board"""
 
         # Figure out the color being moved
         color = board.board[fromRank][fromFile][0]
@@ -735,6 +750,7 @@ class ChessBoardUtils(object):
 
     @staticmethod
     def isLegalMove(board, color, fromRank, fromFile, toRank, toFile):
+        # TODO: move to ChessBoard
         """Returns true if the specified move is legal
 
         Arguments are the same as ChessBoard.makePly
@@ -935,7 +951,7 @@ class ChessBoardUtils(object):
             return False
 
         # Create the board that the proposed move would result in
-        boardAfterMove = ChessBoardUtils.getResultBoard(board,
+        boardAfterMove = ChessBoardUtils.getResultOfPly(board,
                                                         fromRank, fromFile,
                                                         toRank, toFile)
 
