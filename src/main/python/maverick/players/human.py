@@ -44,8 +44,6 @@ class HumanGamer(MaverickPlayer):
             qStr = "Please enter move (e.g., \"a1 b3\" to move a1 to b3):  "
             playerMove = raw_input(qStr)
 
-            # TODO (mattsh): get the actual move stuff to work - 0-delimited?
-
             # Validate move
             if len(playerMove) == 6:
                 HumanGamer._logger.debug("Invalid input formatting")

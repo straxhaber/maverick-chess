@@ -175,7 +175,12 @@ class MaverickClient(object):
         return plyList
 
     def _request_isMyTurn(self, gameID, playerID):
-        """TODO"""
+        """Return True if it is the given player's turn in the given game
+
+        @param gameID: The integer id of an in-progress game
+        @param playerID: The integer id of a registered player
+
+        @return: True if it is the given player's turn, false otherwise"""
         response = self._makeRequest("IS_MY_TURN",
                                      gameID=gameID,
                                      playerID=playerID)

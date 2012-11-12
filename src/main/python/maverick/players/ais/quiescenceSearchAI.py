@@ -19,7 +19,7 @@ from maverick.data import ChessPosn
 
 
 class QLAI(MaverickAI):
-    """TODO PyDoc"""
+    """Represents a quiescence search-based AI for use with Maverick"""
 
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.ais.quiescenceSearchAI.QLAI")

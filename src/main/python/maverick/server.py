@@ -189,8 +189,6 @@ class TournamentSystem(object):
                 {"fromPosn": (fromRank, fromFile),
                 "toPosn": (toRank, toFile)}"""
 
-        ## TODO (James): finish this! (and write the client end)
-
         # Accumulator for serialized posns
         plyDictList = []
 
