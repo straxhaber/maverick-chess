@@ -50,6 +50,12 @@ import random
 #  TODO: - if it is basically a "switch" statement, have an else with an error
 #  TODO: - no if cond1 then; if cond2 then. Do if cond1 then; elif cond2 then
 
+# TODO (mattsh): Fix this in ALL project Python code before removing TODO
+# TODO (mattsh): Use privacy properly (__name and _name)
+#  Helper methods are __funcHelping_helperName
+#  _name is private
+#  __name is REALLY private (very dependent on internal representations)
+
 
 class ChessPosn(object):
     """Represents a position on a chess board"""
@@ -67,6 +73,7 @@ class ChessBoard(object):
 
     # Initialize class logger
     _logger = logging.getLogger("maverick.data.ChessBoard")
+    # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
     BOARD_LAYOUT_SIZE = 8
@@ -150,7 +157,7 @@ class ChessBoard(object):
              ['p','p','p','p','p','p','p','p'],
              ['r','n','b','q','k','b','n','r']]"""
 
-    PAWN_STARTING_RANKS = {WHITE: 2, BLACK: 7}
+    PAWN_STARTING_RANKS = {WHITE: 1, BLACK: 6}
     """Map of correct starting ranks for pawns
 
     Pawns have the special property that they only move up/down"""
@@ -214,8 +221,64 @@ class ChessBoard(object):
         Gets the (owner, pieceType) tuple for the given position"""
         return self.layout[posn.fileN][posn.rankN]
 
+    def _executePly(self, color, fromRank, fromFile, toRank, toFile):
+        """Make a ply, assuming that it is legal
+
+        Arguments and return values are the same as makePly for a legal move"""
+
+        # Remove moving piece from starting position
+        movedPiece = self.board[fromRank][fromFile]
+        self.board[fromRank][fromFile] = None
+
+        # Reset en passant flags to false
+        self.flag_enpassant[color] = [False] * ChessBoard.BOARD_SIZE
+
+        # Update castle flags
+        prevCastleFlag = self.flag_canCastle[color]
+        if movedPiece == self.KING:
+            self.flag_canCastle[color] = (False, False)
+        if movedPiece == self.ROOK:
+            if fromFile == 0:  # Queen-side rook was moved
+                self.flag_canCastle[color] = (False, prevCastleFlag[1])
+            elif fromFile == 7:  # King-side rook was moved
+                self.flag_canCastle[color] = (prevCastleFlag[0], False)
+
+        rankDeltaAbs = abs(toRank - fromRank)  # Change in rank from origin
+                                                # to destination
+        pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
+
+        # If we've moved a pawn for the first time, set en passant flags
+        if (movedPiece == self.PAWN and
+            fromRank == pawnStartRank and
+            rankDeltaAbs == 2):
+            self.flag_enpassant[color][fromFile] = True
+
+        # Move piece to destination
+        self.board[toRank][toFile] = movedPiece
+
+        otherColor = ChessBoardUtils.getOtherColor(color)
+        otherPawnStartRank = ChessBoard.PAWN_STARTING_RANKS[otherColor]
+
+        # Remove en passant pawns, if relevant
+
+        if (self.flag_enpassant[otherColor][toFile] and
+            toRank == otherPawnStartRank):
+            # Check if a black pawn is taken via en passant
+            if otherColor == ChessBoard.WHITE:
+                self.board[pawnStartRank + 2][toFile] = None
+            # Check if a white pawn is taken via en passant
+            elif otherColor == ChessBoard.BLACK:
+                self.board[pawnStartRank - 2][toFile] = None
+
+        # Log the successful move
+        logStrF = "Moved piece from ({0},{1}), to ({2},{3})"
+        ChessBoard._logger.info(logStrF,
+                                fromRank, fromFile, toRank, toFile)
+
+        return True
+
     def makePly(self, color, fromRank, fromFile, toRank, toFile):
-        """Makes a ply if legal
+        """Make a ply if legal
 
         @param color: the color making the move (BLACK or WHITE constant)
         @param fromRank: the rank from which piece is moving (integer in [0,7])
@@ -225,62 +288,19 @@ class ChessBoard(object):
 
         @return: True if the move was successful, False otherwise
 
-        - Check if the move is legal
-        - Remove the moving piece from the starting position
-        - Update flags if necessary
-        - Add the moving piece to the ending position (possibly overwriting)
-        - Delete pawns in en passant state if relevant
-        - Moves the rook as well if the king is castling """
+        - Checks if the move is legal
+        - Removes the moving piece from the starting position
+        - Updates flags if necessary
+        - Adds the moving piece to the ending position (possibly overwriting)
+        - Deletes pawns in en passant state if relevant
+        - Moves the rook as well if the king is castling"""
 
         # Check if the move is legal
-        if not self.isLegalMove(color, fromRank, fromFile, toRank, toFile):
+        if not ChessBoardUtils.isLegalMove(self, color, fromRank,
+                                           fromFile, toRank, toFile):
             return False
         else:
-            # Remove moving piece from starting position
-            movedPiece = self.layout[fromRank - 1][fromFile - 1]
-            self.layout[fromRank - 1][fromFile - 1] = None
-
-            # Reset en passant flags to false
-            self.flag_enpassant[color] = [False] * ChessBoard.BOARD_SIZE
-
-            # Update castle flags
-            prevCastleFlag = self.flag_canCastle[color]
-            if movedPiece == self.KING:
-                self.flag_canCastle[color] = (False, False)
-            if movedPiece == self.ROOK:
-                if fromFile == 1:  # Queen-side rook was moved
-                    self.flag_canCastle[color] = (False, prevCastleFlag[1])
-                elif fromFile == 8:  # King-side rook was moved
-                    self.flag_canCastle[color] = (prevCastleFlag[0], False)
-
-            rankDeltaAbs = abs(toRank - fromRank)  # Change in rank from origin
-                                                    # to destination
-            pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
-
-            # If we've moved a pawn for the first time, set en passant flags
-            if (movedPiece == self.PAWN and
-                fromRank == pawnStartRank and
-                rankDeltaAbs == 2):
-                self.flag_enpassant[color][fromFile - 1] = True
-
-            # Move piece to destination
-            self.board[toRank - 1][toFile - 1] = movedPiece
-
-            # Remove en passant pawns, if relevant
-            if (self.flag_enpassant[color][toFile - 1] and
-                toRank == pawnStartRank):
-                # Check if a black pawn is taken via en passant
-                if color == ChessBoard.WHITE:
-                    self.layout[pawnStartRank - 2][toFile - 1] = None
-                # Check if a white pawn is taken via en passant
-                elif color == ChessBoard.BLACK:
-                    self.layout[pawnStartRank][toFile - 1] = None
-
-            # Log the successful move
-            logStrF = "Moved piece from ({0},{1}), to ({2},{3})"
-            ChessBoard._logger.info(logStrF,
-                                    fromRank, fromFile, toRank, toFile)
-
+            self._executePly(color, fromRank, fromFile, toRank, toFile)
             return True
 
     def __str__(self):
@@ -303,6 +323,7 @@ class ChessBoardUtils(object):
 
     # Initialize class logger
     _logger = logging.getLogger("maverick.data.ChessBoardUtils")
+    # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
     @staticmethod
@@ -715,11 +736,14 @@ class ChessBoardUtils(object):
                 the given ply being made on this board
         """
 
-        # Copy the board, so as not to modify the previous data
+        # Figure out the color being moved
+        color = board.board[fromRank][fromFile][0]
+
+        # Copy the board, so as not to modify anything real
         postMoveBoard = copy.deepcopy(board)
 
         # Make the proposed ply on the hypothetical board
-        postMoveBoard.makePly(fromRank, fromFile, toRank, toFile)
+        postMoveBoard._executePly(color, fromRank, fromFile, toRank, toFile)
 
         return postMoveBoard
 
@@ -765,13 +789,14 @@ class ChessBoardUtils(object):
          direction ("a" file or "h" file) is True"""
 
         # Pull out the (color, origin_type) entry at the from/to board position
-        origin_entry = board.layout[fromRank - 1][fromFile - 1]
-        destin_entry = board.layout[toRank - 1][toFile - 1]
+        origin_entry = board.board[fromRank][fromFile]
+        destin_entry = board.board[toRank][toFile]
 
         # Check if:
         #  - there is no piece at the position
         #  - the player doesn't own a piece at the from position
         if origin_entry is None or origin_entry[0] != color:
+            print "0\n"
             return False
 
         origin_type = origin_entry[1]  # the type of piece at the origin
@@ -820,8 +845,9 @@ class ChessBoardUtils(object):
                 return False
 
             #check that path between origin and destination is clear
-            if not ChessBoardUtils.isClearLinearPath(board, fromRank,
-                                                     fromFile, toRank, toFile):
+            if not ChessBoardUtils.isClearLinearPath(board,
+                                                     fromRank, fromFile,
+                                                     toRank, toFile):
                 return False
 
         elif origin_type == ChessBoard.KNGT:
@@ -850,7 +876,8 @@ class ChessBoardUtils(object):
                 return False
 
             #check that path between origin and destination is clear
-            if not ChessBoard.isClearLinearPath(board, fromRank, fromFile,
+            if not ChessBoard.isClearLinearPath(board,
+                                                fromRank, fromFile,
                                                 toRank, toFile):
                 return False
 
@@ -868,7 +895,8 @@ class ChessBoardUtils(object):
                 return False
 
             #check that path between origin and destination is clear
-            if not ChessBoardUtils.isClearLinearPath(board, fromRank, fromFile,
+            if not ChessBoardUtils.isClearLinearPath(board,
+                                                     fromRank, fromFile,
                                                      toRank, toFile):
                 return False
 
@@ -917,13 +945,13 @@ class ChessBoardUtils(object):
             return False
 
         # Check that the proposed move is to a square on the board
-        if toRank not in range(1, 9) or toFile not in range(1, 9):
+        if toRank not in range(0, 8) or toFile not in range(0, 8):
             return False
 
         # Create the board that the proposed move would result in
-        boardAfterMove = ChessBoardUtils.getResultBoard(board, fromRank,
-                                                        fromFile, toRank,
-                                                        toFile)
+        boardAfterMove = ChessBoardUtils.getResultBoard(board,
+                                                        fromRank, fromFile,
+                                                        toRank, toFile)
 
         # Check that the king would not be in check after the move
         if ChessBoardUtils.isKingInCheck(boardAfterMove, color)[0]:
@@ -1047,9 +1075,10 @@ class ChessMatch(object):
 
             if self.board.makePly(color, fromRank, fromFile, toRank, toFile):
                 # Check for checkmates
-                if ChessBoardUtils.isCheckMated(self, ChessBoard.WHITE):
+                if ChessBoardUtils.isCheckMated(self.board, ChessBoard.WHITE):
                     self.status = ChessMatch.STATUS_BLACK_WON
-                elif ChessBoardUtils.isCheckMated(self, ChessBoard.BLACK):
+                elif ChessBoardUtils.isCheckMated(self.board,
+                                                  ChessBoard.BLACK):
                     self.status = ChessMatch.STATUS_WHITE_WON
 
                 self.history.append(((fromRank, fromFile), (toRank, toFile)))

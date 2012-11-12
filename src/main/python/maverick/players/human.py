@@ -20,6 +20,7 @@ class HumanGamer(MaverickPlayer):
 
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.human.HumanGamer")
+    # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
     # TODO (mattsh): put some logging throughout this class

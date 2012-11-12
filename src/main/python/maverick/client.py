@@ -26,6 +26,7 @@ class MaverickClient(object):
 
     # Initialize class _logger
     _logger = logging.getLogger("maverick.client.MaverickClient")
+    # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
     TIMEOUT = 2
@@ -151,10 +152,10 @@ class MaverickClient(object):
         @param playerID: The integer playerID of a registered player.
         @param gameID: The integer gameID of an in-progress game which
         has been joined by the given player
-        @param fromRank: The rank of the piece to be moved
-        @param fromFile: The file of the piece to be moved
-        @param toRank: The file to which the piece should be moved
-        @param toFile: The rank to which the piece should be moved"""
+        @param fromRank: The rank of the piece to be moved (0-delimited)
+        @param fromFile: The file of the piece to be moved (0-delimited)
+        @param toRank: File to which the piece should be moved (0-delimited)
+        @param toFile: Rank to which the piece should be moved (0-delimited)"""
 
         self._makeRequest("MAKE_PLY",
                           playerID=playerID,
