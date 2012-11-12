@@ -9,9 +9,6 @@ __version__ = "1.0"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-## TODO (James): For ALL files in this project, modify logging so that it uses
-#                the old style of string formatting
-
 import copy
 import logging
 import random
