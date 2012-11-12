@@ -1,5 +1,6 @@
 import unittest
 
+from maverick.data import ChessBoard
 from maverick.server import TournamentSystem
 
 
@@ -11,10 +12,14 @@ class TestTournamentSystem(unittest.TestCase):
     p2 = ts.request_register("b")[1]["playerID"]
     gid = ts.request_joinGame(p1)[1]["gameID"]
     ts.request_joinGame(p2)
-    state = ts.request_getState(gid)
+    state = ts.request_getState(p2, gid)
 
-    wp = state[1]['players']['O']
-    bp = state[1]['players']['X']
+    if state['youAreColor'] == ChessBoard.WHITE:
+      wp = p2
+      bp = p1
+    else:
+      wp = p1
+      bp = p2
 
     print ts.request_makePly(wp, gid, 2, 5, 4, 5)
     print ts.request_makePly(bp, gid, 7, 5, 5, 5)

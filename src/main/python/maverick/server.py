@@ -312,7 +312,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
                       "GET_STATE": (TournamentSystem.getState,
                                     {"playerID", "gameID"},
                                     {"youAreColor", "isWhitesTurn",
-                                     "boardState", "history"}),
+                                     "board", "history"}),
                       "MAKE_PLY": (TournamentSystem.makePly,
                                    {"playerID", "gameID",
                                     "fromRank", "fromFile",
