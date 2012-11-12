@@ -13,6 +13,8 @@ __version__ = "1.0"
 import json
 import logging
 
+from maverick.data import ChessBoard
+from maverick.data import ChessPiece
 from telnetlib import Telnet
 
 
@@ -122,6 +124,34 @@ class MaverickClient(object):
         response = self._makeRequest("GET_STATUS", gameID=gameID)
         return response["status"]
 
+    @staticmethod
+    def __request_getState_deserializeLayout(layout):
+        """Deserializes a board layout as received over the network
+
+        @param layout: The textual input, as output by
+                       TournamentSystem.__getState._serializeLayout(board)
+
+        @return: A list of rows of pieces, each either None or a
+                ChessPiece object"""
+
+        # Accumulator for return value
+        rowsList = []
+
+        # Iterate through each row, constructing ChessPiece objects
+        for row in layout:
+            rowPieceList = []
+            for pieceTuple in row:
+                if pieceTuple is None:
+                    rowPieceList.append(None)
+                else:
+                    ## TODO (James): Validate form of tuples?
+                    pieceObj = ChessPiece(pieceTuple[0], pieceTuple[1])
+                    rowPieceList.append(pieceObj)
+            # This row is complete, append it to the master list
+            rowsList.append(rowPieceList)
+
+        return rowsList
+
     def _request_getState(self, playerID, gameID):
         """Return the current state of the game
 
@@ -136,10 +166,29 @@ class MaverickClient(object):
         response = self._makeRequest("GET_STATE",
                                      playerID=playerID,
                                      gameID=gameID)
-        return {"youAreColor": response["youAreColor"],
-                "isWhitesTurn": response["isWhitesTurn"],
-                "boardState": response["boardState"],
-                "history": response["history"]}
+        ## TODO (James): check constants to validate received data
+
+        # Construct board object from serialized data
+
+        # The serialized board layout
+        rawLayout = response["board"]["layout"]
+        # The deserialized board layout
+        layout = MaverickClient.__request_getState_deserializeLayout(rawLayout)
+        curEnPassantFlags = response["board"]["enPassantFlags"]
+        curCastleFlags = response["board"]["canCastleFlags"]
+
+        curBoardObj = ChessBoard(startLayout=layout,
+                                 startEnpassantFlags=curEnPassantFlags,
+                                 startCanCastleFlags=curCastleFlags)
+
+        # Build up return dictionary
+        stateDict = {}
+        stateDict["youAreColor"] = response["youAreColor"]
+        stateDict["isWhitesTurn"] = response["isWhitesTurn"]
+        stateDict["board"] = curBoardObj
+        stateDict["history"] = response["history"]
+
+        return stateDict
 
     def _request_makePly(self, playerID, gameID, fromPosn, toPosn):
         """Makes the given ply for the given player if legal to do so

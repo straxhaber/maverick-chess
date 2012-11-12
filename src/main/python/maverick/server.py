@@ -153,6 +153,30 @@ class TournamentSystem(object):
         else:
             return (False, {"error": "Invalid game ID"})
 
+    @staticmethod
+    def __getState_serializeLayout(board):
+        """Serializes the layout of the given ChessBoard object
+
+        @param board: The ChessBoard object to serialize
+
+        @return: A list of rows of piece information, each either None or a
+                tuple of form (pieceColor, pieceType)"""
+
+        # Accumulator for return value
+        rowsList = []
+        # Iterate through each row constructing piece tuples
+        for row in board.layout:
+            rowPieceTupleList = []
+            for piece in row:
+                if piece is None:
+                    rowPieceTupleList.append(None)
+                else:
+                    pieceTuple = (piece.color, piece.pieceType)
+                    rowPieceTupleList.append(pieceTuple)
+            rowsList.append(rowPieceTupleList)
+
+        return rowsList
+
     def getState(self, playerID, gameID):
         """Returns the current state of the game
 
@@ -166,11 +190,12 @@ class TournamentSystem(object):
         error message"}).  On success, returns a tuple of form (True,
         {"youAreColor": ChessBoard.WHITE or ChessBoard.BLACK,
          "isWhitesTurn": someBoolean,
-         "boardState": {"board": 2d board array, or form ChessBoard.layout,
-                         "enPassantFlags": flags of form
-                         ChessBoard.flag_enpassant,
-                         "canCastleFlags": flags of form
-                         ChessBoard.flag_canCastle"},
+         "board": {"layout": 2d board array as returned by
+                        __getState_serializeLayout,
+                   "enPassantFlags": flags of form
+                        ChessBoard.flag_enpassant,
+                    "canCastleFlags": flags of form
+                        ChessBoard.flag_canCastle"},
          "history": listOfPlies})"""
 
         if gameID in self.games:
@@ -184,14 +209,16 @@ class TournamentSystem(object):
             else:
                 return (False, {"error": "You are not a player in this game"})
 
-            boardState = {"board": g.board.layout,
-                          "enPassantFlags": g.board.flag_enpassant,
-                          "canCastleFlags": g.board.flag_canCastle}
+            serialLayout = TournamentSystem.__getState_serializeLayout(g.board)
+
+            board = {"layout": serialLayout,
+                     "enPassantFlags": g.board.flag_enpassant,
+                     "canCastleFlags": g.board.flag_canCastle}
 
             return (True, {"youAreColor": youAreColor,
                            "isWhitesTurn": (g._whoseTurn() ==
                                             ChessBoard.WHITE),
-                           "boardState": boardState,
+                           "board": board,
                            "history": g.history})
         else:
             return (False, {"error": "Invalid game ID"})
@@ -354,6 +381,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
                     try:
                         # Dispatch command to TournamentSystem instance
                         (successP, result) = tsCommand(self._ts, **requestArgs)
+
                     except:
                         # Give an error if caught an exception
                         errMsg = "Uncaught exception"

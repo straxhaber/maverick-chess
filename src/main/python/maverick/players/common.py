@@ -149,35 +149,11 @@ class MaverickPlayer(MaverickClient):
         @return: A dictionary of the following form:
                 {"youAreColor": ChessBoard.WHITE or ChessBoard.BLACK,
                 "isWhitesTurn": True or False,
-                "boardState": {"board": 2d board array,
-                              "enPassantFlags": flags of form
-                                              ChessBoard.flag_enpassant,
-                              "canCastleFlags": flags of form
-                                              ChessBoard.flag_canCastle},
+                "board": a ChessBoard object representing the current board,
                 "history": list of plies}"""
 
-        ## TODO (James): check constants to validate received data
-        curState = MaverickClient._request_getState(self,
+        return MaverickClient._request_getState(self,
                                                    self.playerID, self.gameID)
-
-        # Construct board object from serialized data
-
-        curBoardArray = curState["boardState"]["board"]
-        curEnPassantFlags = curState["boardState"]["enPassantFlags"]
-        curCastleFlags = curState["boardState"]["canCastleFlags"]
-
-        curBoardObj = ChessBoard(startBoard=curBoardArray,
-                                 startEnpassantFlags=curEnPassantFlags,
-                                 startCanCastleFlags=curCastleFlags)
-
-        # Build up return dictionary
-        stateDict = {}
-        stateDict["youAreColor"] = curState["youAreColor"]
-        stateDict["isWhitesTurn"] = curState["isWhitesTurn"]
-        stateDict["board"] = curBoardObj
-        stateDict["history"] = curState["history"]
-
-        return stateDict
 
     def _request_makePly(self, fromPosn, toPosn):
         """Sends a makePly request to the server for the given ply"""

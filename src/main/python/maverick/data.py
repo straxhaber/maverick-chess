@@ -21,6 +21,9 @@ __version__ = "1.0"
 ## TODO (James): For ALL files in this project, make sure that documentation
 #                has more than just type information
 
+## TODO (James): For ALL files in this project, make sure that log statements
+#                utilize ChessPosn's __repr__ function
+
 import copy
 import logging
 import random
@@ -42,7 +45,7 @@ class ChessPiece(object):
 
     def __init__(self, color, pieceType):
         self.color = color
-        self.pieceType = type
+        self.pieceType = pieceType
 
 
 class ChessBoard(object):
@@ -742,7 +745,7 @@ class ChessBoard(object):
         if piece is None:
             return '.'
         else:
-            (c, p) = piece
+            (c, p) = (piece.color, piece.pieceType)
             return ChessBoard.HUMAN_PIECE_TEXT[p][c]
 
     @staticmethod
