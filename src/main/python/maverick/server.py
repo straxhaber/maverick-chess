@@ -81,7 +81,9 @@ class TournamentSystem(object):
         {"PlayerID": someInteger})"""
 
         if name in self.players.itervalues():
-            return (False, {"error": "player with this name already exists"})
+            userPID = dict((self.players[k], k) for k in self.players)[name]
+            self._logger.debug("Player already exists, giving ID")
+            return (True, {"playerID": userPID})
         else:
             newID = _getUniqueInt(self.players.keys())
             self.players[newID] = name
@@ -415,10 +417,11 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
             # Provide client with the error
 
             # Compute error response
-            response = "ERROR %s [query=\"%s\"]".format(errMsg, line)
+            response = "ERROR {0}".format(errMsg, line)
 
             # Log error response
-            MaverickServerProtocol._logger.info(response)
+            logStrF = "RESPONSE [query=\"%s\"]: %s"
+            MaverickServerProtocol._logger.info(logStrF, line, response)
 
             # Send error response
             self.sendLine(response)

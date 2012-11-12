@@ -12,10 +12,10 @@ __version__ = "1.0"
 
 import json
 import logging
+from telnetlib import Telnet
 
 from maverick.data import ChessBoard
 from maverick.data import ChessPiece
-from telnetlib import Telnet
 
 
 class MaverickClientException(Exception):
@@ -70,8 +70,8 @@ class MaverickClient(object):
             elif status != "WAITING_FOR_REQUEST\r\n":
                 err = "bad_status"
         if err != None:
-            MaverickClient._logger.warn("Invalid server welcome (%s): %s",
-                                        err, welcome)
+            MaverickClient._logger.error("Invalid server welcome (%s): %s",
+                                         err, welcome)
             raise MaverickClientException("Invalid server welcome")
 
         # Send the request
@@ -93,11 +93,11 @@ class MaverickClient(object):
             return result
         elif statusString == "ERROR":
             errMsg = value[:]
-            MaverickClient._logger.warn("Received error response: %s", errMsg)
+            MaverickClient._logger.debug("Received error response: %s", errMsg)
             raise MaverickClientException(errMsg)
         else:
             msg = "Invalid status string received"
-            MaverickClient._logger.warn(msg)
+            MaverickClient._logger.error(msg)
             raise MaverickClientException(msg)
 
     def _request_register(self, name):

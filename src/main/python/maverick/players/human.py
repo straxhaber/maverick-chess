@@ -84,7 +84,7 @@ class HumanGamer(MaverickPlayer):
 
     def _welcomePlayer(self):
         """Display welcome messages if appropriate"""
-        welcomeStrF = ("Welcome to Maverick Chess. You are playing as {0}. "
+        welcomeStrF = ("\nWelcome to Maverick Chess. You are playing as {0}. "
                        "Pieces are represented by letters on the board "
                         "as follows:\n"
                         "P = pawn\n"
@@ -107,7 +107,7 @@ class HumanGamer(MaverickPlayer):
         self.displayMessage(welcomeStr)
 
     def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
-        """Calculate the next move based on the provided board"""
+        """Handle a bad move in some smart way"""
         self.displayMessage("Server didn't accept move; please retry.")
         self.displayMessage("Message from server: {0}".format(errMsg))
 
@@ -115,6 +115,7 @@ class HumanGamer(MaverickPlayer):
         """Print out an ASCII version of the chess board"""
         board = self._request_getState()["board"]
         print(board.__str__())
+        print
 
 
 def main(host='127.0.0.1', port=7782):

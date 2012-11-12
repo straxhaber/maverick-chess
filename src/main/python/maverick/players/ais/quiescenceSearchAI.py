@@ -15,11 +15,11 @@ import logging
 
 from maverick.players.ais.common import MaverickAI
 from maverick.data import ChessBoard
-from maverick.data import ChessBoardUtils
 from maverick.data import ChessPosn
 
 
 class QLAI(MaverickAI):
+    """TODO PyDoc"""
 
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.ais.quiescenceSearchAI.QLAI")
@@ -36,6 +36,7 @@ class QLAI(MaverickAI):
                     ChessBoard.QUEN: 9}
 
     def _getNextMove(self, board):
+        """TODO PyDoc"""
 
         # Figure out our color
         if self.isWhite:
@@ -43,7 +44,7 @@ class QLAI(MaverickAI):
         else:
             color = ChessBoard.BLACK
 
-        moveChoices = ChessBoardUtils._enumerateAllMoves(board, color)
+        moveChoices = self._enumerateAllMoves(board, color)
 
         # TODO (mattsh): write this
         (fromPosn, toPosn) = (None, None)
@@ -210,7 +211,7 @@ class QLAI(MaverickAI):
                     emptyLocations.append(testLoc)
 
         # Build list of possible friendly piece moves
-        friendlyMoves = ChessBoardUtils._enumerateAllMoves(board, color)
+        friendlyMoves = self._enumerateAllMoves(board, color)
 
         # Find possible moves to empty squares and build up return value
 
@@ -261,7 +262,7 @@ class QLAI(MaverickAI):
             hypoBoard[lostPiecePosn] = None
 
             # Build list of possible friendly moves
-            friendlyMoves = ChessBoardUtils._enumerateAllMoves(hypoBoard,
+            friendlyMoves = self._enumerateAllMoves(hypoBoard,
                                                                color)
 
             # Test whether any move includes a move to the square in question
