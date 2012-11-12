@@ -70,10 +70,8 @@ class MaverickPlayer(MaverickClient):
 
         # NOTE: Player is now in a game that is not pending
 
-        if self._request_getState()["youAreColor"] == ChessBoard.WHITE:
-            self.isWhite = True
-        else:
-            self.isWhite = False
+        self.isWhite = (self._request_getState()["youAreColor"] ==
+                        ChessBoard.WHITE)
 
     def run(self):
         """Registers user, connects to game, and starts gameplay loop"""
@@ -95,8 +93,8 @@ class MaverickPlayer(MaverickClient):
                 time.sleep(MaverickPlayer.SLEEP_TIME)
 
             curBoard = self._request_getState()["board"]
-            nextMove = self._getNextMove(curBoard)
-            (fromPosn, toPosn) = nextMove
+
+            (fromPosn, toPosn) = self._getNextMove(curBoard)
 
             try:
                 self._request_makePly(fromPosn, toPosn)
@@ -165,11 +163,11 @@ class MaverickPlayer(MaverickClient):
         # Construct board object from serialized data
 
         curBoardArray = curState["boardState"]["board"]
-        curEPFlags = curState["boardState"]["enPassantFlags"]
+        curEnPassantFlags = curState["boardState"]["enPassantFlags"]
         curCastleFlags = curState["boardState"]["canCastleFlags"]
 
         curBoardObj = ChessBoard(startBoard=curBoardArray,
-                                 startEnpassantFlags=curEPFlags,
+                                 startEnpassantFlags=curEnPassantFlags,
                                  startCanCastleFlags=curCastleFlags)
 
         # Build up return dictionary
