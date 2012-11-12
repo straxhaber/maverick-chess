@@ -48,15 +48,21 @@ class HumanGamer(MaverickPlayer):
 
             # Validate move
             if len(playerMove) == 6:
+                HumanGamer._logger.debug("Invalid input formatting")
                 self.displayMessage("Invalid: too many or too few characters")
             elif playerMove[2] != " ":
+                HumanGamer._logger.debug("Invalid input formatting")
                 self.displayMessage("Invalid: put a space between coordinates")
             elif (playerMove[0] not in ChessBoard.HUMAN_FILE_LETTERS or
                   playerMove[3] not in ChessBoard.HUMAN_FILE_LETTERS):
-                self.displayMessage("Invalid: rank not in 1 to 8")
+                logStr = "Invalid: file not in a to h"
+                HumanGamer._logger.debug(logStr)
+                self.displayMessage(logStr)
             elif (playerMove[1] not in ChessBoard.HUMAN_RANK_NUMBERS or
                   playerMove[4] not in ChessBoard.HUMAN_RANK_NUMBERS):
-                self.displayMessage("Invalid: rank not in 1 to 8")
+                logStr = "Invalid: rank not in 1 to 8"
+                HumanGamer._logger.debug(logStr)
+                self.displayMessage(logStr)
             else:
                 haveValidMove = True
 
