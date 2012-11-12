@@ -596,8 +596,7 @@ class ChessBoard(object):
 
             # If a move to the king's location is legal, the king is in check
             if self.isLegalMove(otherColor, pieceLoc, kingLoc):
-                ChessBoard._logger.info("Found that %s is in check",
-                                             color)
+                ChessBoard._logger.debug("Not in check")
                 return (True, pieceLoc)
 
         # If none of the enemy pieces could move to the king's location, the
