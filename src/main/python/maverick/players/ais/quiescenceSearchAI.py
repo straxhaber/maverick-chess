@@ -75,8 +75,6 @@ class QLAI(MaverickAI):
         @return: a list of ChessPosns representing
                 the location of all pieces of the given color"""
 
-        ## TODO (James): only return posns and get piecetype in calling code
-        #                if needed.
         pieceLocations = []
 
         for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
@@ -98,9 +96,6 @@ class QLAI(MaverickAI):
 
         Note that the king's value is not included - the undesirability of the
         king's capture will be incorporated in other heuristics."""
-
-        # Get a list of non-king pieces for this color
-        friendlyPieces = QLAI._findPiecePosnsByColor(board, color)
 
         # Loop through this color's pieces, adding to total value
         foundPieceVals = sum([QLAI.pieceValues[board[posn].pieceType]

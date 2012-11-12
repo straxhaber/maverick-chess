@@ -56,7 +56,7 @@ class MaverickAI(MaverickPlayer):
         """Enumerate all possible immediate moves for the given player
 
         @return: a set of tuples of the form:
-            ListOf[(ChessPiece, ChessPosn)]"""
+            ListOf[(ChessPiece, fromPosn, toPosn)]"""
 
         ## TODO (James): rewrite this function
 
@@ -70,9 +70,9 @@ class MaverickAI(MaverickPlayer):
 
     @staticmethod
     def _getPossibleMoves(board, fromRank, fromFile):
-        """Return all possible moves for the specified piece on this board
+        """Return all possible moves for the specified piece on given board
 
-        @return ListOf[(ChessPiece, ChessPosn, ChessPosn)]"""
+        @return ListOf[(ChessPiece, fromPosn, toPosn)]"""
 
         ## TODO (James): Rewrite this function
 
