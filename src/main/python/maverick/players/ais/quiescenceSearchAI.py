@@ -163,8 +163,8 @@ class QLAI(MaverickAI):
         for piece in enemyPiecesUnderAttack:
 
             # Check if there is a value for this piece in the mappings
-            if piece.type in QLAI._pieceValues:
-                weightedTotal += QLAI._pieceValues[piece.type]
+            if piece.pieceType in QLAI._pieceValues:
+                weightedTotal += QLAI._pieceValues[piece.pieceType]
 
         return weightedTotal
 
@@ -275,8 +275,9 @@ class QLAI(MaverickAI):
                 moveDstPosn = move[3]
                 if lostPiecePosn == moveDstPosn:
                     # Add piece value, if it exists, to accumulator
-                    if movedPiece.type in QLAI._pieceValues:
-                        weightedReturn += QLAI._pieceValues[movedPiece.type]
+                    if movedPiece.pieceType in QLAI._pieceValues:
+                        pieceVal = QLAI._pieceValues[movedPiece.pieceType]
+                        weightedReturn += pieceVal
 
         return weightedReturn
 
