@@ -20,7 +20,6 @@ import random
 #           See ChessBoard.__getitem(posn) for more info
 #  TODO: - All positions 0-delimited (except for user inputs)
 #  TODO: - Return move pair values as 2-tuple (fromPosn, toPosn)
-#  TODO: - don't use variable name "file": it is the name of a built-in module
 #  TODO: - Arguments to functions named one of: posn, fromPosn, toPosn
 #  TODO: - Structure of return values clearly documented in PyDocs
 # Reason behind these changes: too much variation in posn data representation
@@ -28,22 +27,8 @@ import random
 #  def getResultOfPly(board, fromPosn, toPosn):
 #    reference rank/file as fromPosn.rankN and toPosn.fileN
 
-# TODO (mattsh): Fix this in ALL project Python code before removing TODO
-# TODO (mattsh): Fix multi-line comments
-# Correct:
-#     code[code] = code, code.code code  # Single-line comment (simple)
-#
-#     # Single-line comment  # Single-line comment (more visible)
-#     code[code] = code, code.code code
-#
-#     # Multi-line
-#     # comment
-#     code[code] = code, code.code code
-#
-#
-# Not okay:
-#     code[code] = code, code.code code  # Multi-line
-#                                        # comment
+# TODO (James): Fix this in ALL project Python code before removing TODO
+# Change all short-links to something that doesn't expire
 
 # TODO (mattsh): Fix this in ALL project Python code before removing TODO
 # TODO (mattsh): If-elif clauses properly structured
@@ -238,8 +223,9 @@ class ChessBoard(object):
             elif fromFile == 7:  # King-side rook was moved
                 self.flag_canCastle[color] = (prevCastleFlag[0], False)
 
-        rankDeltaAbs = abs(toRank - fromRank)  # Change in rank from origin
-                                                # to destination
+        # Change in rank from origin to destination
+        rankDeltaAbs = abs(toRank - fromRank)
+
         pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
 
         # If we've moved a pawn for the first time, set en passant flags
@@ -445,10 +431,11 @@ class ChessBoardUtils(object):
         pathSquares = ChessBoardUtils.getSquaresInPath(fromRank, fromFile,
                                                        toRank, toFile)
 
-        rank_delta_abs = abs(toRank - fromRank)  # num spaces moved
-                                                # vertically
-        file_delta_abs = abs(toFile - fromFile)  # num spaces moved
-                                                # horizontally
+        # Number spaces moved vertically
+        rank_delta_abs = abs(toRank - fromRank)
+
+        # Number of spaces moved horizontally
+        file_delta_abs = abs(toFile - fromFile)
 
         # Check if squares are adjacent or, if not, if there is a path between
         # the two
@@ -539,9 +526,9 @@ class ChessBoardUtils(object):
         to move to toRank, toFile
         """
 
-        interruptSquares = []  # Squares that could interrupt path from origin
-                                # to destination.  An accumulator to be built
-                                # up and returned
+        # Squares that could interrupt path from origin to destination. An
+        # Accumulator to built up and returned
+        interruptSquares = []
         interruptSquares.append((fromRank, fromFile))
 
         # Build up list of squares in path from origin to destination
@@ -702,14 +689,15 @@ class ChessBoardUtils(object):
         kingLocation = pieceLocations[0]
         kingRank = kingLocation[0]
         kingFile = kingLocation[1]
-        enemyPieceLocations = pieceLocations[1]  # List of (rank, file)
-                                                # locations of pieces that may
-                                                # have the king in check
+        # List of (rank, file) locations of pieces that may have the king
+        # in check
+        enemyPieceLocations = pieceLocations[1]
 
         # Check if any enemy piece can legally move to the king's location
         for piece in enemyPieceLocations:
             pieceRank = piece[0]  # Rank of the piece which may check the king
             pieceFile = piece[1]  # File of the piece which may check the king
+
             # If a move to the king's location is legal, the king is in check
             if ChessBoardUtils.isLegalMove(board, otherColor, pieceRank,
                                            pieceFile, kingRank, kingFile):
@@ -803,44 +791,39 @@ class ChessBoardUtils(object):
 
         origin_type = origin_entry[1]  # the type of piece at the origin
 
+        # Number of spaces moved vertically
+        rank_delta_abs = abs(toRank - fromRank)
+
+        # Number of spaces moved horizontally
+        file_delta_abs = abs(toFile - fromFile)
+
         # Check move legality for individual piece types
         if origin_type == ChessBoard.PAWN:
 
             # Determine the correct starting rank and direction for each color
             pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
-            if color == ChessBoard.WHITE:
-                direction = 1
-            else:
-                direction = -1
 
-            rank_delta = (toRank - fromRank) * direction  # num spaces moved
-                                                        #vertically
-            file_delta_abs = abs(toFile - fromFile)  # num spaces moved
-                                                    # horizontally
-
-            if rank_delta not in [1, 2]:
+            if rank_delta_abs not in [1, 2]:
                 return False
-            elif rank_delta == 1:
+            elif rank_delta_abs == 1:
+
+                # Check if pawn is moving more than 1 space horizontally
                 if file_delta_abs not in [0, 1]:
-                    return False  # Pawns can never move more than 1 space
-                                    # horizontally
+                    return False
+
+                # Check if pawn is moving diagonally without capturing
                 elif file_delta_abs == 1 and destin_entry is None:
-                    return False  # Cannot move diagonally unless capturing
+                    return False
                 elif file_delta_abs == 0 and destin_entry is not None:
                     return False  # Cannot move forward and capture
 
-            elif rank_delta == 2:
+            elif rank_delta_abs == 2:
                 if file_delta_abs != 0:
                     return False  # Pawns cannot move up 2 and left/right
                 elif fromRank != pawnStartRank:
                     return False  # Pawns can move two spaces only on 1st move
 
         elif origin_type == ChessBoard.ROOK:
-
-            rank_delta_abs = abs(toRank - fromRank)  # num spaces moved
-                                                    # vertically
-            file_delta_abs = abs(toFile - fromFile)  # num spaces moved
-                                                    # horizontally
 
             #check that piece either moves up/down or left/right, but not both
             if rank_delta_abs != 0 and file_delta_abs != 0:
@@ -854,12 +837,7 @@ class ChessBoardUtils(object):
 
         elif origin_type == ChessBoard.KNGT:
 
-            rank_delta_abs = abs(toRank - fromRank)  # num spaces moved
-                                                    # vertically
-            file_delta_abs = abs(toFile - fromFile)  # num spaces moved
-                                                    # horizontally
-
-            # Check that destination rank is offeset by 1 and file is offset by
+            # Check that destination rank is offset by 1 and file is offset by
             # 2, or vice versa.
             if  ((rank_delta_abs == 2 and file_delta_abs != 1) or
                  (rank_delta_abs == 1 and file_delta_abs != 2) or
@@ -867,11 +845,6 @@ class ChessBoardUtils(object):
                 return False
 
         elif origin_type == ChessBoard.BISH:
-
-            rank_delta_abs = abs(toRank - fromRank)  # num spaces moved
-                                                    # vertically
-            file_delta_abs = abs(toFile - fromFile)  # num spaces moved
-                                                    # horizontally
 
             #check that piece moves diagonally
             if rank_delta_abs != file_delta_abs:
@@ -885,29 +858,19 @@ class ChessBoardUtils(object):
 
         elif origin_type == ChessBoard.QUEN:
 
-            rank_delta_abs = abs(toRank - fromRank)  # num spaces moved
-                                                    # vertically
-            file_delta_abs = abs(toFile - fromFile)  # num spaces moved
-                                                    # horizontally
-
-            # check that if piece isn't moving horizontally or vertically, it's
+            # Check that if piece isn't moving horizontally or vertically, it's
             # moving diagonally
             if (rank_delta_abs != 0 and file_delta_abs != 0 and
                 rank_delta_abs != file_delta_abs):
                 return False
 
-            #check that path between origin and destination is clear
+            #Check that path between origin and destination is clear
             if not ChessBoardUtils.isClearLinearPath(board,
                                                      fromRank, fromFile,
                                                      toRank, toFile):
                 return False
 
         elif origin_type == ChessBoard.KING:
-
-            rank_delta_abs = abs(toRank - fromRank)  # num spaces moved
-                                                    # vertically
-            file_delta_abs = abs(toFile - fromFile)  # num spaces moved
-                                                    # horizontally
 
             # Retrieve the kingside and queenside castle flags for this color
             castleFlagQueenside = board.flag_canCastle[color][0]
