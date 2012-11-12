@@ -149,7 +149,7 @@ class TournamentSystem(object):
 
         if gameID in self.games:
             status = self.games[gameID].status
-            TournamentSystem._logger.info("Found status of game %d to be %s",
+            TournamentSystem._logger.debug("Found status of game %d to be %s",
                                           gameID, status)
             return (True, {"status": status})
         else:
@@ -207,6 +207,24 @@ class TournamentSystem(object):
 
         return plyDictList
 
+    def isMyTurn(self, gameID, playerID):
+        """Returns whether it is the given player's turn in the game specified
+
+        @param gameID: the integer gameID of an in-progress game
+        @param playerID: the integer gameID of a player in that game
+
+        @return:    On failure: tuple of form (False, {"error": "some err"}),
+            On success: tuble of form (True, {"isMyTurn": True/False/None})"""
+        if gameID in self.games:
+            match = self.games[gameID]
+            myColor = match.getColorOfPlayer(playerID)
+            if myColor is None:
+                return (False, {"error": "Not a player in the game"})
+            else:
+                return (True, {"isMyTurn": match.whoseTurn() == myColor})
+        else:
+            return (False, {"error": "Invalid game ID"})
+
     def getState(self, playerID, gameID):
         """Returns the current state of the game
 
@@ -236,11 +254,8 @@ class TournamentSystem(object):
             g = self.games[gameID]
 
             # Determine which player the client is
-            if g.players[ChessBoard.WHITE] == playerID:
-                youAreColor = ChessBoard.WHITE
-            elif g.players[ChessBoard.BLACK] == playerID:
-                youAreColor = ChessBoard.BLACK
-            else:
+            youAreColor = g.getColorOfPlayer(playerID)
+            if youAreColor is None:
                 return (False, {"error": "You are not a player in this game"})
 
             # Serialize layout and history
@@ -252,7 +267,7 @@ class TournamentSystem(object):
                      "canCastleFlags": g.board.flag_canCastle}
 
             return (True, {"youAreColor": youAreColor,
-                           "isWhitesTurn": (g._whoseTurn() ==
+                           "isWhitesTurn": (g.whoseTurn() ==
                                             ChessBoard.WHITE),
                            "board": board,
                            "history": serialHst})
@@ -343,6 +358,9 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
                       "GET_STATUS": (TournamentSystem.getStatus,
                                      {"gameID"},
                                      {"status"}),
+                      "IS_MY_TURN": (TournamentSystem.isMyTurn,
+                                     {"gameID", "playerID"},
+                                     {"isMyTurn"}),
                       "GET_STATE": (TournamentSystem.getState,
                                     {"playerID", "gameID"},
                                     {"youAreColor", "isWhitesTurn",
@@ -394,7 +412,6 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
         MaverickServerProtocol._logger.debug("Request received: %s", line)
 
         # Pull out request name (e.g., "REGISTER") and arguments (unparsed)
-        print line
         (requestName, _, requestArgsString) = line.partition(" ")
 
         errMsg = None  # If this gets set, there was an error

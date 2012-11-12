@@ -861,12 +861,21 @@ class ChessMatch(object):
         # Log initialization
         ChessMatch._logger.debug("Initialized")
 
-    def _whoseTurn(self):
+    def whoseTurn(self):
         """Returns True if it is whites turn, False otherwise"""
         if (len(self.history) % 2 == 0):
             return ChessBoard.WHITE
         else:
             return ChessBoard.BLACK
+
+    def getColorOfPlayer(self, playerID):
+        """Returns the color of the player (None if player is not in game)"""
+        if playerID == self.players[ChessBoard.WHITE]:
+            return ChessBoard.WHITE
+        elif playerID == self.players[ChessBoard.BLACK]:
+            return ChessBoard.BLACK
+        else:
+            return None
 
     def makePly(self, player, fromPosn, toPosn):
         """Makes a move if legal
@@ -880,7 +889,7 @@ class ChessMatch(object):
             else:
                 return "You are not a player in this game"
 
-            if color != self._whoseTurn():
+            if color != self.whoseTurn():
                 return "It is not your turn"
 
             if self.board.makePly(color, fromPosn, toPosn):

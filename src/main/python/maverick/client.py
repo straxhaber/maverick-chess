@@ -175,6 +175,13 @@ class MaverickClient(object):
 
         return plyList
 
+    def _request_isMyTurn(self, gameID, playerID):
+        """TODO"""
+        response = self._makeRequest("IS_MY_TURN",
+                                     gameID=gameID,
+                                     playerID=playerID)
+        return response["isMyTurn"]
+
     def _request_getState(self, playerID, gameID):
         """Return the current state of the game
 
