@@ -24,6 +24,7 @@ class MaverickAI(MaverickPlayer):
 
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.ais.common.MaverickAI")
+    # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
     CALCULATION_TIMEOUT = 5

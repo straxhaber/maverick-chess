@@ -19,6 +19,7 @@ class ChessBoard(object):
 
     # Initialize class logger
     _logger = logging.getLogger("maverick.data.ChessBoard")
+    # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
     BOARD_LAYOUT_SIZE = 8
@@ -260,6 +261,7 @@ class ChessBoardUtils(object):
 
     # Initialize class logger
     _logger = logging.getLogger("maverick.data.ChessBoardUtils")
+    # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
     @staticmethod
