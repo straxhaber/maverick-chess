@@ -42,7 +42,7 @@ class ChessPiece(object):
 
     def __init__(self, color, pieceType):
         self.color = color
-        self.pieceType = type
+        self.pieceType = pieceType
 
 
 class ChessBoard(object):
