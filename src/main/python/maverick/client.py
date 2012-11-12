@@ -16,6 +16,7 @@ from telnetlib import Telnet
 
 from maverick.data import ChessBoard
 from maverick.data import ChessPiece
+from maverick.data import ChessPosn
 
 
 class MaverickClientException(Exception):
@@ -126,10 +127,10 @@ class MaverickClient(object):
 
     @staticmethod
     def __request_getState_deserializeLayout(layout):
-        """Deserializes a board layout as received over the network
+        """Deserialize a board layout as received over the network
 
         @param layout: The textual input, as output by
-                       TournamentSystem.__getState._serializeLayout(board)
+                       TournamentSystem.__getState._serializeLayout()
 
         @return: A list of rows of pieces, each either None or a
                 ChessPiece object"""
@@ -151,6 +152,28 @@ class MaverickClient(object):
             rowsList.append(rowPieceList)
 
         return rowsList
+
+    @staticmethod
+    def __request_getState_deserializeHistory(history):
+        """Deserealize a ChessMatch history as received over the network
+
+        @param history: The textual input, as produced by
+                        TournamentSystem.__getState._serializeHistory()
+
+        @return: A list of plies as tuples of ChessPosn objects of form
+                (fromPosn, toPosn)"""
+
+        # Accumulate retur value
+        plyList = []
+
+        for plyDict in history:
+            # Construct ply of from, to tuples and append it to the accumulator
+
+            fromPosn = ChessPosn(plyDict['fromRank'], plyDict['fromFile'])
+            toPosn = ChessPosn(plyDict['toRank'], plyDict['toFile'])
+            plyList.append((fromPosn, toPosn))
+
+        return plyList
 
     def _request_getState(self, playerID, gameID):
         """Return the current state of the game
@@ -174,6 +197,12 @@ class MaverickClient(object):
         rawLayout = response["board"]["layout"]
         # The deserialized board layout
         layout = MaverickClient.__request_getState_deserializeLayout(rawLayout)
+
+        # The serialized history
+        rawHst = response["history"]
+        # Deserialize the history
+        histList = MaverickClient.__request_getState_deserializeHistory(rawHst)
+
         curEnPassantFlags = response["board"]["enPassantFlags"]
         curCastleFlags = response["board"]["canCastleFlags"]
 
@@ -186,7 +215,7 @@ class MaverickClient(object):
         stateDict["youAreColor"] = response["youAreColor"]
         stateDict["isWhitesTurn"] = response["isWhitesTurn"]
         stateDict["board"] = curBoardObj
-        stateDict["history"] = response["history"]
+        stateDict["history"] = histList
 
         return stateDict
 

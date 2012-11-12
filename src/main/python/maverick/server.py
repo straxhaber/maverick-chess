@@ -157,7 +157,7 @@ class TournamentSystem(object):
 
     @staticmethod
     def __getState_serializeLayout(board):
-        """Serializes the layout of the given ChessBoard object
+        """Serialize the layout of the given ChessBoard object
 
         @param board: The ChessBoard object to serialize
 
@@ -179,6 +179,34 @@ class TournamentSystem(object):
 
         return rowsList
 
+    @staticmethod
+    def __getState_serializeHistory(history):
+        """Serialize the given list of ChessPosn objects
+
+        @param history: A list of (fromPosn, toPosn) tuples
+
+        @return: A list of dictionaries of the form:
+                {"fromPosn": (fromRank, fromFile),
+                "toPosn": (toRank, toFile)}"""
+
+        ## TODO (James): finish this! (and write the client end)
+
+        # Accumulator for serialized posns
+        plyDictList = []
+
+        for ply in history:
+            # Create dictionary of this ply and append it to accumulator
+
+            plyDict = {}
+            plyDict['fromRank'] = ply[0][0]
+            plyDict['fromFile'] = ply[0][1]
+            plyDict['toRank'] = ply[1][0]
+            plyDict['toFile'] = ply[1][1]
+
+            plyDictList.append(plyDict)
+
+        return plyDictList
+
     def getState(self, playerID, gameID):
         """Returns the current state of the game
 
@@ -198,7 +226,11 @@ class TournamentSystem(object):
                         ChessBoard.flag_enpassant,
                     "canCastleFlags": flags of form
                         ChessBoard.flag_canCastle"},
-         "history": listOfPlies})"""
+         "history": list of ply dictionaries of form:
+                     {'fromRank': fromRank,
+                      'fromFile': fromFile,
+                      'toRank': toRank,
+                      'toFile': toFile}"""
 
         if gameID in self.games:
             g = self.games[gameID]
@@ -211,7 +243,9 @@ class TournamentSystem(object):
             else:
                 return (False, {"error": "You are not a player in this game"})
 
+            # Serialize layout and history
             serialLayout = TournamentSystem.__getState_serializeLayout(g.board)
+            serialHst = TournamentSystem.__getState_serializeHistory(g.history)
 
             board = {"layout": serialLayout,
                      "enPassantFlags": g.board.flag_enpassant,
@@ -221,7 +255,7 @@ class TournamentSystem(object):
                            "isWhitesTurn": (g._whoseTurn() ==
                                             ChessBoard.WHITE),
                            "board": board,
-                           "history": g.history})
+                           "history": serialHst})
         else:
             return (False, {"error": "Invalid game ID"})
 
