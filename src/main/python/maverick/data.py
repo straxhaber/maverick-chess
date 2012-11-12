@@ -180,10 +180,16 @@ class ChessBoard(object):
             self.flag_canCastle = copy.deepcopy(startCanCastleFlags)
 
     def __getitem__(self, posn):
-        """x.__gt__(y) <==> x>y
+        """x.__getitem__(y) <==> x[y]
 
         Gets the piece object for the given position"""
-        return self.layout[posn.fileN][posn.rankN]
+        return self.layout[posn.rankN][posn.fileN]
+
+    def __setitem__(self, posnLayoutLoc, piece):
+        """x.__setitem__(i, y) <==> x[i]=y
+
+        Sets the piece object at the given position"""
+        self.layout[posnLayoutLoc.rankN][posnLayoutLoc.fileN] = piece
 
     def _executePly(self, color, fromPosn, toPosn):
         """Make a ply on this board, assuming that it is legal
@@ -403,7 +409,6 @@ class ChessBoard(object):
         #  - there is no piece at the position
         #  - the player doesn't own a piece at the from position
         if origin_entry is None or origin_entry.color != color:
-            print "0\n"
             return False
 
         # Number of spaces moved vertically
@@ -428,6 +433,7 @@ class ChessBoard(object):
 
                 # Check if pawn is moving diagonally without capturing
                 elif file_delta_abs == 1 and destin_entry is None:
+                    print "10\n"
                     return False
                 elif file_delta_abs == 0 and destin_entry is not None:
                     return False  # Cannot move forward and capture
@@ -513,7 +519,7 @@ class ChessBoard(object):
                     return False
 
         # If we own a piece at the destination, we cannot move there
-        if destin_entry is not None and destin_entry[0] == color:
+        if destin_entry is not None and destin_entry.color == color:
             return False
 
         # Check that a move is being made
@@ -529,7 +535,7 @@ class ChessBoard(object):
         else:
 
             # Create the board that the proposed move would result in
-            boardAfterMove = self.getResultOfPly(self, fromPosn, toPosn)
+            boardAfterMove = self.getResultOfPly(fromPosn, toPosn)
 
             # Check that the king would not be in check after the move
             if boardAfterMove.isKingInCheck(color)[0]:
@@ -549,7 +555,7 @@ class ChessBoard(object):
                 the given ply being made on this board"""
 
         # Figure out the color being moved
-        color = self[fromPosn][0]
+        color = self[fromPosn].color
 
         # Copy the board, so as not to modify anything real
         postMoveBoard = copy.deepcopy(self)
@@ -888,9 +894,9 @@ class ChessMatch(object):
 
             if self.board.makePly(color, fromPosn, toPosn):
                 # Check for checkmates
-                if self.isCheckMated(ChessBoard.WHITE):
+                if self.board.isCheckMated(ChessBoard.WHITE):
                     self.status = ChessMatch.STATUS_BLACK_WON
-                elif self.isCheckMated(ChessBoard.BLACK):
+                elif self.board.isCheckMated(ChessBoard.BLACK):
                     self.status = ChessMatch.STATUS_WHITE_WON
                 else:
                     self.history.append((fromPosn, toPosn))
