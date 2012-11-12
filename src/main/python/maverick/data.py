@@ -445,7 +445,6 @@ class ChessBoard(object):
 
                 # Check if pawn is moving diagonally without capturing
                 elif file_delta_abs == 1 and destin_entry is None:
-                    print "10\n"
                     return False
                 elif file_delta_abs == 0 and destin_entry is not None:
                     return False  # Cannot move forward and capture
@@ -814,7 +813,7 @@ class ChessBoard(object):
                 # Check that origin and destination aren't included
                 if r not in [fromPosn.rankN, toPosn.rankN]:
                     path_rank_values.append(r)
-            path_file_values = [fromPosn.fileN] * len(path_file_values)
+            path_file_values = [fromPosn.fileN] * len(path_rank_values)
 
         # If the path is not straight-line, return the empty list
         else:
