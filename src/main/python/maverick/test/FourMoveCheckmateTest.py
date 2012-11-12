@@ -30,7 +30,7 @@ class TestTournamentSystem(unittest.TestCase):
     print ts.makePly(wp, gid, 4, 7, 6, 5)
 
     print ts.getStatus(gid)
-    print ts.getState(gid)
+    print ts.getState(p2, gid)
 
 if __name__ == '__main__':
     unittest.main()
