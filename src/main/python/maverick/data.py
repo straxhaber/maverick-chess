@@ -105,42 +105,28 @@ class ChessBoard(object):
     KING = "K"
     """Constant for the king piece"""
 
-    DEFAULT_STARTING_LAYOUT = [[(WHITE, ROOK),
-                                (WHITE, KNGT),
-                                (WHITE, BISH),
-                                (WHITE, QUEN),
-                                (WHITE, KING),
-                                (WHITE, BISH),
-                                (WHITE, KNGT),
-                                (WHITE, ROOK)],
-                               [(WHITE, PAWN),
-                                (WHITE, PAWN),
-                                (WHITE, PAWN),
-                                (WHITE, PAWN),
-                                (WHITE, PAWN),
-                                (WHITE, PAWN),
-                                (WHITE, PAWN),
-                                (WHITE, PAWN)],
-                               [None] * 8,
-                               [None] * 8,
-                               [None] * 8,
-                               [None] * 8,
-                               [(BLACK, PAWN),
-                                (BLACK, PAWN),
-                                (BLACK, PAWN),
-                                (BLACK, PAWN),
-                                (BLACK, PAWN),
-                                (BLACK, PAWN),
-                                (BLACK, PAWN),
-                                (BLACK, PAWN)],
-                               [(BLACK, ROOK),
-                                (BLACK, KNGT),
-                                (BLACK, BISH),
-                                (BLACK, QUEN),
-                                (BLACK, KING),
-                                (BLACK, BISH),
-                                (BLACK, KNGT),
-                                (BLACK, ROOK)]]
+    DEFAULT_INITIAL_LAYOUT = [[(WHITE, ROOK),
+                               (WHITE, KNGT),
+                               (WHITE, BISH),
+                               (WHITE, QUEN),
+                               (WHITE, KING),
+                               (WHITE, BISH),
+                               (WHITE, KNGT),
+                               (WHITE, ROOK)],
+                              [(WHITE, PAWN)] * 8,
+                              [None] * 8,
+                              [None] * 8,
+                              [None] * 8,
+                              [None] * 8,
+                              [(BLACK, PAWN)] * 8,
+                              [(BLACK, ROOK),
+                               (BLACK, KNGT),
+                               (BLACK, BISH),
+                               (BLACK, QUEN),
+                               (BLACK, KING),
+                               (BLACK, BISH),
+                               (BLACK, KNGT),
+                               (BLACK, ROOK)]]
     """A constant board layout that represents the board layout's initial state
 
         NOTE: Board layout is represented as a list of rows and 0-indexed
@@ -193,7 +179,7 @@ class ChessBoard(object):
 
         if startLayout is None:
             # Perform deep copy of board start state into self.layout
-            self.layout = copy.deepcopy(ChessBoard.DEFAULT_STARTING_LAYOUT)
+            self.layout = copy.deepcopy(ChessBoard.DEFAULT_INITIAL_LAYOUT)
         else:
             self.layout = copy.deepcopy(startLayout)
 
