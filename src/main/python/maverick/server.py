@@ -81,7 +81,9 @@ class TournamentSystem(object):
         {"PlayerID": someInteger})"""
 
         if name in self.players.itervalues():
-            return (False, {"error": "player with this name already exists"})
+            userPID = dict((self.players[k], k) for k in self.players)[name]
+            self._logger.debug("Player already exists, giving ID")
+            return (True, {"playerID": userPID})
         else:
             newID = _getUniqueInt(self.players.keys())
             self.players[newID] = name
