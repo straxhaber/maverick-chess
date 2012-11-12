@@ -8,29 +8,29 @@ class TestTournamentSystem(unittest.TestCase):
     # Note: this is not a proper unit test
 
     ts = TournamentSystem()
-    p1 = ts.request_register("a")[1]["playerID"]
-    p2 = ts.request_register("b")[1]["playerID"]
-    gid = ts.request_joinGame(p1)[1]["gameID"]
-    ts.request_joinGame(p2)
-    state = ts.request_getState(p2, gid)
+    p1 = ts.register("a")[1]["playerID"]
+    p2 = ts.register("b")[1]["playerID"]
+    gid = ts.joinGame(p1)[1]["gameID"]
+    ts.joinGame(p2)
+    state = ts.getState(p2, gid)
 
-    if state['youAreColor'] == ChessBoard.WHITE:
+    if state[1]['youAreColor'] == ChessBoard.WHITE:
       wp = p2
       bp = p1
     else:
       wp = p1
       bp = p2
 
-    print ts.request_makePly(wp, gid, 2, 5, 4, 5)
-    print ts.request_makePly(bp, gid, 7, 5, 5, 5)
-    print ts.request_makePly(wp, gid, 1, 4, 5, 8)
-    print ts.request_makePly(bp, gid, 8, 2, 6, 3)
-    print ts.request_makePly(wp, gid, 1, 6, 4, 3)
-    print ts.request_makePly(bp, gid, 8, 7, 6, 6)
-    print ts.request_makePly(wp, gid, 5, 8, 7, 6)
+    print ts.makePly(wp, gid, 1, 4, 3, 4)
+    print ts.makePly(bp, gid, 6, 4, 4, 4)
+    print ts.makePly(wp, gid, 0, 3, 4, 7)
+    print ts.makePly(bp, gid, 7, 2, 5, 2)
+    print ts.makePly(wp, gid, 0, 5, 3, 2)
+    print ts.makePly(bp, gid, 7, 6, 5, 5)
+    print ts.makePly(wp, gid, 4, 7, 6, 5)
 
-    print ts.request_getStatus(gid)
-    print ts.request_getState(gid)
+    print ts.getStatus(gid)
+    print ts.getState(gid)
 
 if __name__ == '__main__':
     unittest.main()
