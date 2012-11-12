@@ -28,9 +28,9 @@ class ChessPosn(object):
 class ChessPiece(object):
     """Represents chess piece in Maverick"""
 
-    def __init__(self, color, type):
+    def __init__(self, color, pieceType):
         self.color = color
-        self.type = type
+        self.pieceType = type
 
 
 class ChessBoard(object):
@@ -356,7 +356,7 @@ class ChessBoard(object):
          - the to position doesn't contain a piece owned by the color
          - flags don't preclude the move (i.e., castling)
          - the path to make the move is free (for bishops, rooks, queens, etc.)
-         - this is a legal move for the piece type
+         - this is a legal move for the piece pieceType
          - the king would not be in check after the move
          - the move alters the board state
 
@@ -404,7 +404,7 @@ class ChessBoard(object):
         file_delta_abs = abs(toPosn.fileNum - fromPosn.fileNum)
 
         # Check move legality for individual piece types
-        if origin_entry.type == ChessBoard.PAWN:
+        if origin_entry.pieceType == ChessBoard.PAWN:
 
             # Determine the correct starting rank and direction for each color
             pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
@@ -429,7 +429,7 @@ class ChessBoard(object):
                 elif fromPosn.rankNum != pawnStartRank:
                     return False  # Pawns can move two spaces only on 1st move
 
-        elif origin_entry.type == ChessBoard.ROOK:
+        elif origin_entry.pieceType == ChessBoard.ROOK:
 
             #check that piece either moves up/down or left/right, but not both
             if rank_delta_abs != 0 and file_delta_abs != 0:
@@ -439,7 +439,7 @@ class ChessBoard(object):
             if not ChessBoard.__isClearLinearPath(self, fromPosn, toPosn):
                 return False
 
-        elif origin_entry.type == ChessBoard.KNGT:
+        elif origin_entry.pieceType == ChessBoard.KNGT:
 
             # Check that destination rank is offset by 1 and file is offset by
             # 2, or vice versa.
@@ -448,7 +448,7 @@ class ChessBoard(object):
                  (rank_delta_abs != 1 and rank_delta_abs != 2)):
                 return False
 
-        elif origin_entry.type == ChessBoard.BISH:
+        elif origin_entry.pieceType == ChessBoard.BISH:
 
             #check that piece moves diagonally
             if rank_delta_abs != file_delta_abs:
@@ -458,7 +458,7 @@ class ChessBoard(object):
             if not ChessBoard.__isClearLinearPath(self, fromPosn, toPosn):
                 return False
 
-        elif origin_entry.type == ChessBoard.QUEN:
+        elif origin_entry.pieceType == ChessBoard.QUEN:
 
             # Check that if piece isn't moving horizontally or vertically, it's
             # moving diagonally
@@ -470,7 +470,7 @@ class ChessBoard(object):
             if not ChessBoard.__isClearLinearPath(self, fromPosn, toPosn):
                 return False
 
-        elif origin_entry.type == ChessBoard.KING:
+        elif origin_entry.pieceType == ChessBoard.KING:
 
             # Retrieve the kingside and queenside castle flags for this color
             castleFlagQueenside = self.flag_canCastle[color][0]
@@ -707,10 +707,11 @@ class ChessBoard(object):
             for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
                 piece = row[f]
                 if piece is not None:
-                    if piece.color == color and piece.type == ChessBoard.KING:
+                    if (piece.color == color and piece.pieceType ==
+                        ChessBoard.KING):
                         kingLoc = ChessPosn(r, f)
                     elif (piece.color != color and
-                          piece.type != ChessBoard.KING):
+                          piece.pieceType != ChessBoard.KING):
 
                         # Create a ChessPosn to append to the return list
                         piecePosn = ChessPosn(r, f)
