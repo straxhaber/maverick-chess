@@ -152,10 +152,10 @@ class MaverickPlayer(MaverickClient):
         @return: A dictionary of the following form:
                 {"youAreColor": ChessBoard.WHITE or ChessBoard.BLACK,
                 "isWhitesTurn": True or False,
-                "board": {"board": 2d board array,
-                          "enPassantFlags": flags of form
+                "boardState": {"board": 2d board array,
+                              "enPassantFlags": flags of form
                                               ChessBoard.flag_enpassant,
-                          "canCastleFlags": flags of form
+                              "canCastleFlags": flags of form
                                               ChessBoard.flag_canCastle},
                 "history": list of plies}"""
 
@@ -165,9 +165,9 @@ class MaverickPlayer(MaverickClient):
 
         # Construct board object from serialized data
 
-        curBoardArray = curState["board"]
-        curEPFlags = curState["enPassantFlags"]
-        curCastleFlags = curState["canCastleFlags"]
+        curBoardArray = curState["boardState"]["board"]
+        curEPFlags = curState["boardState"]["enPassantFlags"]
+        curCastleFlags = curState["boardState"]["canCastleFlags"]
 
         curBoardObj = ChessBoard(startBoard=curBoardArray,
                                  startEnpassantFlags=curEPFlags,

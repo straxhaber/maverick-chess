@@ -152,7 +152,9 @@ class TournamentSystem(object):
             return (False, {"error": "Invalid game ID"})
 
     def getState(self, playerID, gameID):
-        """Returns the current state of the game, containing information about
+        """Returns the current state of the game
+
+        The state contains information about
         the playerIDs of the black and white players, whose turn it is,
         the current board state, and the game history.
 
@@ -180,18 +182,19 @@ class TournamentSystem(object):
             else:
                 return (False, {"error": "You are not a player in this game"})
 
+            boardState = {"board": g.board.board,
+                          "enPassantFlags": g.board.flag_enpassant,
+                          "canCastleFlags": g.board.flag_canCastle}
+
             return (True, {"youAreColor": youAreColor,
                            "isWhitesTurn": (g.whoseTurn() == ChessBoard.WHITE),
-                           "board": g.board.board,
-                           "enPassantFlags": g.board.flag_enpassant,
-                           "canCastleFlags": g.board.flag_canCastle,
+                           "boardState": boardState,
                            "history": g.history})
         else:
             return (False, {"error": "Invalid game ID"})
 
     def makePly(self, playerID, gameID, fromRank, fromFile, toRank, toFile):
-        """Makes the given ply in the given game on behalf of the given
-        player, if it is legal to do so.
+        """Makes the given ply in the given game for given player if legal
 
         @param playerID: The integer playerID of a registered player.
         @param gameID: The integer gameID of an in-progress game which

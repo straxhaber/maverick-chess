@@ -124,8 +124,9 @@ class MaverickClient(object):
         return response["status"]
 
     def request_getState(self, playerID, gameID):
-        """
-        Returns the current state of the game, containing information about
+        """Return the current state of the game
+
+        The state contains information about
         the playerIDs of the black and white players, whose turn it is,
         the current board state, and the game history.
 
@@ -138,16 +139,13 @@ class MaverickClient(object):
                                      gameID=gameID)
         return {"youAreColor": response["youAreColor"],
                 "isWhitesTurn": response["isWhitesTurn"],
-                "board": response["board"],
-                "enPassantFlags": response["enPassantFlags"],
-                "canCastleFlags": response["canCastleFlags"],
+                "boardState": response["boardState"],
                 "history": response["history"]}
 
     def request_makePly(self, playerID, gameID,
                         fromRank, fromFile,
                         toRank, toFile):
-        """Makes the given ply in the given game on behalf of the given
-        player, if it is legal to do so.
+        """Makes the given ply for the given player if legal to do so
 
         @param playerID: The integer playerID of a registered player.
         @param gameID: The integer gameID of an in-progress game which

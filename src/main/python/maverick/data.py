@@ -18,7 +18,6 @@ import random
 #  TODO: - Positions are ChessPosn structure
 #  TODO: - Getting the value at a position can be done like so: board[posn]
 #           See ChessBoard.__getitem(posn) for more info
-#  TODO: - All positions 0-delimited (except for user inputs)
 #  TODO: - Return move pair values as 2-tuple (fromPosn, toPosn)
 #  TODO: - Arguments to functions named one of: posn, fromPosn, toPosn
 #  TODO: - Structure of return values clearly documented in PyDocs
@@ -40,9 +39,6 @@ import random
 #  Helper methods are __funcHelping_helperName
 #  _name is private
 #  __name is REALLY private (very dependent on internal representations)
-
-# TODO (mattsh): Fix this in ALL project Python code before removing TODO
-# TODO (mattsh): Pydoc first line cannot be multi-line
 
 # TODO (mattsh): Fix this in ALL project Python code before removing TODO
 # TODO (mattsh): Change (color, pieceType) to a dict
@@ -342,9 +338,11 @@ class ChessBoardUtils(object):
     @staticmethod
     def getSquaresInPath(fromRank, fromFile, toRank, toFile):
         # TODO (mattsh): helper function
-        """Returns a list of squares in the straight-line path
-        from origin to destination (not including the origin or destination
-        squares.)  Returns an empty list if no straight-line path exists.
+        """Returns a list of squares in the straight path from origin to dest
+
+        NOTE: Return path does not include the origin or destination
+
+        Returns an empty list if no straight-line path exists.
 
         @param fromRank: the rank of the starting position  (integer in [0,7])
         @param fromFile: the file of the starting position  (integer in [0,7])
@@ -352,9 +350,7 @@ class ChessBoardUtils(object):
         @param toFile: the file of the ending position  (integer in [0,7])
 
         @return: A list of (rank, file) tuples representing squares in the path
-        from origin to destination, not including the origin or destination
-        squares.  Returns an empty list if no straight line path exists.
-        """
+        from origin to destination, not including the origin or destination"""
 
         rank_delta_abs = abs(toRank - fromRank)  # num spaces up/down
         file_delta_abs = abs(toFile - fromFile)  # num spaces left/right
@@ -410,9 +406,9 @@ class ChessBoardUtils(object):
     @staticmethod
     def isClearLinearPath(board, fromRank, fromFile, toRank, toFile):
         # TODO (mattsh): helper function
-        """Returns true if the straight-line path from origin to destination
-        is not obstructed.  To be used for horizontal, vertical, or diagonal
-        moves.
+        """True if there is a clear straight path from origin to destination
+
+        To be used for horizontal, vertical, or diagonal moves.
 
         @param board: the board on which to perform this test
         @param fromRank: the rank of the starting position  (integer in [0,7])
@@ -424,8 +420,7 @@ class ChessBoardUtils(object):
         not a straight-line path.
 
         Builds a list of the rank and file values of squares to check for
-        clarity, then checks them all for clarity.
-        """
+        clarity, then checks them all for clarity."""
 
         # Get the squares in the path, if there is one
         pathSquares = ChessBoardUtils.getSquaresInPath(fromRank, fromFile,
@@ -453,7 +448,7 @@ class ChessBoardUtils(object):
     @staticmethod
     def findColorPieces(board, color):
         # TODO (mattsh): helper function
-        """Returns a list of of all pieces of the given color.
+        """Return a list of of all pieces of the given color on the board
 
         @param board: The board to use for this check.
         @param color: The color of the pieces to find, ChessMatch.WHITE or
@@ -477,8 +472,7 @@ class ChessBoardUtils(object):
     @staticmethod
     def findKingAndEnemies(board, color):
         # TODO (mattsh): helper function
-        """Returns the location of the king of the given color, and a list
-        of locations of all non-king pieces of the opposite color.
+        """Return the location color's king and all opposing non-king pieces
 
         @param board: The board to use for this check.
         @param color: The color of the king to check, ChessMatch.WHITE or
@@ -488,8 +482,7 @@ class ChessBoardUtils(object):
                 Element 0: a tuple of form (rank, file) representing the
                 location of the king of the given color
                 Element 1: a list of tuples of form (rank, file) representing
-                the location of all non-king enemy pieces
-        """
+                the location of all non-king enemy pieces"""
 
         ## TODO (James): rewrite this to use findColorPieces
 
@@ -512,9 +505,9 @@ class ChessBoardUtils(object):
     @staticmethod
     def getInterruptSquares(fromRank, fromFile, toRank, toFile):
         # TODO (mattsh): helper function
-        """Returns a list of squares that, if moved to, would inhibit the
-        piece at fromRank, fromFile from being able to move to toRank, toFile.
-        This list will always include (fromRank, fromFile)
+        """Return a list of squares that block the given path if moved to
+
+        NOTE: This list will always include (fromRank, fromFile)
 
         @param fromRank: the rank of the starting position (integer in [0,7])
         @param fromFile: the file of the starting position (integer in [0,7])
@@ -523,8 +516,7 @@ class ChessBoardUtils(object):
 
         @return: A list of (rank, file) tuples representing squares that, if
         moved to, would inhibit the piece at fromRank, fromFile from being able
-        to move to toRank, toFile
-        """
+        to move to toRank, toFile"""
 
         # Squares that could interrupt path from origin to destination. An
         # Accumulator to built up and returned
@@ -542,8 +534,7 @@ class ChessBoardUtils(object):
     @staticmethod
     def isCheckMated(board, color):
         # TODO (mattsh): to ChessBoard
-        """Returns True if the given color is in checkmate given the current
-        board state.
+        """Returns True if the given color is in checkmate on the given board
 
         @param board: The board to use for this check
         @param color: The color of the player to check, ChessMatch.WHITE or
@@ -561,9 +552,7 @@ class ChessBoardUtils(object):
 
         If any of the above checks passes, see if that move would produce a
         board where the given color king was not in check. If one does, then
-        there is no checkmate.
-
-        """
+        there is no checkmate."""
 
         # Get other color
         otherColor = ChessBoardUtils.getOtherColor(color)
@@ -659,8 +648,7 @@ class ChessBoardUtils(object):
     @staticmethod
     def isKingInCheck(board, color):
         # TODO (mattsh): to ChessBoard
-        """Determines whether the king of the given color is in check
-        in the given board.
+        """Return true if color's king is in check on the given board
 
         @param board: The board to use for this check.
         @param color: The color of the king to check, ChessMatch.WHITE or
@@ -675,14 +663,10 @@ class ChessBoardUtils(object):
 
         Finds the location of the king of the given color, and checks whether
         any of the other player's non-king pieces could legally move to that
-        location.
-        """
+        location."""
 
         # Determine enemy player's color
-        if color == ChessBoard.WHITE:
-            otherColor = ChessBoard.BLACK
-        else:
-            otherColor = ChessBoard.WHITE
+        otherColor = ChessBoardUtils.getOtherColor(color)
 
         # Locate given player's king, and opposing player's non-king pieces
         pieceLocations = ChessBoardUtils.findKingAndEnemies(board, color)
