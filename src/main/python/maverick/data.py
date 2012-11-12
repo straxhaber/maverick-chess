@@ -12,9 +12,6 @@ __version__ = "1.0"
 ## TODO (James): For ALL files in this project, modify logging so that it uses
 #                the old style of string formatting
 
-## TODO (James): For ALL files in this project, make sure that log statements
-#                utilize ChessPosn's __repr__ function
-
 import copy
 import logging
 import random
@@ -243,10 +240,8 @@ class ChessBoard(object):
                 self[pawnPosn] = None
 
         # Log the successful move
-        logStrF = "Moved piece from (%d, %d), to (%d, %d)"
-        ChessBoard._logger.info(logStrF,
-                                fromPosn.rankN, fromPosn.fileN,
-                                toPosn.rankN, toPosn.fileN)
+        logStrF = "Moved piece from %s, to %s"
+        ChessBoard._logger.info(logStrF, fromPosn, toPosn)
 
     def makePly(self, color, fromPosn, toPosn):
         """Make a ply on this board if legal
@@ -890,12 +885,9 @@ class ChessMatch(object):
                     self.history.append((fromPosn, toPosn))
 
                     # Log this ply
-                    logStrF = "Added (%d, %d) -> (%d, %d) to match history"
+                    logStrF = "Added %s -> %s to match history"
                     ChessMatch._logger.debug(logStrF,
-                                             fromPosn.rankN,
-                                             fromPosn.fileN,
-                                             toPosn.rankN,
-                                             toPosn.fileN)
+                                             fromPosn, toPosn)
                 return "SUCCESS"
             else:
                 return "Illegal move"
