@@ -12,6 +12,7 @@ __version__ = "1.0"
 import logging
 
 from maverick.server import ChessBoard
+from maverick.server import ChessPosn
 from maverick.players.common import MaverickPlayer
 
 
@@ -30,7 +31,10 @@ class HumanGamer(MaverickPlayer):
         MaverickPlayer.__init__(self)
 
     def getNextMove(self, board):
-        """Ask the player for a move and make it"""
+        """Ask the player for a move and return it
+
+        @return: a tuple whose first element is the origin ChessPosn and whose
+                second element is the destination ChessPosn"""
 
         # Show the user the board
         self.printBoard()
@@ -61,7 +65,11 @@ class HumanGamer(MaverickPlayer):
         toFile = ChessBoard.HUMAN_FILE_LETTERS.index(playerMove[3])
         toRank = ChessBoard.HUMAN_RANK_NUMBERS.index(playerMove[4])
 
-        return (fromRank, fromFile, toRank, toFile)
+        # Build ChessPosns to return
+        fromPosn = ChessPosn(fromRank, fromFile)
+        toPosn = ChessPosn(toRank, toFile)
+
+        return (fromPosn, toPosn)
 
     def initName(self):
         """Figure out the name of the player"""
@@ -92,7 +100,7 @@ class HumanGamer(MaverickPlayer):
         welcomeStr = welcomeStrF.format(colorStr)
         self.displayMessage(welcomeStr)
 
-    def handleBadMove(self, errMsg, board, fromRank, fromFile, toRank, toFile):
+    def handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Calculate the next move based on the provided board"""
         self.displayMessage("Server didn't accept move; please retry.")
         self.displayMessage("Message from server: {0}".format(errMsg))

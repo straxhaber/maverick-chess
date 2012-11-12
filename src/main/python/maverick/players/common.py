@@ -96,14 +96,13 @@ class MaverickPlayer(MaverickClient):
 
             curBoard = self.request_getState()["board"]
             nextMove = self.getNextMove(curBoard)
-            (fromRank, fromFile, toRank, toFile) = nextMove
+            (fromPosn, toPosn) = nextMove
 
             try:
-                self.request_makePly(fromRank, fromFile, toRank, toFile)
+                self.request_makePly(fromPosn, toPosn)
             except MaverickClientException, msg:
                 self.handleBadMove(msg, curBoard,
-                                   fromRank, fromFile,
-                                   toRank, toFile)
+                                   fromPosn, toPosn)
 
         # When this is reached, game is over
         status = self.request_getStatus()
@@ -130,7 +129,7 @@ class MaverickPlayer(MaverickClient):
         """Calculate the next move based on the provided board"""
         raise NotImplementedError("Must be overridden by the extending class")
 
-    def handleBadMove(self, errMsg, board, fromRank, fromFile, toRank, toFile):
+    def handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Calculate the next move based on the provided board"""
         raise NotImplementedError("Must be overridden by the extending class")
 
@@ -182,12 +181,11 @@ class MaverickPlayer(MaverickClient):
 
         return stateDict
 
-    def request_makePly(self, fromRank, fromFile, toRank, toFile):
+    def request_makePly(self, fromPosn, toPosn):
         """Sends a makePly request to the server for the given ply"""
         MaverickClient.request_makePly(self,
                                        self.playerID, self.gameID,
-                                       fromRank, fromFile,
-                                       toRank, toFile)
+                                       fromPosn, toPosn)
 
 
 def main():

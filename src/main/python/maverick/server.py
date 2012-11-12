@@ -17,6 +17,7 @@ import random
 
 from maverick.data import ChessBoard
 from maverick.data import ChessMatch
+from maverick.data import ChessPosn
 
 from twisted.internet import endpoints
 from twisted.internet import protocol
@@ -207,9 +208,13 @@ class TournamentSystem(object):
         @return: On failure, returns a tuple of form (False, {"error": "some
         error message"}).  On success, returns a tuple of form (True, {})"""
 
+        # Build ChessPosn objects from received client data
+
+        fromPosn = ChessPosn(fromRank, fromFile)
+        toPosn = ChessPosn(toRank, toFile)
+
         if gameID in self.games:
-            result = self.games[gameID].makePly(playerID, fromRank, fromFile,
-                                                toRank, toFile)
+            result = self.games[gameID].makePly(playerID, fromPosn, toPosn)
             if result == "SUCCESS":
                 return (True, {})
             else:

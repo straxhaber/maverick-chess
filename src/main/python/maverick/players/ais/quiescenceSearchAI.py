@@ -10,6 +10,7 @@ __version__ = "pre-alpha"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+import copy
 import logging
 
 from maverick.players.ais.common import MaverickAI
@@ -44,9 +45,9 @@ class QLAI(MaverickAI):
         moveChoices = ChessBoardUtils.enumerateAllMoves(board, color)
 
         # TODO (mattsh): write this
-        fromRank, fromFile, toRank, toFile = None
+        fromPosn, toPosn = None
 
-        return ((fromRank, fromFile), (toRank, toFile))
+        return (fromPosn, toPosn)
 
     def _heuristicPieceValue(self, color, board):
         """Return the total value of color's pieces on the given board.
@@ -59,13 +60,12 @@ class QLAI(MaverickAI):
         king's capture will be incorporated in other heuristics."""
 
         # Get a list of non-king pieces for this color
-        friendlyPieces = ChessBoardUtils.findColorPieces(board, color)
+        friendlyPieces = ChessBoardUtils.findPiecePosnsByColor(board, color)
 
         # Loop through this color's pieces, adding to total value
-        totalValue = 0
-        for piece in friendlyPieces:
-            if piece.type in QLAI._pieceValues:
-                totalValue += QLAI._pieceValues[piece.type]
+        foundPieceVals = map(lambda x: QLAI._pieceValues[board[x].pieceType],
+                             board.getPiecesOfColor(color))
+        totalValue = sum(foundPieceVals)
 
         return totalValue
 
@@ -98,33 +98,25 @@ class QLAI(MaverickAI):
         otherColor = ChessBoard.getOtherColor(color)
 
         # Get friendly pieces
-        friendlyPieces = ChessBoardUtils.findColorPieces(board, color)
+        friendPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board, color)
 
         # Get enemy pieces
-        enemyPieces = ChessBoardUtils.findColorPieces(board, otherColor)
+        enemyPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board,
+                                                                otherColor)
 
         # Record which enemy pieces are under attack
         enemyPiecesUnderAttack = []
 
         # For each enemyPiece, check whether any friendlyPiece can capture it
-        for enemyPiece in enemyPieces:
+        for enemyPiecePosn in enemyPiecePosns:
 
-            # Determine this piece's location
-            enemyRank = enemyPiece[1][0]
-            enemyFile = enemyPiece[1][1]
-
-            for friendlyPiece in friendlyPieces:
-
-                # Determine this piece's location
-                friendRank = friendlyPiece[1][0]
-                friendFile = friendlyPiece[1][1]
+            for friendPiecePosn in friendPiecePosns:
 
                 # Check if this piece can capture the enemy piece
-                if ChessBoardUtils.isLegalMove(board, friendRank, friendFile,
-                                               enemyRank, enemyFile):
+                if ChessBoardUtils.isLegalMove(board, friendPiecePosn):
 
                     # Note that this enemyPiece is under attack
-                    enemyPiecesUnderAttack.append(enemyPiece)
+                    enemyPiecesUnderAttack.append(enemyPiecePosn)
                     break
 
         # Sum weighted values of under-attack pieces
@@ -160,18 +152,17 @@ class QLAI(MaverickAI):
         otherColor = ChessBoardUtils.getOtherColor(color)
 
         # Find friendly piece locations and add to pieceLocations
-        friendlyPieces = ChessBoardUtils.findColorPieces(board, color)
+        friendPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board, color)
 
-        for piece in friendlyPieces:
-            pieceLoc = piece[1]
-            pieceLocations.append(pieceLoc)
+        for piecePosn in friendPiecePosns:
+            pieceLocations.append(piecePosn)
 
         # Find enemy piece locations and add to pieceLocations
-        enemyPieces = ChessBoardUtils.findColorPieces(board, otherColor)
+        enemyPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board,
+                                                                otherColor)
 
-        for piece in enemyPieces:
-            pieceLoc = piece[1]
-            pieceLocations.append(pieceLoc)
+        for enemyPiecePosn in enemyPiecePosns:
+            pieceLocations.append(enemyPiecePosn)
 
         # Build list of empty squares
 
@@ -200,7 +191,7 @@ class QLAI(MaverickAI):
             if moveDst in emptyLocations:
 
                 #Check if it is a center square
-                if ChessBoardUtils.isCenterSquare(moveDst[0], moveDst[1]):
+                if ChessBoardUtils.isCenterSquare(moveDst):
                     weightedReturn += centerSquareValue
                 else:
                     weightedReturn += squareValue
@@ -219,31 +210,31 @@ class QLAI(MaverickAI):
                 weighted by piece value"""
 
         # Construct list of friendly pieces
-        friendlyPieces = ChessBoardUtils.findColorPieces(board, color)
+        friendPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board, color)
 
         # Accumulator for return value
         weightedReturn = 0
 
         # For each piece, test whether a friendly piece could move to its
-        # position if it were taken were not present
-        for lostPiece in friendlyPieces:
+        # position if it were not present
+        for lostPiecePosn in friendPiecePosns:
 
             # Build hypothetical board with the lost piece removed
 
-            lostPieceRank = lostPiece[1][0]
-            lostPieceFile = lostPiece[1][1]
-            lostPieceLoc = (lostPieceRank, lostPieceFile)
+            ## TODO (James): consider a more efficient way of doing this,
+            #                rather than a deep copy
+            hypoBoard = copy.deepcopy(board)
             # Eliminate the supposedly lost piece
-            board.board[lostPieceRank][lostPieceFile] = None
+            hypoBoard[lostPiecePosn] = None
 
             # Build list of possible friendly moves
-            friendlyMoves = ChessBoardUtils.enumerateAllMoves(board, color)
+            friendlyMoves = ChessBoardUtils.enumerateAllMoves(hypoBoard, color)
 
             # Test whether any move includes a move to the square in question
             for move in friendlyMoves:
                 movedPiece = move[0]
-                moveDst = move[3]
-                if lostPieceLoc == moveDst:
+                moveDstPosn = move[3]
+                if lostPiecePosn == moveDstPosn:
                     # Add piece value, if it exists, to accumulator
                     if movedPiece.type in QLAI._pieceValues:
                         weightedReturn += QLAI._pieceValues[movedPiece.type]

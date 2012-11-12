@@ -142,26 +142,22 @@ class MaverickClient(object):
                 "boardState": response["boardState"],
                 "history": response["history"]}
 
-    def request_makePly(self, playerID, gameID,
-                        fromRank, fromFile,
-                        toRank, toFile):
+    def request_makePly(self, playerID, gameID, fromPosn, toPosn):
         """Makes the given ply for the given player if legal to do so
 
         @param playerID: The integer playerID of a registered player.
         @param gameID: The integer gameID of an in-progress game which
         has been joined by the given player
-        @param fromRank: The rank of the piece to be moved (0-delimited)
-        @param fromFile: The file of the piece to be moved (0-delimited)
-        @param toRank: File to which the piece should be moved (0-delimited)
-        @param toFile: Rank to which the piece should be moved (0-delimited)"""
+        @param fromPosn: a ChessPosn representing the origin position
+        @param toPosn: a ChessPosn representing the destination position"""
 
         self._makeRequest("MAKE_PLY",
                           playerID=playerID,
                           gameID=gameID,
-                          fromRank=fromRank,
-                          fromFile=fromFile,
-                          toRank=toRank,
-                          toFile=toFile)
+                          fromRank=fromPosn.rankN,
+                          fromFile=fromPosn.fileN,
+                          toRank=toPosn.rankN,
+                          toFile=toPosn.fileN)
 
 
 def _asciify_json_list(data):

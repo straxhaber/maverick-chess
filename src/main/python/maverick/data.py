@@ -14,19 +14,6 @@ import logging
 import random
 
 # TODO (mattsh): Fix this in ALL project Python code before removing TODO
-# TODO (mattsh): all position information should be of the form:
-#  TODO: - Positions are ChessPosn structure
-#  TODO: - Getting the value at a position can be done like so: board[posn]
-#           See ChessBoard.__getitem(posn) for more info
-#  TODO: - Return move pair values as 2-tuple (fromPosn, toPosn)
-#  TODO: - Arguments to functions named one of: posn, fromPosn, toPosn
-#  TODO: - Structure of return values clearly documented in PyDocs
-# Reason behind these changes: too much variation in posn data representation
-# Example:
-#  def getResultOfPly(board, fromPosn, toPosn):
-#    reference rank/file as fromPosn.rankN and toPosn.fileN
-
-# TODO (mattsh): Fix this in ALL project Python code before removing TODO
 # TODO (mattsh): If-elif clauses properly structured
 # TODO: - if it is basically a "switch" statement, have an else with an error
 # TODO: - no if cond1 then; if cond2 then. Do if cond1 then; elif cond2 then
@@ -199,14 +186,14 @@ class ChessBoard(object):
         Gets the piece object for the given position"""
         return self.layout[posn.fileN][posn.rankN]
 
-    def _executePly(self, color, fromRank, fromFile, toRank, toFile):
+    def _executePly(self, color, fromPosn, toPosn):
         """Make a ply, assuming that it is legal
 
         Arguments and are the same as makePly for a legal move"""
 
         # Remove moving piece from starting position
-        movedPiece = self.board[fromRank][fromFile]
-        self.board[fromRank][fromFile] = None
+        movedPiece = self.board[fromPosn]
+        self.board[fromPosn] = None
 
         # Reset en passant flags to false
         self.flag_enpassant[color] = [False] * ChessBoard.BOARD_SIZE
@@ -216,52 +203,51 @@ class ChessBoard(object):
         if movedPiece == self.KING:
             self.flag_canCastle[color] = (False, False)
         if movedPiece == self.ROOK:
-            if fromFile == 0:  # Queen-side rook was moved
+            if fromPosn.fileN == 0:  # Queen-side rook was moved
                 self.flag_canCastle[color] = (False, prevCastleFlag[1])
-            elif fromFile == 7:  # King-side rook was moved
+            elif fromPosn.fileN == 7:  # King-side rook was moved
                 self.flag_canCastle[color] = (prevCastleFlag[0], False)
 
         # Change in rank from origin to destination
-        rankDeltaAbs = abs(toRank - fromRank)
+        rankDeltaAbs = abs(toPosn.rankN - fromPosn.rankN)
 
         pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
 
         # If we've moved a pawn for the first time, set en passant flags
         if (movedPiece == self.PAWN and
-            fromRank == pawnStartRank and
+            fromPosn.rankN == pawnStartRank and
             rankDeltaAbs == 2):
-            self.flag_enpassant[color][fromFile] = True
+            self.flag_enpassant[color][fromPosn.fileN] = True
 
         # Move piece to destination
-        self.board[toRank][toFile] = movedPiece
+        self.board[toPosn] = movedPiece
 
         otherColor = ChessBoardUtils.getOtherColor(color)
         otherPawnStartRank = ChessBoard.PAWN_STARTING_RANKS[otherColor]
 
         # Remove en passant pawns, if relevant
 
-        if (self.flag_enpassant[otherColor][toFile] and
-            toRank == otherPawnStartRank):
+        if (self.flag_enpassant[otherColor][toPosn.fileN] and
+            toPosn.rankN == otherPawnStartRank):
             # Check if a black pawn is taken via en passant
             if otherColor == ChessBoard.WHITE:
-                self.board[pawnStartRank + 2][toFile] = None
+                self.board[pawnStartRank + 2][toPosn.fileN] = None
             # Check if a white pawn is taken via en passant
             elif otherColor == ChessBoard.BLACK:
-                self.board[pawnStartRank - 2][toFile] = None
+                self.board[pawnStartRank - 2][toPosn.fileN] = None
 
         # Log the successful move
         logStrF = "Moved piece from ({0},{1}), to ({2},{3})"
         ChessBoard._logger.info(logStrF,
-                                fromRank, fromFile, toRank, toFile)
+                                fromPosn.rankN, fromPosn.fileN,
+                                toPosn.rankN, toPosn.fileN)
 
-    def makePly(self, color, fromRank, fromFile, toRank, toFile):
+    def makePly(self, color, fromPosn, toPosn):
         """Make a ply if legal
 
         @param color: the color making the move (BLACK or WHITE constant)
-        @param fromRank: the rank from which piece is moving (integer in [0,7])
-        @param fromFile: the file from which piece is moving (integer in [0,7])
-        @param toRank: the rank to which piece is moving (integer in [0,7])
-        @param toFile: the file to which piece is moving (integer in [0,7])
+        @param fromPosn: a ChessPosn representing the origin position
+        @param toPosn: a ChessPosn representing the destination position
 
         @return: True if the move was successful, False otherwise
 
@@ -273,12 +259,9 @@ class ChessBoard(object):
         - Moves the rook as well if the king is castling"""
 
         # Check if the move is legal
-        isLegal = ChessBoardUtils.isLegalMove(self,
-                                              color,
-                                              fromRank, fromFile,
-                                              toRank, toFile)
+        isLegal = ChessBoardUtils.isLegalMove(self, color, fromPosn, toPosn)
         if isLegal:
-            self._executePly(color, fromRank, fromFile, toRank, toFile)
+            self._executePly(color, fromPosn, toPosn)
 
         return isLegal
 
@@ -338,7 +321,7 @@ class ChessBoardUtils(object):
         return rankVal in [3, 4] and fileVal in [3, 4]
 
     @staticmethod
-    def getSquaresInPath(fromRank, fromFile, toRank, toFile):
+    def getSquaresInPath(fromPosn, toPosn):
         # TODO (mattsh): helper function
         """Returns a list of squares in the straight path from origin to dest
 
@@ -346,26 +329,27 @@ class ChessBoardUtils(object):
 
         Returns an empty list if no straight-line path exists.
 
-        @param fromRank: the rank of the starting position  (integer in [0,7])
-        @param fromFile: the file of the starting position  (integer in [0,7])
-        @param toRank: the rank of the ending position  (integer in [0,7])
-        @param toFile: the file of the ending position  (integer in [0,7])
+        @param fromPosn: a ChessPosn representing the origin position
+        @param toPosn: a ChessPosn representing the destination position
 
-        @return: A list of (rank, file) tuples representing squares in the path
+        @return: A list of ChessPosn objects representing squares in the path
         from origin to destination, not including the origin or destination"""
 
-        rank_delta_abs = abs(toRank - fromRank)  # num spaces up/down
-        file_delta_abs = abs(toFile - fromFile)  # num spaces left/right
+        # Number of spaces moved vertically
+        rank_delta_abs = abs(toPosn.rankN - fromPosn.rankN)
+
+        # Number of spaces moved horizontally
+        file_delta_abs = abs(toPosn.fileN - fromPosn.fileN)
         path_rank_values = []  # Rank values of squares that must be open
         path_file_values = []  # File values of squares that must be open
 
         #Determine step values to use in range finding
-        if fromRank < toRank:
+        if fromPosn.rankN < toPosn.rankN:
             rankStep = 1
         else:
             rankStep = -1
 
-        if fromFile < toFile:
+        if fromPosn.fileN < toPosn.fileN:
             fileStep = 1
         else:
             fileStep = -1
@@ -373,50 +357,60 @@ class ChessBoardUtils(object):
         # Check if the path is diagonal
         if rank_delta_abs == file_delta_abs:
             # Build up lists of rank and file values to be included in path
-            for r in range(fromRank, toRank, rankStep):
-                if r not in [fromRank, toRank]:  # don't include origin or dest
+            for r in range(fromPosn.rankN, toPosn.rankN, rankStep):
+                # Check that include origin or dest is not included
+                if r not in [fromPosn.rankN, toPosn.rankN]:
                     path_rank_values.append(r)
 
-            for f in range(fromFile, toFile, fileStep):
-                if f not in [fromFile, toFile]:
+            for f in range(fromPosn.fileN, toPosn.fileN, fileStep):
+                if f not in [fromPosn.fileN, toPosn.fileN]:
                     path_file_values.append(f)
 
         #Check if the path is horizontal
         elif rank_delta_abs == 0:
             # Build up lists of rank and file values to be included in path
-            for f in range(fromFile, toFile, fileStep):
-                if f not in [fromFile, toFile]:  # don't include origin or dest
+            for f in range(fromPosn.fileN, toPosn.fileN, fileStep):
+                # Check that origin and destination are not included
+                if f not in [fromPosn.fileN, toPosn.fileN]:
                     path_file_values.append(f)
-            path_rank_values = [fromRank] * len(path_file_values)
+            path_rank_values = [fromPosn.rankN] * len(path_file_values)
 
         #Check if the path is vertical
         elif rank_delta_abs != 0:
             #Build up lists of rank and file values to be included in path
-            for r in range(fromRank, toRank, rankStep):
-                if r not in [fromRank, toRank]:  # don't include origin or dest
+            for r in range(fromPosn.rankN, toPosn.rankN, rankStep):
+                # Check that origin and destination aren't included
+                if r not in [fromPosn.rankN, toPosn.rankN]:
                     path_rank_values.append(r)
-            path_file_values = [fromFile] * len(path_file_values)
+            path_file_values = [fromPosn.fileN] * len(path_file_values)
 
         # If the path is not straight-line, return the empty list
         else:
             return []
 
-        # Combine rank and file lists into return value
+        # Combine rank and file lists into list of tuples (rank, file)
         pathSquares = zip(path_rank_values, path_file_values)
-        return pathSquares
+
+        # Build list of posns out of zipped tuples
+        pathPosns = []
+
+        for square in pathSquares:
+            # Create a new posn and append it to the accumulator
+            posn = ChessPosn(square[0], square[1])
+            pathPosns.append(posn)
+
+        return pathPosns
 
     @staticmethod
-    def isClearLinearPath(board, fromRank, fromFile, toRank, toFile):
+    def isClearLinearPath(board, fromPosn, toPosn):
         # TODO (mattsh): helper function
         """True if there is a clear straight path from origin to destination
 
         To be used for horizontal, vertical, or diagonal moves.
 
         @param board: the board on which to perform this test
-        @param fromRank: the rank of the starting position  (integer in [0,7])
-        @param fromFile: the file of the starting position  (integer in [0,7])
-        @param toRank: the rank of the ending position  (integer in [0,7])
-        @param toFile: the file of the ending position  (integer in [0,7])
+        @param fromPosn: a ChessPosn representing the origin position
+        @param toPosn: a ChessPosn representing the destination position
 
         @return: True if the path is clear, False if it is obstructed, or is
         not a straight-line path.
@@ -425,14 +419,13 @@ class ChessBoardUtils(object):
         clarity, then checks them all for clarity."""
 
         # Get the squares in the path, if there is one
-        pathSquares = ChessBoardUtils.getSquaresInPath(fromRank, fromFile,
-                                                       toRank, toFile)
+        pathSquares = ChessBoardUtils.getSquaresInPath(fromPosn, toPosn)
 
         # Number spaces moved vertically
-        rank_delta_abs = abs(toRank - fromRank)
+        rank_delta_abs = abs(toPosn.rankN - fromPosn.rankN)
 
         # Number of spaces moved horizontally
-        file_delta_abs = abs(toFile - fromFile)
+        file_delta_abs = abs(toPosn.fileN - fromPosn.fileN)
 
         # Check if squares are adjacent or, if not, if there is a path between
         # the two
@@ -448,7 +441,7 @@ class ChessBoardUtils(object):
         return True  # None of the path squares contained a piece
 
     @staticmethod
-    def findColorPieces(board, color):
+    def findPiecePosnsByColor(board, color):
         # TODO (mattsh): helper function
         """Return a list of of all pieces of the given color on the board
 
@@ -456,8 +449,11 @@ class ChessBoardUtils(object):
         @param color: The color of the pieces to find, ChessMatch.WHITE or
         ChessMatch.BLACK
 
-        @return: a list of tuples of form (piece, (rank, file) representing
+        @return: a list of ChessPosns representing
                 the location of all pieces of the given color"""
+
+        ## TODO (James): only return posns and get piecetype in calling code
+        #                if needed.
         pieceLocations = []
 
         for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
@@ -466,7 +462,9 @@ class ChessBoardUtils(object):
                 piece = row[f]
                 if piece is not None:
                     if piece.color == color:
-                        pieceLocations.append((piece.type, (r + 1, f + 1)))
+
+                        # Build ChessPosn for piece location
+                        pieceLocations.append(ChessPosn(r, f))
         return (pieceLocations)
 
     @staticmethod
@@ -479,14 +477,14 @@ class ChessBoardUtils(object):
         ChessMatch.BLACK
 
         @return: a tuple whose two elements are as follows:
-                Element 0: a tuple of form (rank, file) representing the
+                Element 0: A ChessPosn representing the
                 location of the king of the given color
-                Element 1: a list of tuples of form (rank, file) representing
+                Element 1: A list of ChessTuples representing
                 the location of all non-king enemy pieces"""
 
-        ## TODO (James): rewrite this to use findColorPieces
+        ## TODO (James): rewrite this to use findPiecePosnsByColor
 
-        enemyPieceLocations = []  # List of (rank, file) non-king pieces
+        enemyPiecePosns = []  # List of ChessPosns of non-king pieces
 
         # Locate given player's king, and opposing player's non-king pieces
         for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
@@ -495,36 +493,36 @@ class ChessBoardUtils(object):
                 piece = row[f]
                 if piece is not None:
                     if piece.color == color and piece.type == ChessBoard.KING:
-                        kingLoc = (r, f)
+                        kingLoc = ChessPosn(r, f)
                     elif (piece.color != color and
                           piece.type != ChessBoard.KING):
-                        enemyPieceLocations.append((r, f))
-        return (kingLoc, enemyPieceLocations)
+
+                        # Create a ChessPosn to append to the return list
+                        piecePosn = ChessPosn(r, f)
+                        enemyPiecePosns.append(piecePosn)
+        return (kingLoc, enemyPiecePosns)
 
     @staticmethod
-    def getInterruptSquares(fromRank, fromFile, toRank, toFile):
+    def getInterruptSquares(fromPosn, toPosn):
         # TODO (mattsh): helper function
         """Return a list of squares that block the given path if moved to
 
-        NOTE: This list will always include (fromRank, fromFile)
+        NOTE: This list will always include fromPosn
 
-        @param fromRank: the rank of the starting position (integer in [0,7])
-        @param fromFile: the file of the starting position (integer in [0,7])
-        @param toRank: the rank of the ending position (integer in [0,7])
-        @param toFile: the file of the ending position (integer in [0,7])
+        @param fromPosn: a ChessPosn representing the origin position
+        @param toPosn: a ChessPosn representing the destination position
 
-        @return: A list of (rank, file) tuples representing squares that, if
-        moved to, would inhibit the piece at fromRank, fromFile from being able
-        to move to toRank, toFile"""
+        @return: A list of ChessPosn objects representing squares that, if
+        moved to, would inhibit the piece at fromPosn from being able
+        to move to toPosn"""
 
         # Squares that could interrupt path from origin to destination. An
         # Accumulator to built up and returned
         interruptSquares = []
-        interruptSquares.append((fromRank, fromFile))
+        interruptSquares.append(fromPosn)
 
         # Build up list of squares in path from origin to destination
-        pathSquares = ChessBoardUtils.getSquaresInPath(fromRank, fromFile,
-                                                       toRank, toFile)
+        pathSquares = ChessBoardUtils.getSquaresInPath(fromPosn, toPosn)
 
         interruptSquares += (pathSquares)
 
@@ -569,17 +567,14 @@ class ChessBoardUtils(object):
 
         # Pull out the rank and file of the piece putting the king in check
         # TODO (mattsh): James please check that the comment above is correct
-        (checkPieceR, checkPieceF) = (checkInfo[1][0], checkInfo[1][0])
+        checkPieceLoc = checkInfo[1]
 
         # Find the king whose checkmate status is in question
-        myKingLocation = ChessBoardUtils.findKingAndEnemies(board, color)[0]
-        (checkedKingR, checkedKingF) = (myKingLocation[0], myKingLocation[1])
+        chkdKingLoc = ChessBoardUtils.findKingAndEnemies(board, color)[0]
 
         # Get a list of locations that, if moved to, might alleviate check
-        interruptLocations = ChessBoardUtils.getInterruptSquares(checkPieceR,
-                                                                 checkPieceF,
-                                                                 checkedKingR,
-                                                                 checkedKingF)
+        interruptLocations = ChessBoardUtils.getInterruptSquares(checkPieceLoc,
+                                                                 chkdKingLoc)
         # Get locations of all this player's non-king pieces
         myNonKingPieceLocs = ChessBoardUtils.findKingAndEnemies(board,
                                                                 otherColor)[1]
@@ -587,24 +582,16 @@ class ChessBoardUtils(object):
         # Iterate through pieces, and see if any can move to potential check-
         # alleviating squares
         for pieceLoc in myNonKingPieceLocs:
-            pieceRank = pieceLoc[0]
-            pieceFile = pieceLoc[1]
-
-            for interruptLoc in interruptLocations:
-                intruptRnk = interruptLoc[0]
-                intruptFil = interruptLoc[1]
+            for intruptLoc in interruptLocations:
 
                 # Check if the piece can move to this interrupt square
-                if ChessBoardUtils.isLegalMove(board, color, pieceRank,
-                                               pieceFile, intruptRnk,
-                                               intruptFil):
+                if ChessBoardUtils.isLegalMove(board, color, pieceLoc,
+                                               intruptLoc):
 
                     # Generate the board that such a move would produce
                     boardAfterMove = ChessBoardUtils.getResultOfPly(board,
-                                                                    pieceRank,
-                                                                    pieceFile,
-                                                                    intruptRnk,
-                                                                    intruptFil)
+                                                                    pieceLoc,
+                                                                    intruptLoc)
                     # Check if the given color is still in check in that board
                     # If not, that color is not in checkmate
                     if not ChessBoardUtils.isKingInCheck(boardAfterMove,
@@ -614,24 +601,23 @@ class ChessBoardUtils(object):
         possibleKingMoves = []  # List of tuples of possible king moves
 
         # If no alleviating moves found, enumerate king's possible moves
-        for r in range(checkedKingR - 1, checkedKingR + 1):
-            for f in range(checkedKingF - 1, checkedKingF + 1):
-                if r != checkedKingR or f != checkedKingF:
-                    possibleKingMoves.append((r, f))
+        for r in range(chkdKingLoc.rankN - 1, chkdKingLoc.rankN + 1):
+            for f in range(chkdKingLoc.fileN - 1, chkdKingLoc.fileN + 1):
+                if r != chkdKingLoc.rankN or f != chkdKingLoc.fileN:
+
+                    # Build ChessPosn object to append to list
+                    kingMove = ChessPosn(r, f)
+                    possibleKingMoves.append(kingMove)
 
         # For each possible king move, test if it is legal.
-        for move in possibleKingMoves:
-            toRank = move[0]
-            toFile = move[1]
+        for kingMove in possibleKingMoves:
 
-            if ChessBoardUtils.isLegalMove(board, color, checkedKingR,
-                                           checkedKingF, toRank, toFile):
+            if ChessBoardUtils.isLegalMove(board, color,
+                                           chkdKingLoc, kingMove):
                 # Generate the board that such a move would produce
                 boardAfterMove = ChessBoardUtils.getResultOfPly(board,
-                                                                pieceRank,
-                                                                pieceFile,
-                                                                toRank,
-                                                                toFile)
+                                                                chkdKingLoc,
+                                                                kingMove)
 
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
@@ -655,7 +641,7 @@ class ChessBoardUtils(object):
 
         @return: A tuple containing two values, as follows:
                 Element 0: True if the king is in check, false otherwise
-                Element 1: A tuple of form (rank, file) representing the
+                Element 1: A ChessPosn representing the
                 location of a piece which is placing the king in check.
                 NOTE: this is only the first such piece detected.  There may be
                 others.
@@ -669,24 +655,20 @@ class ChessBoardUtils(object):
 
         # Locate given player's king, and opposing player's non-king pieces
         pieceLocations = ChessBoardUtils.findKingAndEnemies(board, color)
-        kingLocation = pieceLocations[0]
-        kingRank = kingLocation[0]
-        kingFile = kingLocation[1]
-        # List of (rank, file) locations of pieces that may have the king
+        kingLoc = pieceLocations[0]
+        # List of ChessPosns of pieces that may have the king
         # in check
         enemyPieceLocations = pieceLocations[1]
 
         # Check if any enemy piece can legally move to the king's location
-        for piece in enemyPieceLocations:
-            pieceRank = piece[0]  # Rank of the piece which may check the king
-            pieceFile = piece[1]  # File of the piece which may check the king
+        for pieceLoc in enemyPieceLocations:
 
             # If a move to the king's location is legal, the king is in check
-            if ChessBoardUtils.isLegalMove(board, otherColor, pieceRank,
-                                           pieceFile, kingRank, kingFile):
+            if ChessBoardUtils.isLegalMove(board, otherColor,
+                                           pieceLoc, kingLoc):
                 ChessBoardUtils._logger.info("Found that {0} is in check",
                                              color)
-                return (True, (pieceRank, pieceFile))
+                return (True, pieceLoc)
 
         # If none of the enemy pieces could move to the king's location, the
         # king is not in check
@@ -694,33 +676,30 @@ class ChessBoardUtils(object):
         return (False, None)
 
     @staticmethod
-    def getResultOfPly(board, fromRank, fromFile, toRank, toFile):
+    def getResultOfPly(board, fromPosn, toPosn):
         # TODO: move to ChessBoard
         """Returns the board object resulting from the given move
 
         NOTE: Does not check legality of move, and creates a copy for operation
 
-        @param fromRank: the rank of the piece to be moved
-        @param fromFile: the file of the piece to be moved
-        @param toRank: the rank to which the piece is to be moved
-        @param toFile: the file to which the piece is to be moved
+        @param fromPosn: a ChessPosn representing the origin position
+        @param toPosn: a ChessPosn representing the destination position
 
         @return: a ChessBoard object identical to that which would result from
                 the given ply being made on this board"""
 
         # Figure out the color being moved
-        color = board.board[fromRank][fromFile][0]
+        color = board.board[fromPosn][0]
 
         # Copy the board, so as not to modify anything real
         postMoveBoard = copy.deepcopy(board)
 
         # Make the proposed ply on the hypothetical board
-        postMoveBoard._executePly(color, fromRank, fromFile, toRank, toFile)
-
+        postMoveBoard._executePly(color, fromPosn, toPosn)
         return postMoveBoard
 
     @staticmethod
-    def isLegalMove(board, color, fromRank, fromFile, toRank, toFile):
+    def isLegalMove(board, color, fromPosn, toPosn):
         # TODO: move to ChessBoard
         """Returns true if the specified move is legal
 
@@ -762,8 +741,8 @@ class ChessBoardUtils(object):
          direction ("a" file or "h" file) is True"""
 
         # Pull out the (color, origin_type) entry at the from/to board position
-        origin_entry = board.board[fromRank][fromFile]
-        destin_entry = board.board[toRank][toFile]
+        origin_entry = board.board[fromPosn]
+        destin_entry = board.board[toPosn]
 
         # Check if:
         #  - there is no piece at the position
@@ -775,10 +754,10 @@ class ChessBoardUtils(object):
         origin_type = origin_entry[1]  # the type of piece at the origin
 
         # Number of spaces moved vertically
-        rank_delta_abs = abs(toRank - fromRank)
+        rank_delta_abs = abs(toPosn.rankN - fromPosn.rankN)
 
         # Number of spaces moved horizontally
-        file_delta_abs = abs(toFile - fromFile)
+        file_delta_abs = abs(toPosn.fileN - fromPosn.fileN)
 
         # Check move legality for individual piece types
         if origin_type == ChessBoard.PAWN:
@@ -803,7 +782,7 @@ class ChessBoardUtils(object):
             elif rank_delta_abs == 2:
                 if file_delta_abs != 0:
                     return False  # Pawns cannot move up 2 and left/right
-                elif fromRank != pawnStartRank:
+                elif fromPosn.rankN != pawnStartRank:
                     return False  # Pawns can move two spaces only on 1st move
 
         elif origin_type == ChessBoard.ROOK:
@@ -813,9 +792,7 @@ class ChessBoardUtils(object):
                 return False
 
             #check that path between origin and destination is clear
-            if not ChessBoardUtils.isClearLinearPath(board,
-                                                     fromRank, fromFile,
-                                                     toRank, toFile):
+            if not ChessBoardUtils.isClearLinearPath(board, fromPosn, toPosn):
                 return False
 
         elif origin_type == ChessBoard.KNGT:
@@ -834,9 +811,7 @@ class ChessBoardUtils(object):
                 return False
 
             #check that path between origin and destination is clear
-            if not ChessBoard.isClearLinearPath(board,
-                                                fromRank, fromFile,
-                                                toRank, toFile):
+            if not ChessBoard.isClearLinearPath(board, fromPosn, toPosn):
                 return False
 
         elif origin_type == ChessBoard.QUEN:
@@ -848,9 +823,7 @@ class ChessBoardUtils(object):
                 return False
 
             #Check that path between origin and destination is clear
-            if not ChessBoardUtils.isClearLinearPath(board,
-                                                     fromRank, fromFile,
-                                                     toRank, toFile):
+            if not ChessBoardUtils.isClearLinearPath(board, fromPosn, toPosn):
                 return False
 
         elif origin_type == ChessBoard.KING:
@@ -871,12 +844,14 @@ class ChessBoardUtils(object):
             if file_delta_abs != 1 and rank_delta_abs != 1:
 
                 # Check for illegal kingside castle
-                if toFile == castleFileKingside and toRank == kingStartRank:
+                if (toPosn.fileN == castleFileKingside and
+                    toPosn.rankN == kingStartRank):
                     if not castleFlagKingside:
                         return False
 
                 # Check for illegal queenside castle
-                elif toFile == castleFileQueenside and toRank == kingStartRank:
+                elif (toPosn.fileN == castleFileQueenside and
+                      toPosn.rankN == kingStartRank):
                     if not castleFlagQueenside:
                         return False
 
@@ -889,17 +864,16 @@ class ChessBoardUtils(object):
             return False
 
         # Check that a move is being made
-        if fromRank == toRank and fromFile == toFile:
+        if fromPosn == toPosn:
             return False
 
         # Check that the proposed move is to a square on the board
-        if toRank not in range(0, 8) or toFile not in range(0, 8):
+        if toPosn.rankN not in range(0, 8) or toPosn.fileN not in range(0, 8):
             return False
 
         # Create the board that the proposed move would result in
         boardAfterMove = ChessBoardUtils.getResultOfPly(board,
-                                                        fromRank, fromFile,
-                                                        toRank, toFile)
+                                                        fromPosn, toPosn)
 
         # Check that the king would not be in check after the move
         if ChessBoardUtils.isKingInCheck(boardAfterMove, color)[0]:
@@ -925,7 +899,7 @@ class ChessBoardUtils(object):
         """Enumerate all possible immediate moves for the given player
 
         @return: a set of tuples of the form:
-            ListOf[(piece, (fromRank, fromFile), (toRank, toFile))]"""
+            ListOf[(ChessPiece, ChessPosn)]"""
 
         ## TODO (James): rewrite this function
 
@@ -941,7 +915,7 @@ class ChessBoardUtils(object):
     def getPossibleMoves(board, fromRank, fromFile):
         """Return all possible moves for the specified piece on this board
 
-        @return ListOf[(pieceType, (fromRank, fromFile), (toRank, toFile))]"""
+        @return ListOf[(ChessPiece, ChessPosn, ChessPosn)]"""
 
         ## TODO (James): Rewrite this function
 
@@ -1006,7 +980,7 @@ class ChessMatch(object):
         else:
             return ChessBoard.BLACK
 
-    def makePly(self, player, fromRank, fromFile, toRank, toFile):
+    def makePly(self, player, fromPosn, toPosn):
         """Makes a move if legal
 
         @return: "SUCCESS" if move was successful, error message otherwise"""
@@ -1021,7 +995,7 @@ class ChessMatch(object):
             if color != self.whoseTurn():
                 return "It is not your turn"
 
-            if self.board.makePly(color, fromRank, fromFile, toRank, toFile):
+            if self.board.makePly(color, fromPosn, toPosn):
                 # Check for checkmates
                 if ChessBoardUtils.isCheckMated(self.board, ChessBoard.WHITE):
                     self.status = ChessMatch.STATUS_BLACK_WON
@@ -1029,12 +1003,13 @@ class ChessMatch(object):
                                                   ChessBoard.BLACK):
                     self.status = ChessMatch.STATUS_WHITE_WON
 
-                self.history.append(((fromRank, fromFile), (toRank, toFile)))
+                self.history.append((fromPosn, toPosn))
 
                 # Log this ply
                 logStrF = "Added ({0},{1}) -> ({2}, {3}) to match history"
                 ChessMatch._logger.debug(logStrF,
-                                         fromRank, fromFile, toRank, toFile)
+                                         fromPosn.rankN, fromPosn.fileN,
+                                         toPosn.rankN, toPosn.fileN)
                 return "SUCCESS"
             else:
                 return "Illegal move"
