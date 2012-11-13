@@ -12,7 +12,6 @@ __version__ = "1.0"
 from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
 import logging
-import sys
 
 from maverick.data import ChessBoard
 from maverick.data import ChessPosn

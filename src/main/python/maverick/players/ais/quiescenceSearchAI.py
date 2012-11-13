@@ -337,9 +337,9 @@ class QLAI(MaverickAI):
         otherColor = ChessBoard.getOtherColor(color)
 
         # Check to see if either player is checkmated and return appropriately
-        if board.isCheckMated(otherColor):
+        if board.isKingCheckmated(otherColor):
             return 1
-        elif board.isCheckMated(color):
+        elif board.isKingCheckmated(color):
             return -1
         else:
 
