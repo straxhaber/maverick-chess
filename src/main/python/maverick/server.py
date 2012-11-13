@@ -10,6 +10,9 @@ __version__ = "1.0"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+## TODO (James): Once Systems has decided whether to install a new version of
+#                Python or not, decide whether command-line arguments need to
+#                be parsed without the argparse module
 from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
 import json
@@ -355,25 +358,25 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
     """The version of this server, as reported in its response headers"""
 
     VALID_REQUESTS = {"REGISTER": (TournamentSystem.register,
-                                   {"name"},
-                                   {"playerID"}),
+                                   set(["name"]),
+                                   set(["playerID"])),
                       "JOIN_GAME": (TournamentSystem.joinGame,
-                                    {"playerID"},
-                                    {"gameID"}),
+                                    set(["playerID"]),
+                                    set(["gameID"])),
                       "GET_STATUS": (TournamentSystem.getStatus,
-                                     {"gameID"},
-                                     {"status"}),
+                                     set(["gameID"]),
+                                     set(["status"])),
                       "IS_MY_TURN": (TournamentSystem.isMyTurn,
-                                     {"gameID", "playerID"},
-                                     {"isMyTurn"}),
+                                    set(["gameID", "playerID"]),
+                                     set(["isMyTurn"])),
                       "GET_STATE": (TournamentSystem.getState,
-                                    {"playerID", "gameID"},
-                                    {"youAreColor", "isWhitesTurn",
-                                     "board", "history"}),
+                                    set(["playerID", "gameID"]),
+                                    set(["youAreColor", "isWhitesTurn",
+                                         "board", "history"])),
                       "MAKE_PLY": (TournamentSystem.makePly,
-                                   {"playerID", "gameID",
-                                    "fromRank", "fromFile",
-                                    "toRank", "toFile"},
+                                   set(["playerID", "gameID",
+                                        "fromRank", "fromFile",
+                                        "toRank", "toFile"]),
                                    {})}
     """Map of valid request names to:
         - corresponding TournamentSystem function

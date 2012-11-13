@@ -28,8 +28,6 @@ class HumanGamer(MaverickPlayer):
     # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
-    # TODO (mattsh): put some logging throughout this class
-
     VALID_INPUT_FILE = ["a", "b", "c", "d", "e", "f", "g", "h"]
     """Valid input characters for the file (row) of a position"""
 
@@ -122,7 +120,9 @@ class HumanGamer(MaverickPlayer):
     def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Handle a bad move in some smart way"""
         self.displayMessage("Server didn't accept move; please retry.")
-        self.displayMessage("Message from server: {0}".format(errMsg))
+        logStrF = "Error message from server: {0}".format(errMsg)
+        self.displayMessage(logStrF)
+        HumanGamer._logger.debug(logStrF)
 
     def printBoard(self):
         """Print out an ASCII version of the chess board"""
