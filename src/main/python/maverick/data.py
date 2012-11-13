@@ -11,6 +11,10 @@ __version__ = "1.0"
 
 ## TODO (James): For ALL MAVERICK CODE - license as BeerWare
 
+## TODO (James): Fix castling so that it works
+
+## TODO (James): Fix en passant capture so that it works
+
 import copy
 import logging
 import random
@@ -513,12 +517,12 @@ class ChessBoard(object):
             castleFileQueenside = 3
             castleFileKingside = 6
             if color == ChessBoard.WHITE:
-                kingStartRank = 1
+                kingStartRank = 0
             else:
                 kingStartRank = 7
 
             # Check that king only moves more than one square when castling
-            if file_delta_abs != 1 and rank_delta_abs != 1:
+            if file_delta_abs != 1 or rank_delta_abs != 1:
 
                 # Check for illegal kingside castle
                 if (toPosn.fileN == castleFileKingside and
