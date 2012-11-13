@@ -18,7 +18,7 @@ from maverick.players.ais.common import MaverickAI
 from maverick.data import ChessBoard
 from maverick.data import ChessPosn
 
-## TODO (James): Change all heuristic functions to return an int in [-1..1]
+## TODO (James): Make sure that heuristic functions to return an int in [-1..1]
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
 __version__ = "pre-alpha"
@@ -351,6 +351,9 @@ class QLAI(MaverickAI):
             # Data structure of 'opinions' from heuristics
             # Format: ListOf[("Name", weight, value)]
             opinions = []
+
+            ## TODO (James): Clean up the code below a bit - there has to be
+            #                a cleaner way to do this
 
             # Add piece value opinion
             pieceValueFriend = self._heuristicPieceValue(color, board)
