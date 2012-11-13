@@ -2,4 +2,4 @@
 
 export PYTHONPATH="${PYTHONPATH}":"$(dirname "$0")"/../src/main/python
 
-python -m maverick.server
+python -m maverick.server "${@}"
