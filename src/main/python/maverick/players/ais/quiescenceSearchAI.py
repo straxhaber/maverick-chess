@@ -35,7 +35,6 @@ class QLAI(MaverickAI):
 
     # Standard piece values, from
     # http://en.wikipedia.org/wiki/Chess_piece_values
-    ## TODO (James): decide whether to include the king with large point value
     _pieceValues = {ChessBoard.PAWN: 1,
                     ChessBoard.KNGT: 3,
                     ChessBoard.BISH: 3,
@@ -115,6 +114,8 @@ class QLAI(MaverickAI):
         totalValue = sum([QLAI._pieceValues[board[posn].pieceType]
                               for posn in QLAI._findPiecePosnsByColor(board,
                                                                       color)])
+
+        # Compress return value into range [-1..1]
         halfMaxVal = QLAI._maxTotalPieceVal / 2
         return (totalValue - halfMaxVal) / halfMaxVal
 
@@ -179,6 +180,7 @@ class QLAI(MaverickAI):
             if piece.pieceType in QLAI._pieceValues:
                 weightedTotal += QLAI._pieceValues[piece.pieceType]
 
+        # Compress return value into range [-1..1]
         return 1 - 2 * (weightedTotal / QLAI._maxTotalPieceVal)
 
     def _heuristicEmptySpaceCoverage(self, color, board):
@@ -248,6 +250,8 @@ class QLAI(MaverickAI):
                     weightedReturn += squareValue
 
         numEmptyLocations = len(emptyLocations)
+
+        # Compress return value into range [-1..1]
         return 1 - weightedReturn / numEmptyLocations * 2
 
     def _heuristicPiecesCovered(self, color, board):
@@ -293,7 +297,8 @@ class QLAI(MaverickAI):
                         weightedReturn += pieceVal
 
         numFriendPcs = len(friendPiecePosns)
-        halfMaxVal = QLAI._maxTotalPieceVal / 2
+
+        # Compress return value into range [-1..1]
         return 1 - weightedReturn / numFriendPcs * 2
 
     def combineHeuristicValues(self, res1, res2):
