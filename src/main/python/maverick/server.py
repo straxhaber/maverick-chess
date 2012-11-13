@@ -10,6 +10,9 @@ __version__ = "1.0"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+## TODO (James): Once Systems has decided whether to install a new version of
+#                Python or not, decide whether command-line arguments need to
+#                be parsed without the argparse module
 from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
 import json
