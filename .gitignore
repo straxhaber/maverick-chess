@@ -14,3 +14,6 @@
 ## Eclipse files to ignore
 *.project
 *.pydevproject
+
+## Ignore 'playground' used for testing
+/src/main/python/maverick/test/playground.py
