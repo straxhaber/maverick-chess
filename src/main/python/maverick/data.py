@@ -15,6 +15,11 @@ import copy
 import logging
 import random
 
+__all__ = ["ChessBoard",
+           "ChessMatch",
+           "ChessPiece",
+           "ChessPosn"]
+
 
 class ChessPosn(object):
     """Represents a position on a chess board"""

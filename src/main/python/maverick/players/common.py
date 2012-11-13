@@ -16,8 +16,10 @@ import time
 
 from maverick.client import MaverickClient
 from maverick.client import MaverickClientException
-from maverick.server import ChessBoard
-from maverick.server import ChessMatch
+from maverick.data import ChessBoard
+from maverick.data import ChessMatch
+
+__all__ = ["MaverickPlayer"]
 
 # TODO (mattsh): put more logging throughout this class
 
@@ -33,13 +35,15 @@ class MaverickPlayer(MaverickClient):
     SLEEP_TIME = 1
     """Amount of time to wait between requests when polling"""
 
-    def __init__(self):
+    def __init__(self, host=None, port=None):
         """Initialize a MaverickPlayer
+
+        If host or port specified and not None, use them instead of defaults
 
         NOTE: MaverickPlayer.startPlaying must be run to set playerID, gameID,
         and isWhite before the player can make moves"""
 
-        MaverickClient.__init__(self)
+        MaverickClient.__init__(self, host=host, port=port)
 
         # Default name (should be overridden for a human AI)
         # i.e., MaverickAI.1234901234.12839429834
@@ -167,8 +171,8 @@ class MaverickPlayer(MaverickClient):
                                        fromPosn, toPosn)
 
 
-def main():
+def _main():
     print "This class should not be run directly"
 
 if __name__ == '__main__':
-    main()
+    _main()

@@ -15,11 +15,11 @@ class TestTournamentSystem(unittest.TestCase):
     state = ts.getState(p2, gid)
 
     if state[1]['youAreColor'] == ChessBoard.WHITE:
-      wp = p2
-      bp = p1
+        wp = p2
+        bp = p1
     else:
-      wp = p1
-      bp = p2
+        wp = p1
+        bp = p2
 
     print ts.makePly(wp, gid, 1, 4, 3, 4)
     print ts.makePly(bp, gid, 6, 4, 4, 4)
@@ -33,4 +33,4 @@ class TestTournamentSystem(unittest.TestCase):
     print ts.getState(p2, gid)
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.runAI()

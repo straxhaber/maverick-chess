@@ -10,14 +10,19 @@ __version__ = "pre-alpha"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+from argparse import ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser
 import copy
 import logging
+import sys
 
 from maverick.players.ais.common import MaverickAI
 from maverick.data import ChessBoard
 from maverick.data import ChessPosn
 
 ## TODO (James): Change all heuristic functions to return an int in [-1..1]
+
+__all__ = ["QLAI", "runAI"]
 
 
 class QLAI(MaverickAI):
@@ -384,9 +389,19 @@ class QLAI(MaverickAI):
                 sum([weight for (_, weight, _) in opinions])
 
 
-def main():
+def runAI():
     ai = QLAI()
     ai.runAI()
 
+
+def main():
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--host", default=None, type=str,
+                        help="specify hostname of Maverick server")
+    parser.add_argument("--port", default=None, type=int,
+                        help="specify port of Maverick server")
+    args = parser.parse_args()
+    runAI(host=args.host, port=args.port)
+
 if __name__ == '__main__':
-    main()
+    runAI()
