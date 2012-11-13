@@ -11,10 +11,6 @@ __version__ = "1.0"
 
 ## TODO (James): For ALL MAVERICK CODE - license as BeerWare
 
-## TODO (James): Fix castling so that it works
-
-## TODO (James): Fix en passant capture so that it works
-
 import copy
 import logging
 import random
@@ -264,18 +260,25 @@ class ChessBoard(object):
 
         # Remove en passant pawns, if relevant
 
-        if (self.flag_enpassant[otherColor][toPosn.fileN] and
-            toPosn.rankN == otherPawnStartRank):
-            # Check if a black pawn is taken via en passant
+        if movedPiece.pieceType == ChessBoard.PAWN:
+
+            # Build up information for en passant capture check
             if otherColor == ChessBoard.WHITE:
+                # The rank at which a pawn could capture via en passant
+                epCapRnk = ChessBoard.PAWN_STARTING_RANKS[otherColor] + 1
                 # Location of the pawn being captured
-                pawnPosn = ChessPosn(pawnStartRank + 2, toPosn.fileN)
-                self[pawnPosn] = None
-            # Check if a white pawn is taken via en passant
-            elif otherColor == ChessBoard.BLACK:
+                pawnPosn = ChessPosn(epCapRnk + 1, toPosn.fileN)
+            else:
+                epCapRnk = ChessBoard.PAWN_STARTING_RANKS[otherColor] - 1
                 # Location of the pawn being captured
-                pawnPosn = ChessPosn(pawnStartRank - 2, toPosn.fileN)
-                self[pawnPosn] = None
+                pawnPosn = ChessPosn(epCapRnk - 1, toPosn.fileN)
+
+            # Check whether a pawn was captured by en passant
+            if (self.flag_enpassant[otherColor][toPosn.fileN] and
+                toPosn.rankN == epCapRnk):
+
+                    # If a pawn was captured, remove it
+                    self[pawnPosn] = None
 
         # Log the successful move
         logStrF = "Moved piece from %s, to %s"
@@ -535,8 +538,27 @@ class ChessBoard(object):
                     return False
 
                 # Check if pawn is moving diagonally without capturing
-                elif file_delta_abs == 1 and destin_entry is None:
-                    return False
+                elif file_delta_abs == 1:
+
+                    # Get the opposing player's color and en passant capture
+                    # rank
+                    oppClr = ChessBoard.getOtherColor(color)
+
+                    if oppClr == ChessBoard.WHITE:
+                        # The rank at which a pawn could capture via en passant
+                        epCapRnk = ChessBoard.PAWN_STARTING_RANKS[oppClr] + 1
+                    else:
+                        epCapRnk = ChessBoard.PAWN_STARTING_RANKS[oppClr] - 1
+
+                    # Get en passant flag for this file
+                    epFlag = self.flag_enpassant[oppClr][toPosn.fileN]
+
+                    # Calculate whether an en passant capture would occur
+                    # in this ply
+                    epCaptureP = epFlag and (toPosn.rankN == epCapRnk)
+                    if destin_entry is None and not epFlag:
+                        return False
+
                 elif file_delta_abs == 0 and destin_entry is not None:
                     return False  # Cannot move forward and capture
 
