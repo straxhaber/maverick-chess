@@ -11,7 +11,6 @@ __version__ = "pre-alpha"
 ###############################################################################
 
 import logging
-import random
 import time
 
 from maverick.client import MaverickClient
