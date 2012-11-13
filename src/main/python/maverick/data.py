@@ -224,6 +224,9 @@ class ChessBoard(object):
         # Change in rank from origin to destination
         rankDeltaAbs = abs(toPosn.rankN - fromPosn.rankN)
 
+        # Increase
+        fileDelta = toPosn.fileN - fromPosn.fileN
+
         pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
 
         # If we've moved a pawn for the first time, set en passant flags
@@ -237,6 +240,27 @@ class ChessBoard(object):
 
         otherColor = ChessBoard.getOtherColor(color)
         otherPawnStartRank = ChessBoard.PAWN_STARTING_RANKS[otherColor]
+
+        # Handle rook movement if castling
+
+        # Check whether this ply is a castle
+        if movedPiece.pieceType == ChessBoard.KING and abs(fileDelta) == 2:
+            # Find posn of the rook to be moved
+
+            #Check if this was a kingside castle
+            if fileDelta > 0:
+                movedRookPosn = ChessPosn(toPosn.rankN, 7)
+                rookDestPosn = ChessPosn(toPosn.rankN, 5)
+
+            # Else, this was a queenside castle
+            else:
+                movedRookPosn = ChessPosn(toPosn.rankN, 0)
+                rookDestPosn = ChessPosn(toPosn.rankN, 3)
+
+            # Move the rook
+            movedRook = self[movedRookPosn]
+            self[movedRookPosn] = None
+            self[rookDestPosn] = movedRook
 
         # Remove en passant pawns, if relevant
 
@@ -576,7 +600,7 @@ class ChessBoard(object):
             castleFlagKingside = self.flag_canCastle[color][1]
 
             # Determine the locations to which the king would move if castling
-            castleFileQueenside = 3
+            castleFileQueenside = 2
             castleFileKingside = 6
             if color == ChessBoard.WHITE:
                 kingStartRank = 0
