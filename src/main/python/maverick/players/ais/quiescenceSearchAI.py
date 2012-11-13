@@ -2,13 +2,12 @@
 
 """quiescenceSearchAI.py: AI that uses a quiescence search with heuristics"""
 
-__author__ = "Matthew Strax-Haber and James Magnarelli"
-__version__ = "pre-alpha"
-
 ###############################################################################
 # Code written by Matthew Strax-Haber, James Magnarelli, and Brad Fournier.
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
+
+from __future__ import division
 
 from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
@@ -21,6 +20,8 @@ from maverick.data import ChessPosn
 
 ## TODO (James): Change all heuristic functions to return an int in [-1..1]
 
+__author__ = "Matthew Strax-Haber and James Magnarelli"
+__version__ = "pre-alpha"
 __all__ = ["QLAI", "runAI"]
 
 
@@ -114,22 +115,23 @@ class QLAI(MaverickAI):
         totalValue = sum([QLAI._pieceValues[board[posn].pieceType]
                               for posn in QLAI._findPiecePosnsByColor(board,
                                                                       color)])
-        return totalValue / QLAI._maxTotalPieceVal - 0.5
+        halfMaxVal = QLAI._maxTotalPieceVal / 2
+        return (totalValue - halfMaxVal) / halfMaxVal
 
     def _heuristicInCheck(self, color, board):
-        """Return 1 if the given color king is in check on the given board
+        """Return -1 if the given color king is in check on the given board
 
         @param color: one of maverick.data.ChessBoard.WHITE or
                     maverick.data.ChessBoard.BLACK
         @param board: a ChessBoard object
 
-        @return: 1 if the given color is in check on the given board, 0
+        @return: -1 if the given color is in check on the given board, 1
                 otherwise"""
 
         if board.isKingInCheck(color)[0]:
-            return 1
+            return -1
         else:
-            return 0
+            return 1
 
     def _heuristicPiecesUnderAttack(self, color, board):
         """Return the value of the given color's pieces that are under attack
@@ -175,10 +177,9 @@ class QLAI(MaverickAI):
             piece = board[piecePosn]
             # Check if there is a value for this piece in the mappings
             if piece.pieceType in QLAI._pieceValues:
-                print "found piece type", piece.pieceType
                 weightedTotal += QLAI._pieceValues[piece.pieceType]
 
-        return weightedTotal
+        return 1 - 2 * (weightedTotal / QLAI._maxTotalPieceVal)
 
     def _heuristicEmptySpaceCoverage(self, color, board):
         """Return a value representing the number of empty squares controlled
@@ -246,7 +247,8 @@ class QLAI(MaverickAI):
                 else:
                     weightedReturn += squareValue
 
-        return weightedReturn
+        numEmptyLocations = len(emptyLocations)
+        return 1 - weightedReturn / numEmptyLocations * 2
 
     def _heuristicPiecesCovered(self, color, board):
         """Return a number representing how many of color's pieces are covered
@@ -290,7 +292,9 @@ class QLAI(MaverickAI):
                         pieceVal = QLAI._pieceValues[movedPiece.pieceType]
                         weightedReturn += pieceVal
 
-        return weightedReturn
+        numFriendPcs = len(friendPiecePosns)
+        halfMaxVal = QLAI._maxTotalPieceVal / 2
+        return 1 - weightedReturn / numFriendPcs * 2
 
     def combineHeuristicValues(self, res1, res2):
         """Combine the given results for the same heuristic run on both colors
