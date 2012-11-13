@@ -9,6 +9,8 @@ __version__ = "1.0"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+## TODO (James): For ALL MAVERICK CODE - license as BeerWare
+
 import copy
 import logging
 import random

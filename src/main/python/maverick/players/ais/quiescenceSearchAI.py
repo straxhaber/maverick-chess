@@ -100,7 +100,7 @@ class QLAI(MaverickAI):
 
         # Loop through this color's pieces, adding to total value
         foundPieceVals = sum([QLAI.pieceValues[board[posn].pieceType]
-                              for posn in board.getPiecesOfColor(color)])
+                              for posn in QLAI.findPiecePosnsByColor(color)])
         totalValue = sum(foundPieceVals)
 
         return totalValue
@@ -115,51 +115,56 @@ class QLAI(MaverickAI):
         @return: 1 if the given color is in check on the given board, 0
                 otherwise"""
 
-        if board.isKingInCheck(color):
+        if board.isKingInCheck(color)[0]:
             return 1
         else:
             return 0
 
     def _heuristicPiecesUnderAttack(self, color, board):
-        """Return a value representing the number of enemy pieces under attack
+        """Return the value of the given color's pieces that are under attack
 
-        @param color: one of maverick.data.ChessBoard.WHITE or
+        @param color: The color of the pieces to test -
+                    one of maverick.data.ChessBoard.WHITE or
                     maverick.data.ChessBoard.BLACK
         @param board: a ChessBoard object
 
-        @return: a value representing the number of enemy pieces that the given
-                color has under attack on the given board, weighted by piece
-                value"""
+        @return: A number representing the value of the given color's
+                pieces that are under attack, weighted by piece value"""
 
         otherColor = ChessBoard.getOtherColor(color)
 
         # Get friendly pieces
-        friendPiecePosns = QLAI._findPiecePosnsByColor(board, color)
+        attackingPiecePosns = QLAI._findPiecePosnsByColor(board, otherColor)
 
         # Get enemy pieces
-        enemyPiecePosns = QLAI._findPiecePosnsByColor(board, otherColor)
+        attackedPiecePosns = QLAI._findPiecePosnsByColor(board, color)
 
         # Record which enemy pieces are under attack
-        enemyPiecesUnderAttack = []
+        piecesUnderAttack = []
 
         # For each enemyPiece, check whether any friendlyPiece can capture it
-        for enemyPiecePosn in enemyPiecePosns:
+        for attackedPiecePosn in attackedPiecePosns:
 
-            for friendPiecePosn in friendPiecePosns:
+            for attackingPiecePosn in attackingPiecePosns:
 
                 # Check if this piece can capture the enemy piece
-                if board.isLegalMove(color, friendPiecePosn, enemyPiecePosn):
+                if board.isLegalMove(otherColor,
+                                     attackingPiecePosn,
+                                     attackedPiecePosn):
 
                     # Note that this enemyPiece is under attack
-                    enemyPiecesUnderAttack.append(enemyPiecePosn)
+                    piecesUnderAttack.append(attackedPiecePosn)
+                    # Each piece can only be attacked once, so break here
                     break
 
         # Sum weighted values of under-attack pieces
         weightedTotal = 0
-        for piece in enemyPiecesUnderAttack:
+        for piecePosn in piecesUnderAttack:
 
+            piece = board[piecePosn]
             # Check if there is a value for this piece in the mappings
             if piece.pieceType in QLAI._pieceValues:
+                print "found piece type", piece.pieceType
                 weightedTotal += QLAI._pieceValues[piece.pieceType]
 
         return weightedTotal
@@ -262,8 +267,7 @@ class QLAI(MaverickAI):
             hypoBoard[lostPiecePosn] = None
 
             # Build list of possible friendly moves
-            friendlyMoves = self._enumerateAllMoves(hypoBoard,
-                                                               color)
+            friendlyMoves = self._enumerateAllMoves(hypoBoard, color)
 
             # Test whether any move includes a move to the square in question
             for move in friendlyMoves:
