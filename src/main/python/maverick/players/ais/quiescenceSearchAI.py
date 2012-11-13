@@ -17,6 +17,8 @@ from maverick.players.ais.common import MaverickAI
 from maverick.data import ChessBoard
 from maverick.data import ChessPosn
 
+## TODO (James): Change all heuristic functions to return an int in [-1..1]
+
 
 class QLAI(MaverickAI):
     """Represents a quiescence search-based AI for use with Maverick"""
@@ -36,6 +38,9 @@ class QLAI(MaverickAI):
                     ChessBoard.QUEN: 9,
                     ChessBoard.KING: 0}
     """Point values for all pieces. King's value is reflected in checkmate"""
+
+    _maxTotalPieceVal = 39
+    """The sum of piece values for a full set of one player's chess pieces"""
 
     def _getNextMove(self, board):
         """TODO PyDoc"""
@@ -98,15 +103,13 @@ class QLAI(MaverickAI):
         @param board: a ChessBoard object
 
         Note that the king's value is not included - the undesirability of the
-        king's capture will be incorporated iln other heuristics."""
+        king's capture is handled elsewhere by checkmate checks."""
 
         # Loop through this color's pieces, adding to total value
-        foundPieceVals = sum([QLAI._pieceValues[board[posn].pieceType]
+        totalValue = sum([QLAI._pieceValues[board[posn].pieceType]
                               for posn in QLAI._findPiecePosnsByColor(board,
                                                                       color)])
-        totalValue = sum(foundPieceVals)
-
-        return totalValue
+        return totalValue / QLAI._maxTotalPieceVal - 0.5
 
     def _heuristicInCheck(self, color, board):
         """Return 1 if the given color king is in check on the given board
