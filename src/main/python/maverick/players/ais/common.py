@@ -15,6 +15,9 @@ import logging
 from maverick.data import ChessBoard
 from maverick.players.common import MaverickPlayer
 
+__all__ = ["MaverickAI",
+           "MaverickAIException"]
+
 
 class MaverickAIException(Exception):
     """Base class for Exceptions from Maverick AIs"""

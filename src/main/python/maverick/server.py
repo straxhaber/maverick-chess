@@ -10,10 +10,13 @@ __version__ = "1.0"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+from argparse import ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser
 import json
 import logging
 import pickle
 import random
+import sys
 
 from maverick.data import ChessBoard
 from maverick.data import ChessMatch
@@ -22,8 +25,13 @@ from maverick.data import ChessPosn
 from twisted.internet import endpoints
 from twisted.internet import protocol
 from twisted.internet import reactor
-
 from twisted.protocols import basic as basicProtocols
+
+
+__all__ = ["TournamentSystem",
+           "MaverickServerProtocol",
+           "MaverickServerProt",
+           "startServer"]
 
 
 class TournamentSystem(object):
@@ -509,8 +517,8 @@ class MaverickServerProtFactory(protocol.ServerFactory):
         return MaverickServerProtocol(self._tournamentSystem)
 
 
-def main(port=DEFAULT_MAVERICK_PORT):
-    """Main method: called when the server code is run
+def startServer(port=DEFAULT_MAVERICK_PORT):
+    """Start a server on the specified (or default) port
 
     @param port: The port to use for communication with a Maverick server"""
 
@@ -521,6 +529,15 @@ def main(port=DEFAULT_MAVERICK_PORT):
     endpoint = endpoints.TCP4ServerEndpoint(reactor, port)
     endpoint.listen(MaverickServerProtFactory(core))
     reactor.run()  # @UndefinedVariable
+
+
+def main():
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--port", default=7782, type=int,
+                        help="specify port for Maverick server")
+    args = parser.parse_args()
+    startServer(args.port)
+
 
 if __name__ == '__main__':
     main()

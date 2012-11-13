@@ -9,11 +9,17 @@ __version__ = "1.0"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
+from argparse import ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser
 import logging
+import sys
 
-from maverick.server import ChessBoard
-from maverick.server import ChessPosn
+from maverick.data import ChessBoard
+from maverick.data import ChessPosn
 from maverick.players.common import MaverickPlayer
+
+__all__ = ["HumanGamer",
+           "runHumanClient"]
 
 
 class HumanGamer(MaverickPlayer):
@@ -26,9 +32,11 @@ class HumanGamer(MaverickPlayer):
 
     # TODO (mattsh): put some logging throughout this class
 
-    def __init__(self, host, port):
-        """Initialize a human player"""
-        MaverickPlayer.__init__(self)
+    def __init__(self, host=None, port=None):
+        """Initialize a human player
+
+        If host or port specified and not None, use them instead of defaults"""
+        MaverickPlayer.__init__(self, host=host, port=port)
 
     def _getNextMove(self, board):
         """Ask the player for a move and return it
@@ -117,9 +125,20 @@ class HumanGamer(MaverickPlayer):
         print
 
 
-def main(host='127.0.0.1', port=7782):
-        p = HumanGamer(host, port)
-        p.run()
+def runHumanClient(host=None, port=None):
+    """Run human client that connects to host:port (None means use default)"""
+    p = HumanGamer(host=host, port=port)
+    p.run()
+
+
+def main():
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--host", default=None, type=str,
+                        help="specify hostname of Maverick server")
+    parser.add_argument("--port", default=None, type=int,
+                        help="specify port of Maverick server")
+    args = parser.parse_args()
+    runHumanClient(host=args.host, port=args.port)
 
 if __name__ == '__main__':
     main()

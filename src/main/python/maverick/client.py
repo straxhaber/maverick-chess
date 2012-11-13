@@ -18,6 +18,9 @@ from maverick.data import ChessBoard
 from maverick.data import ChessPiece
 from maverick.data import ChessPosn
 
+__all__ = ["MaverickClient",
+           "MaverickClientException"]
+
 
 class MaverickClientException(Exception):
     """Base class for Exceptions from the Maverick Network Client"""
@@ -35,13 +38,27 @@ class MaverickClient(object):
     TIMEOUT = 2
     """Timeout (in seconds) for the telnet connections"""
 
-    def __init__(self, host="127.0.0.1", port=7782):
+    DEFAULT_HOST = "127.0.0.1"
+    """Default host to connect to"""
+
+    DEFAULT_PORT = 7782
+    """Default port to connect to"""
+
+    def __init__(self, host=None, port=None):
         """Initializes a MaverickClient, for use in Maverick Chess
 
+        If host or port specified and not None, use them instead of defaults
         NOTE: Port 7782 is not registered with the IANA as of 2012-12-17"""
 
-        self.host = host
-        self.port = port
+        if host is None:
+            self.host = MaverickClient.DEFAULT_HOST
+        else:
+            self.host = host
+
+        if port is None:
+            self.port = MaverickClient.DEFAULT_PORT
+        else:
+            self.port = port
 
     def _makeRequest(self, verb, **dikt):
         """Send a request to the server
