@@ -13,7 +13,6 @@ from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
 import logging
 
-from maverick.data import ChessBoard
 from maverick.data import ChessPosn
 from maverick.players.common import MaverickPlayer
 
@@ -54,20 +53,23 @@ class HumanGamer(MaverickPlayer):
 
         haveValidMove = False
         while not haveValidMove:
-            qStr = "Please enter move (e.g., \"a1b3\" to move a1 to b3):  "
+            qStr = "Please enter move (e.g., \"e2 e4\" to move e2 to e4):  "
             playerMove = raw_input(qStr)
 
             # Validate move
-            if len(playerMove) != 4:
+            if len(playerMove) != 5:
                 HumanGamer._logger.debug("Invalid input formatting")
                 self.displayMessage("Invalid: too many or too few characters")
+            elif playerMove[2] != " ":
+                HumanGamer._logger.debug("Invalid input formatting")
+                self.displayMessage("Invalid: put a space between coordinates")
             elif (playerMove[0] not in HumanGamer.VALID_INPUT_FILE or
-                  playerMove[2] not in HumanGamer.VALID_INPUT_FILE):
+                  playerMove[3] not in HumanGamer.VALID_INPUT_FILE):
                 logStr = "Invalid: file not in a to h"
                 HumanGamer._logger.debug(logStr)
                 self.displayMessage(logStr)
             elif (playerMove[1] not in HumanGamer.VALID_INPUT_RANK or
-                  playerMove[3] not in HumanGamer.VALID_INPUT_RANK):
+                  playerMove[4] not in HumanGamer.VALID_INPUT_RANK):
                 logStr = "Invalid: rank not in 1 to 8"
                 HumanGamer._logger.debug(logStr)
                 self.displayMessage(logStr)
@@ -76,8 +78,8 @@ class HumanGamer(MaverickPlayer):
 
         fromFile = HumanGamer.VALID_INPUT_FILE.index(playerMove[0])
         fromRank = HumanGamer.VALID_INPUT_RANK.index(playerMove[1])
-        toFile = HumanGamer.VALID_INPUT_FILE.index(playerMove[2])
-        toRank = HumanGamer.VALID_INPUT_RANK.index(playerMove[3])
+        toFile = HumanGamer.VALID_INPUT_FILE.index(playerMove[3])
+        toRank = HumanGamer.VALID_INPUT_RANK.index(playerMove[4])
 
         # Build ChessPosns to return
         fromPosn = ChessPosn(fromRank, fromFile)
