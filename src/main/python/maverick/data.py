@@ -130,18 +130,18 @@ class ChessBoard(object):
 
     Pawns have the special property that they only move up/down"""
 
-    HUMAN_FILE_LETTERS = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    HUMAN_FILE_LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H"]
     """Ordered listing of valid files"""
 
     HUMAN_RANK_NUMBERS = ["1", "2", "3", "4", "5", "6", "7", "8"]
     """Ordered listing of valid ranks"""
 
-    HUMAN_PIECE_TEXT = {ROOK: {WHITE: 'R', BLACK: 'r'},
-                        KNGT: {WHITE: 'N', BLACK: 'n'},
-                        BISH: {WHITE: 'B', BLACK: 'b'},
-                        QUEN: {WHITE: 'Q', BLACK: 'q'},
-                        KING: {WHITE: 'K', BLACK: 'k'},
-                        PAWN: {WHITE: 'P', BLACK: 'p'}}
+    HUMAN_PIECE_TEXT = {PAWN: "~",
+                        ROOK: "R",
+                        KNGT: "N",
+                        BISH: "B",
+                        QUEN: "Q",
+                        KING: "K"}
     """Mapping of piece constants to their visual represenataion"""
 
     def __init__(self,
@@ -276,6 +276,19 @@ class ChessBoard(object):
 
         return isLegal
 
+    @staticmethod
+    def __str_getPieceChar(piece):
+        """Return a character representing the given piece
+
+        @param piece: A piece as defined in maverick.data.ChessBoard
+
+        @return: ASCII character representing the given piece"""
+        if piece is None:
+            return "  "
+        else:
+            return "{}{}".format(["B", "W"][piece.color == ChessBoard.WHITE],
+                                 ChessBoard.HUMAN_PIECE_TEXT[piece.pieceType])
+
     def __str__(self, whitePerspective=True):
         """Prints out a human-readable ASCII version of the board
 
@@ -284,7 +297,6 @@ class ChessBoard(object):
 
         if whitePerspective if False, print the board with the 8-row
         on bottom and the 1-row on top"""
-        header = "  {0}  ".format(" ".join(self.HUMAN_FILE_LETTERS))
 
         if whitePerspective:
             iterStart = ChessBoard.BOARD_LAYOUT_SIZE - 1
@@ -295,15 +307,25 @@ class ChessBoard(object):
             iterStop = ChessBoard.BOARD_LAYOUT_SIZE
             iterStep = 1
 
-        s = []
-        s.append(header)
-        for rankN in xrange(iterStart, iterStop, iterStep):
-            rank = self.layout[rankN]
-            rankStr = " ".join([ChessBoard._getPieceChar(c) for c in rank])
-            s.append("{0} {1} {0}".format(rankN + 1, rankStr))
-        s.append(header)
+        boardSep = " | "
+        header = "    A    B    C    D    E    F    G    H"
+        barrier = "  -----------------------------------------"
 
-        return "\n".join(s)
+        boardStrA = []
+        boardStrA.append(header)
+        boardStrA.append(barrier)
+        for rankN in xrange(iterStart, iterStop, iterStep):
+            fStr = "{1}{0}{2}{0}{1}"
+            rS = fStr.format(boardSep,
+                             rankN + 1,
+                             boardSep.join([ChessBoard._getPieceChar(c)
+                                            for c in self.layout[rankN]]))
+            boardStrA.append(rS)
+            boardStrA.append(barrier)
+        boardStrA.append(header)
+
+        boardStr = "\n".join(boardStrA)
+        return boardStr
 
     @staticmethod
     def getOtherColor(color):
@@ -321,7 +343,7 @@ class ChessBoard(object):
         else:
             raise ValueError("Invalid color code")
 
-    def __isClearLinearPath(self, fromPosn, toPosn):
+    def __isLegalMove_isClearLinearPath(self, fromPosn, toPosn):
         """True if there is a clear straight path from origin to destination
 
         To be used for horizontal, vertical, or diagonal moves.
@@ -336,7 +358,7 @@ class ChessBoard(object):
         clarity, then checks them all for clarity."""
 
         # Get the squares in the path, if there is one
-        pathPosns = ChessBoard.__getSquaresInPath(fromPosn, toPosn)
+        pathPosns = ChessBoard.__isLegalMove_getSquaresInPath(fromPosn, toPosn)
 
         # Number spaces moved vertically
         rank_delta_abs = abs(toPosn.rankN - fromPosn.rankN)
@@ -356,7 +378,7 @@ class ChessBoard(object):
         return True  # None of the path squares contained a piece
 
     @staticmethod
-    def _getInterruptSquares(fromPosn, toPosn):
+    def __isLegalMove_getInterruptSquares(fromPosn, toPosn):
         """Return a list of squares that block the given path if moved to
 
         NOTE: This list will always include fromPosn
@@ -374,11 +396,44 @@ class ChessBoard(object):
         interruptSquares.append(fromPosn)
 
         # Build up list of squares in path from origin to destination
-        pathSquares = ChessBoard.__getSquaresInPath(fromPosn, toPosn)
+        pathSquares = ChessBoard.__isLegalMove_getSquaresInPath(fromPosn, toPosn)
 
         interruptSquares += (pathSquares)
 
         return interruptSquares
+
+    def __isLegalMove_findKingAndEnemies(self, color):
+        """Return the location color's king and all opposing non-king pieces
+
+        @param color: The color of the king to check, ChessMatch.WHITE or
+        ChessMatch.BLACK
+
+        @return: a tuple whose two elements are as follows:
+                Element 0: A ChessPosn representing the
+                location of the king of the given color
+                Element 1: A list of ChessTuples representing
+                the location of all non-king enemy pieces"""
+
+        enemyPiecePosns = []  # List of ChessPosns of non-king pieces
+
+        # Locate given player's king, and opposing player's non-king pieces
+        for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
+            row = self.layout[r]
+            for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
+                piece = row[f]
+                if piece is not None:
+                    if (piece.color == color and piece.pieceType ==
+                        ChessBoard.KING):
+                        kingLoc = ChessPosn(r, f)
+                    elif (piece.color != color and
+                          piece.pieceType != ChessBoard.KING):
+
+                        # Create a ChessPosn to append to the return list
+                        piecePosn = ChessPosn(r, f)
+                        enemyPiecePosns.append(piecePosn)
+                    else:
+                        pass  # This is not one of the requested pieces
+        return (kingLoc, enemyPiecePosns)
 
     def isLegalMove(self, color, fromPosn, toPosn):
         """Returns true if the specified move is legal
@@ -622,7 +677,7 @@ class ChessBoard(object):
         ChessBoard._logger.info("Found that %s is not in check", color)
         return (False, None)
 
-    def isCheckMated(self, color):
+    def isKingCheckmated(self, color):
         """Returns True if the given color is in checkmate on this board
 
         @param color: The color of the player to check, ChessMatch.WHITE or
@@ -712,54 +767,8 @@ class ChessBoard(object):
         ChessBoard._logger.info("Found that %s is in checkmate", color)
         return True
 
-    def _findKingAndEnemies(self, color):
-        """Return the location color's king and all opposing non-king pieces
-
-        @param color: The color of the king to check, ChessMatch.WHITE or
-        ChessMatch.BLACK
-
-        @return: a tuple whose two elements are as follows:
-                Element 0: A ChessPosn representing the
-                location of the king of the given color
-                Element 1: A list of ChessTuples representing
-                the location of all non-king enemy pieces"""
-
-        enemyPiecePosns = []  # List of ChessPosns of non-king pieces
-
-        # Locate given player's king, and opposing player's non-king pieces
-        for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
-            row = self.layout[r]
-            for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
-                piece = row[f]
-                if piece is not None:
-                    if (piece.color == color and piece.pieceType ==
-                        ChessBoard.KING):
-                        kingLoc = ChessPosn(r, f)
-                    elif (piece.color != color and
-                          piece.pieceType != ChessBoard.KING):
-
-                        # Create a ChessPosn to append to the return list
-                        piecePosn = ChessPosn(r, f)
-                        enemyPiecePosns.append(piecePosn)
-                    else:
-                        pass  # This is not one of the requested pieces
-        return (kingLoc, enemyPiecePosns)
-
     @staticmethod
-    def _getPieceChar(piece):
-        """Return a character representing the given piece
-
-        @param piece: A piece as defined in maverick.server.ChessBoard
-
-        @return: A character representing the given piece on the chess board"""
-        if piece is None:
-            return '.'
-        else:
-            (c, p) = (piece.color, piece.pieceType)
-            return ChessBoard.HUMAN_PIECE_TEXT[p][c]
-
-    @staticmethod
-    def __getSquaresInPath(fromPosn, toPosn):
+    def __isLegalMove_getSquaresInPath(fromPosn, toPosn):
         """Returns a list of squares in the straight path from origin to dest
 
         NOTE: Return path does not include the origin or destination
@@ -911,9 +920,9 @@ class ChessMatch(object):
 
             if self.board.makePly(color, fromPosn, toPosn):
                 # Check for checkmates
-                if self.board.isCheckMated(ChessBoard.WHITE):
+                if self.board.isKingCheckmated(ChessBoard.WHITE):
                     self.status = ChessMatch.STATUS_BLACK_WON
-                elif self.board.isCheckMated(ChessBoard.BLACK):
+                elif self.board.isKingCheckmated(ChessBoard.BLACK):
                     self.status = ChessMatch.STATUS_WHITE_WON
                 else:
                     self.history.append((fromPosn, toPosn))
