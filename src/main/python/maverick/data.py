@@ -400,7 +400,8 @@ class ChessBoard(object):
         interruptSquares.append(fromPosn)
 
         # Build up list of squares in path from origin to destination
-        pathSquares = ChessBoard.__isLegalMove_getSquaresInPath(fromPosn, toPosn)
+        pathSquares = ChessBoard.__isLegalMove_getSquaresInPath(fromPosn, 
+                                                                toPosn)
 
         interruptSquares += (pathSquares)
 
@@ -542,11 +543,11 @@ class ChessBoard(object):
 
         elif origin_entry.pieceType == ChessBoard.BISH:
 
-            #check that piece moves diagonally
+            # Check that piece moves diagonally
             if rank_delta_abs != file_delta_abs:
                 return False
 
-            #check that path between origin and destination is clear
+            # Check that path between origin and destination is clear
             if not ChessBoard.__isClearLinearPath(self, fromPosn, toPosn):
                 return False
 
