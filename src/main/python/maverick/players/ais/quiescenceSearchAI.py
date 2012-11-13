@@ -14,7 +14,6 @@ from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
 import copy
 import logging
-import sys
 
 from maverick.players.ais.common import MaverickAI
 from maverick.data import ChessBoard
@@ -47,7 +46,7 @@ class QLAI(MaverickAI):
     _maxTotalPieceVal = 39
     """The sum of piece values for a full set of one player's chess pieces"""
 
-    def _getNextMove(self, board):
+    def getNextMove(self, board):
         """TODO PyDoc"""
 
         # Figure out our color
@@ -57,6 +56,7 @@ class QLAI(MaverickAI):
             color = ChessBoard.BLACK
 
         moveChoices = self._enumerateAllMoves(board, color)
+        print(moveChoices)
 
         # TODO (mattsh): write this
         (fromPosn, toPosn) = (None, None)

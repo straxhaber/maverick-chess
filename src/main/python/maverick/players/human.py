@@ -31,13 +31,19 @@ class HumanGamer(MaverickPlayer):
 
     # TODO (mattsh): put some logging throughout this class
 
+    VALID_INPUT_FILE = ["a", "b", "c", "d", "e", "f", "g", "h"]
+    """Valid input characters for the file (row) of a position"""
+
+    VALID_INPUT_RANK = ["1", "2", "3", "4", "5", "6", "7", "8"]
+    """Valid input characters for the rank (column) of a position"""
+
     def __init__(self, host=None, port=None):
         """Initialize a human player
 
         If host or port specified and not None, use them instead of defaults"""
         MaverickPlayer.__init__(self, host=host, port=port)
 
-    def _getNextMove(self, board):
+    def getNextMove(self, board):
         """Ask the player for a move and return it
 
         @return: a tuple whose first element is the origin ChessPosn and whose
@@ -48,33 +54,30 @@ class HumanGamer(MaverickPlayer):
 
         haveValidMove = False
         while not haveValidMove:
-            qStr = "Please enter move (e.g., \"a1 b3\" to move a1 to b3):  "
+            qStr = "Please enter move (e.g., \"a1b3\" to move a1 to b3):  "
             playerMove = raw_input(qStr)
 
             # Validate move
-            if len(playerMove) == 6:
+            if len(playerMove) != 4:
                 HumanGamer._logger.debug("Invalid input formatting")
                 self.displayMessage("Invalid: too many or too few characters")
-            elif playerMove[2] != " ":
-                HumanGamer._logger.debug("Invalid input formatting")
-                self.displayMessage("Invalid: put a space between coordinates")
-            elif (playerMove[0] not in ChessBoard.HUMAN_FILE_LETTERS or
-                  playerMove[3] not in ChessBoard.HUMAN_FILE_LETTERS):
+            elif (playerMove[0] not in HumanGamer.VALID_INPUT_FILE or
+                  playerMove[2] not in HumanGamer.VALID_INPUT_FILE):
                 logStr = "Invalid: file not in a to h"
                 HumanGamer._logger.debug(logStr)
                 self.displayMessage(logStr)
-            elif (playerMove[1] not in ChessBoard.HUMAN_RANK_NUMBERS or
-                  playerMove[4] not in ChessBoard.HUMAN_RANK_NUMBERS):
+            elif (playerMove[1] not in HumanGamer.VALID_INPUT_RANK or
+                  playerMove[3] not in HumanGamer.VALID_INPUT_RANK):
                 logStr = "Invalid: rank not in 1 to 8"
                 HumanGamer._logger.debug(logStr)
                 self.displayMessage(logStr)
             else:
                 haveValidMove = True
 
-        fromFile = ChessBoard.HUMAN_FILE_LETTERS.index(playerMove[0])
-        fromRank = ChessBoard.HUMAN_RANK_NUMBERS.index(playerMove[1])
-        toFile = ChessBoard.HUMAN_FILE_LETTERS.index(playerMove[3])
-        toRank = ChessBoard.HUMAN_RANK_NUMBERS.index(playerMove[4])
+        fromFile = HumanGamer.VALID_INPUT_FILE.index(playerMove[0])
+        fromRank = HumanGamer.VALID_INPUT_RANK.index(playerMove[1])
+        toFile = HumanGamer.VALID_INPUT_FILE.index(playerMove[2])
+        toRank = HumanGamer.VALID_INPUT_RANK.index(playerMove[3])
 
         # Build ChessPosns to return
         fromPosn = ChessPosn(fromRank, fromFile)
@@ -82,24 +85,22 @@ class HumanGamer(MaverickPlayer):
 
         return (fromPosn, toPosn)
 
-    def _initName(self):
+    def getPlayerName(self):
         """Figure out the name of the player"""
-        # Get the user's name
-        self.name = raw_input("Please enter your name:  ")
+        return raw_input("Please enter your name:  ")
 
-    def _welcomePlayer(self):
+    def _showPlayerWelcome(self):
         """Display welcome messages if appropriate"""
         welStrFArray = ("", "",
                         "Welcome to Maverick Chess. You are playing as {0}.",
                         "Pieces are represented by letters on the board ",
                         "as follows:\n",
                         "PieceType    White    Black",
-                        "pawn         X        O",
-                        "rook         R        r",
-                        "bishop       B        b",
-                        "queen        Q        q",
-                        "king         K        k",
-                        "no piece         .",
+                        "pawn         W~       B~",
+                        "rook         WR       BR",
+                        "bishop       WB       BB",
+                        "queen        WQ       BQ",
+                        "king         WK       BK",
                         "", "")
         welcomeStrF = "\n".join(welStrFArray)
 

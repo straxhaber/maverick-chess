@@ -11,6 +11,8 @@ __version__ = "pre-alpha"
 ###############################################################################
 
 import logging
+import time
+import random
 
 from maverick.data import ChessBoard
 from maverick.players.common import MaverickPlayer
@@ -34,11 +36,19 @@ class MaverickAI(MaverickPlayer):
     CALCULATION_TIMEOUT = 5
     """Maximum amount of time for the AI to take to make its move"""
 
-    def _initName(self):
-        """Figure out the name of the class"""
-        pass  # Default name is appropriate
+    def getNextMove(self, board):
+        """Calculate the next move based on the provided board"""
+        raise NotImplementedError("Must be overridden by the extending class")
 
-    def _welcomePlayer(self):
+    def getPlayerName(self):
+        """Figure out the name of the class"""
+        # Default name (should be overridden for a human AI)
+        # i.e., MaverickAI.1234901234.12839429834
+        return ".".join([self.__class__.__name__,
+                         str(time.time()),
+                         str(random.randrange(1, 2 ** 30))])
+
+    def _showPlayerWelcome(self):
         """Display welcome messages if appropriate"""
         MaverickAI._logger.info("I, %s (%d), have entered game %d",
                                 self.name,
@@ -49,10 +59,6 @@ class MaverickAI(MaverickPlayer):
         """Calculate the next move based on the provided board"""
         raise MaverickAIException("Invalid move made: {}->{}".format(fromPosn,
                                                                      toPosn))
-
-    def _getNextMove(self, board):
-        """Calculate the next move based on the provided board"""
-        raise NotImplementedError("Must be overridden by the extending class")
 
     @staticmethod
     def _enumerateAllMoves(board, color):

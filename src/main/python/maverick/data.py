@@ -318,7 +318,7 @@ class ChessBoard(object):
             fStr = "{1}{0}{2}{0}{1}"
             rS = fStr.format(boardSep,
                              rankN + 1,
-                             boardSep.join([ChessBoard._getPieceChar(c)
+                             boardSep.join([ChessBoard.__str_getPieceChar(c)
                                             for c in self.layout[rankN]]))
             boardStrA.append(rS)
             boardStrA.append(barrier)
