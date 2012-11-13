@@ -33,7 +33,9 @@ class QLAI(MaverickAI):
                     ChessBoard.KNGT: 3,
                     ChessBoard.BISH: 3,
                     ChessBoard.ROOK: 5,
-                    ChessBoard.QUEN: 9}
+                    ChessBoard.QUEN: 9,
+                    ChessBoard.KING: 0}
+    """Point values for all pieces. King's value is reflected in checkmate"""
 
     def _getNextMove(self, board):
         """TODO PyDoc"""
@@ -96,11 +98,12 @@ class QLAI(MaverickAI):
         @param board: a ChessBoard object
 
         Note that the king's value is not included - the undesirability of the
-        king's capture will be incorporated in other heuristics."""
+        king's capture will be incorporated iln other heuristics."""
 
         # Loop through this color's pieces, adding to total value
-        foundPieceVals = sum([QLAI.pieceValues[board[posn].pieceType]
-                              for posn in QLAI.findPiecePosnsByColor(color)])
+        foundPieceVals = sum([QLAI._pieceValues[board[posn].pieceType]
+                              for posn in QLAI._findPiecePosnsByColor(board,
+                                                                      color)])
         totalValue = sum(foundPieceVals)
 
         return totalValue
@@ -293,7 +296,7 @@ class QLAI(MaverickAI):
         return ((res1 - res2) / ((res1 + res2) / 2))
 
     def evaluateBoardLikability(self, color, board):
-        """Return a number in [-1,1] based on likability of the position
+        """Return a number in [-1,1] based on board's likability to color
 
         @param color: One of maverick.data.ChessBoard.WHITE or
                        maverick.data.ChessBoard.BLACK
@@ -321,51 +324,61 @@ class QLAI(MaverickAI):
         # Determine opposing player color
         otherColor = ChessBoard.getOtherColor(color)
 
-        # Data structure of 'opinions' from heuristics
-        # Format: ListOf[("Name", weight, value)]
-        opinions = []
+        # Check to see if either player is checkmated and return appropriately
+        if board.isCheckMated(otherColor):
+            return 1
+        elif board.isCheckMated(color):
+            return -1
+        else:
 
-        # Add piece value opinion
-        pieceValueFriend = self._heuristicPieceValue(color, board)
-        pieceValueFoe = self._heuristicPieceValue(otherColor, board)
-        pieceValueRes = self.combineHeuristicValues(pieceValueFriend,
-                                                    pieceValueFoe)
-        opinions.append("PieceValue", pieceValueWeight, pieceValueRes)
+            # Data structure of 'opinions' from heuristics
+            # Format: ListOf[("Name", weight, value)]
+            opinions = []
 
-        # Add in check opinion
-        inCheckFriend = self._heuristicInCheck(color, board)
-        inCheckFoe = self._heuristicInCheck(otherColor, board)
-        inCheckRes = self.combineHeuristicValues(inCheckFriend,
-                                                    inCheckFoe)
-        opinions.append("InCheck", inCheckWeight, inCheckRes)
+            # Add piece value opinion
+            pieceValueFriend = self._heuristicPieceValue(color, board)
+            pieceValueFoe = self._heuristicPieceValue(otherColor, board)
+            pieceValueRes = self.combineHeuristicValues(pieceValueFriend,
+                                                        pieceValueFoe)
+            opinions.append("PieceValue", pieceValueWeight, pieceValueRes)
 
-        # Add pieces under attack opinion
-        pcsUnderAtkFriend = self._heuristicPiecesUnderAttack(color, board)
-        pcsUnderAtkFoe = self._heuristicPiecesUnderAttack(otherColor, board)
-        pcsUnderAtkRes = self.combineHeuristicValues(pcsUnderAtkFriend,
-                                                     pcsUnderAtkFoe)
-        opinions.append("PiecesUnderAttack", piecesUnderAttackWeight,
-                        pcsUnderAtkRes)
+            # Add in check opinion
+            inCheckFriend = self._heuristicInCheck(color, board)
+            inCheckFoe = self._heuristicInCheck(otherColor, board)
+            inCheckRes = self.combineHeuristicValues(inCheckFriend,
+                                                        inCheckFoe)
+            opinions.append("InCheck", inCheckWeight, inCheckRes)
 
-        # Add empty space coverage opinion
-        emptySpcsCvdFriend = self._heuristicEmptySpaceCoverage(color, board)
-        emptySpcsCvdFoe = self._heuristicEmptySpaceCoverage(otherColor, board)
-        emptySpcsCvdRes = self.combineHeuristicValues(emptySpcsCvdFriend,
-                                                      emptySpcsCvdFoe)
-        opinions.append("EmptySpaceCoverage", emptySpaceCoverageWeight,
-                        emptySpcsCvdRes)
+            # Add pieces under attack opinion
+            pcsUnderAtkFriend = self._heuristicPiecesUnderAttack(color, board)
+            pcsUnderAtkFoe = self._heuristicPiecesUnderAttack(otherColor,
+                                                              board)
+            pcsUnderAtkRes = self.combineHeuristicValues(pcsUnderAtkFriend,
+                                                         pcsUnderAtkFoe)
+            opinions.append("PiecesUnderAttack", piecesUnderAttackWeight,
+                            pcsUnderAtkRes)
 
-        # Add pieces covered opinion
-        pcsCoveredFriend = self._heuristicPiecesCovered(color, board)
-        pcsCoveredFoe = self._heuristicPiecesCovered(otherColor, board)
-        pcsCoveredRes = self.combineHeuristicValues(pcsCoveredFriend,
-                                                    pcsCoveredFoe)
-        opinions.append("PiecesCovered", piecesCoveredWeight,
-                        pcsCoveredRes)
+            # Add empty space coverage opinion
+            emptySpcsCvdFriend = self._heuristicEmptySpaceCoverage(color,
+                                                                   board)
+            emptySpcsCvdFoe = self._heuristicEmptySpaceCoverage(otherColor,
+                                                                board)
+            emptySpcsCvdRes = self.combineHeuristicValues(emptySpcsCvdFriend,
+                                                          emptySpcsCvdFoe)
+            opinions.append("EmptySpaceCoverage", emptySpaceCoverageWeight,
+                            emptySpcsCvdRes)
 
-        # Return the weighted average
-        return sum([weight * value for (_, weight, value) in opinions]) / \
-            sum([weight for (_, weight, _) in opinions])
+            # Add pieces covered opinion
+            pcsCoveredFriend = self._heuristicPiecesCovered(color, board)
+            pcsCoveredFoe = self._heuristicPiecesCovered(otherColor, board)
+            pcsCoveredRes = self.combineHeuristicValues(pcsCoveredFriend,
+                                                        pcsCoveredFoe)
+            opinions.append("PiecesCovered", piecesCoveredWeight,
+                            pcsCoveredRes)
+
+            # Return the weighted average
+            return sum([weight * value for (_, weight, value) in opinions]) / \
+                sum([weight for (_, weight, _) in opinions])
 
 
 def main():
