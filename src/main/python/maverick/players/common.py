@@ -61,6 +61,10 @@ class MaverickPlayer(MaverickClient):
         """Display welcome messages if appropriate"""
         raise NotImplementedError("Must be overridden by the extending class")
 
+    def _showPlayerGoodbye(self):
+        """Display goodbye messages if appropriate"""
+        raise NotImplementedError("Must be overridden by the extending class")
+
     def displayMessage(self, message):
         """Display a message for the user"""
         print(" -- {0}".format(message))
@@ -93,37 +97,38 @@ class MaverickPlayer(MaverickClient):
 
             # Wait until it is your turn
             while not self._request_isMyTurn():
-#            while self._request_getState()['isWhitesTurn'] != self.isWhite:
                 self.displayMessage("Waiting until turn")
+                time.sleep(MaverickPlayer.SLEEP_TIME)
 
-                # Break if a game is stopped while waiting
+                # Break if the game was stopped while sleeping
                 if self._request_getStatus() != ChessMatch.STATUS_ONGOING:
                     break
 
-                time.sleep(MaverickPlayer.SLEEP_TIME)
+            else:  # It is now our turn (wrapped in else in case of break)
+                curBoard = self._request_getState()["board"]
+                (fromPosn, toPosn) = self.getNextMove(curBoard)
 
-            curBoard = self._request_getState()["board"]
-
-            (fromPosn, toPosn) = self.getNextMove(curBoard)
-
-            try:
-                self._request_makePly(fromPosn, toPosn)
-            except MaverickClientException, e:
-                self._handleBadMove(e.message, curBoard,
-                                    fromPosn, toPosn)
+                try:
+                    self._request_makePly(fromPosn, toPosn)
+                except MaverickClientException, e:
+                    self._handleBadMove(e.message, curBoard, fromPosn, toPosn)
 
         # When this is reached, game is over
         status = self._request_getStatus()
         if status == ChessMatch.STATUS_WHITE_WON:
-            self.displayMessage("GAME OVER - WHITE WON")
+            stat = "won" if self.isWhite else "lost"
+            self.displayMessage("GAME OVER - WHITE WON (you {0})".format(stat))
         elif status == ChessMatch.STATUS_BLACK_WON:
-            self.displayMessage("GAME OVER - BLACK WON")
+            stat = "lost" if self.isWhite else "won"
+            self.displayMessage("GAME OVER - BLACK WON (you {0})".format(stat))
         elif status == ChessMatch.STATUS_DRAWN:
             self.displayMessage("GAME OVER - DRAWN")
         elif status == ChessMatch.STATUS_CANCELLED:
-            self.displayMessage("GAME CANCELLED")
+            self.displayMessage("GAME OVER CANCELLED")
         else:
             self.displayMessage("ERROR: UNEXPECTED GAME STATUS TRANSITION")
+
+        self._showPlayerGoodbye()
 
     def _request_isMyTurn(self):
         """Requests the player's turn status from the Maverick server

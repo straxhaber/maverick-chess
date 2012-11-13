@@ -33,4 +33,4 @@ class TestTournamentSystem(unittest.TestCase):
     print ts.getState(p2, gid)
 
 if __name__ == '__main__':
-    unittest.runAI()
+    print "don't run directly"

@@ -15,6 +15,7 @@ import time
 import random
 
 from maverick.data import ChessBoard
+from maverick.data import ChessMatch
 from maverick.players.common import MaverickPlayer
 
 __all__ = ["MaverickAI",
@@ -54,6 +55,26 @@ class MaverickAI(MaverickPlayer):
                                 self.name,
                                 self.playerID,
                                 self.gameID)
+
+    def _showPlayerGoodbye(self):
+        """Display goodbye messages if appropriate"""
+        MaverickAI._logger.info("I, %s (%d), have finished game %d",
+                                self.name,
+                                self.playerID,
+                                self.gameID)
+        status = self._request_getStatus()
+        if status == ChessMatch.STATUS_WHITE_WON:
+            result = "white won"
+        elif status == ChessMatch.STATUS_BLACK_WON:
+            result = "black won"
+        elif status == ChessMatch.STATUS_DRAWN:
+            result = "ended in a draw"
+        elif status == ChessMatch.STATUS_CANCELLED:
+            result = "game was cancelled"
+        else:
+            MaverickAI._logger.error("Unexpected status code: %d", status)
+            result = "UNEXPECTED FINISH STATUS"
+        MaverickAI._logger.info("The result was: %s", result)
 
     def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Calculate the next move based on the provided board"""

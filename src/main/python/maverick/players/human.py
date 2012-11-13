@@ -114,6 +114,11 @@ class HumanGamer(MaverickPlayer):
         welcomeStr = welcomeStrF.format(colorStr)
         self.displayMessage(welcomeStr)
 
+    def _showPlayerGoodbye(self):
+        """Display goodbye message if appropriate"""
+        self.printBoard()
+        self.displayMessage("Now exiting. Run again to enter a new game.")
+
     def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Handle a bad move in some smart way"""
         self.displayMessage("Server didn't accept move; please retry.")
