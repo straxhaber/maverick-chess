@@ -45,16 +45,22 @@ class MaverickPlayer(MaverickClient):
 
         MaverickClient.__init__(self, host=host, port=port)
 
-        # Default name (should be overridden for a human AI)
-        # i.e., MaverickAI.1234901234.12839429834
-        self.name = ".".join([self.__class__.__name__,
-                              str(time.time()),
-                              str(random.randrange(1, 2 ** 30))])
-
         # These variables must be overridden
         self.playerID = None    # ID for player's system registration
         self.gameID = None      # ID for game that the player is in
         self.isWhite = None     # Is the player white?
+
+    def getPlayerName(self):
+        """Figure out the name of the class"""
+        raise NotImplementedError("Must be overridden by the extending class")
+
+    def getNextMove(self, board):
+        """Calculate the next move based on the provided board"""
+        raise NotImplementedError("Must be overridden by the extending class")
+
+    def _showPlayerWelcome(self):
+        """Display welcome messages if appropriate"""
+        raise NotImplementedError("Must be overridden by the extending class")
 
     def displayMessage(self, message):
         """Display a message for the user"""
@@ -79,9 +85,9 @@ class MaverickPlayer(MaverickClient):
 
     def run(self):
         """Registers user, connects to game, and starts gameplay loop"""
-        self._initName()
+        self.name = self.getPlayerName()
         self.startPlaying()
-        self._welcomePlayer()
+        self._showPlayerWelcome()
 
         # While the game is in progress
         while self._request_getStatus() == ChessMatch.STATUS_ONGOING:
@@ -99,7 +105,7 @@ class MaverickPlayer(MaverickClient):
 
             curBoard = self._request_getState()["board"]
 
-            (fromPosn, toPosn) = self._getNextMove(curBoard)
+            (fromPosn, toPosn) = self.getNextMove(curBoard)
 
             try:
                 self._request_makePly(fromPosn, toPosn)
@@ -119,18 +125,6 @@ class MaverickPlayer(MaverickClient):
             self.displayMessage("GAME CANCELLED")
         else:
             self.displayMessage("ERROR: UNEXPECTED GAME STATUS TRANSITION")
-
-    def _initName(self):
-        """Figure out the name of the class"""
-        raise NotImplementedError("Must be overridden by the extending class")
-
-    def _welcomePlayer(self):
-        """Display welcome messages if appropriate"""
-        raise NotImplementedError("Must be overridden by the extending class")
-
-    def _getNextMove(self, board):
-        """Calculate the next move based on the provided board"""
-        raise NotImplementedError("Must be overridden by the extending class")
 
     def _request_isMyTurn(self):
         """Requests the player's turn status from the Maverick server

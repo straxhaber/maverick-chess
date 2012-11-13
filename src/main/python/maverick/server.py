@@ -16,7 +16,6 @@ import json
 import logging
 import pickle
 import random
-import sys
 
 from maverick.data import ChessBoard
 from maverick.data import ChessMatch
