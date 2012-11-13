@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-"""random.py: Provides an AI that makes random moves"""
+"""randomAI.py: Provides an AI that makes random moves"""
 
 ###############################################################################
 # Code written by Matthew Strax-Haber, James Magnarelli, and Brad Fournier.
