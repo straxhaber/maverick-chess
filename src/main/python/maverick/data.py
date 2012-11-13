@@ -29,24 +29,35 @@ class ChessPosn(object):
     """Represents a position on a chess board"""
 
     def __init__(self, rankN, fileN):
+        """ChessPosn wraps a rank (row) and a file (column)"""
         self.rankN = rankN
         self.fileN = fileN
 
+    def __repr__(self):
+        """Represent a ChessPosn as a 2-tuple (rank, file)"""
+        return "({0},{1})".format(self.rankN, self.fileN)
+
     def __eq__(self, other):
+        """x.__eq__(y) <==> x==y
+
+        Compares two ChessPosns for deep equality"""
         if isinstance(other, ChessPosn):
             return (self.rankN == other.rankN and
                     self.fileN == other.fileN)
         else:
             return False
 
-    def __repr__(self):
-        return "({0},{1})".format(self.rankN, self.fileN)
+    def getTranslatedBy(self, deltaRank, deltaFile):
+        """Return new ChessPosn translated by the coordinates provided"""
+        return ChessPosn(self.rankN + deltaRank,
+                         self.fileN + deltaFile)
 
 
 class ChessPiece(object):
     """Represents chess piece in Maverick"""
 
     def __init__(self, color, pieceType):
+        """ChessPosn wraps a color and a piece type"""
         self.color = color
         self.pieceType = pieceType
 
@@ -198,6 +209,14 @@ class ChessBoard(object):
 
         Sets the piece object at the given position"""
         self.layout[posnLayoutLoc.rankN][posnLayoutLoc.fileN] = piece
+
+    def getPiecesOfColor(self, color):
+        """TODO"""
+        for row in self.layout:
+            for col in row:
+                p = self.layout[row][col]
+                if p is not None and p.color == color:
+                    yield p
 
     def _executePly(self, color, fromPosn, toPosn):
         """Make a ply on this board, assuming that it is legal
@@ -503,6 +522,9 @@ class ChessBoard(object):
          - can move one square in any direction
          - can move two squares toward a rook if the canCastle flag for that
          direction ("a" file or "h" file) is True"""
+
+        # TODO (mattsh): double-check that pawns can't skip over another piece
+        #                on first move
 
         # Pull out the (color, origin_type) entry at the from/to board position
         origin_entry = self[fromPosn]
