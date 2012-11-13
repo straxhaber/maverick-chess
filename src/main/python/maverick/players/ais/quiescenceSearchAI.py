@@ -401,9 +401,9 @@ class QLAI(MaverickAI):
                 sum([weight for (_, weight, _) in opinions])
 
 
-def runAI():
-    ai = QLAI()
-    ai.runAI()
+def runAI(host=None, port=None):
+    ai = QLAI(host=host, port=port)
+    ai.run()
 
 
 def main():
