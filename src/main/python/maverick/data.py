@@ -400,14 +400,14 @@ class ChessBoard(object):
         interruptSquares.append(fromPosn)
 
         # Build up list of squares in path from origin to destination
-        pathSquares = ChessBoard.__isLegalMove_getSquaresInPath(fromPosn, 
+        pathSquares = ChessBoard.__isLegalMove_getSquaresInPath(fromPosn,
                                                                 toPosn)
 
         interruptSquares += (pathSquares)
 
         return interruptSquares
 
-    def __isLegalMove_findKingAndEnemies(self, color):
+    def __isLegalMove_findKngAndEnems(self, color):
         """Return the location color's king and all opposing non-king pieces
 
         @param color: The color of the king to check, ChessMatch.WHITE or
@@ -529,7 +529,9 @@ class ChessBoard(object):
                 return False
 
             #check that path between origin and destination is clear
-            if not ChessBoard.__isClearLinearPath(self, fromPosn, toPosn):
+            if not ChessBoard.__isLegalMove_isClearLinearPath(self,
+                                                              fromPosn,
+                                                              toPosn):
                 return False
 
         elif origin_entry.pieceType == ChessBoard.KNGT:
@@ -548,7 +550,9 @@ class ChessBoard(object):
                 return False
 
             # Check that path between origin and destination is clear
-            if not ChessBoard.__isClearLinearPath(self, fromPosn, toPosn):
+            if not ChessBoard.__isLegalMove_isClearLinearPath(self,
+                                                              fromPosn,
+                                                              toPosn):
                 return False
 
         elif origin_entry.pieceType == ChessBoard.QUEN:
@@ -560,7 +564,9 @@ class ChessBoard(object):
                 return False
 
             # Check that path between origin and destination is clear
-            if not ChessBoard.__isClearLinearPath(self, fromPosn, toPosn):
+            if not ChessBoard.__isLegalMove_isClearLinearPath(self,
+                                                              fromPosn,
+                                                              toPosn):
                 return False
 
         elif origin_entry.pieceType == ChessBoard.KING:
@@ -663,7 +669,7 @@ class ChessBoard(object):
         otherColor = ChessBoard.getOtherColor(color)
 
         # Locate given player's king, and opposing player's non-king pieces
-        pieceLocations = self._findKingAndEnemies(color)
+        pieceLocations = self.__isLegalMove_findKngAndEnems(color)
         kingLoc = pieceLocations[0]
         # List of ChessPosns of pieces that may have the king
         # in check
@@ -718,13 +724,14 @@ class ChessBoard(object):
         checkPiecePosn = checkInfo[1]
 
         # Find the king whose checkmate status is in question
-        chkdKingLoc = self._findKingAndEnemies(color)[0]
+        chkdKingLoc = self.__isLegalMove_findKngAndEnems(color)[0]
 
         # Get a list of locations that, if moved to, might alleviate check
-        interruptLocations = ChessBoard._getInterruptSquares(checkPiecePosn,
+        interruptLocations = ChessBoard.__isLegalMove_getInterruptSquares(
+                                                             checkPiecePosn,
                                                              chkdKingLoc)
         # Get locations of all this player's non-king pieces
-        myNonKingPieceLocs = self._findKingAndEnemies(otherColor)[1]
+        myNonKingPieceLocs = self.__isLegalMove_findKngAndEnems(otherColor)[1]
 
         # Iterate through pieces, and see if any can move to potential check-
         # alleviating squares
