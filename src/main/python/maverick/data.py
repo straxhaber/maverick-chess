@@ -29,19 +29,20 @@ class ChessPosn(object):
         self.rankN = rankN
         self.fileN = fileN
 
-    def __repr__(self):
+    def __str__(self):
         """Represent a ChessPosn as a 2-tuple (rank, file)"""
         return "({0},{1})".format(self.rankN, self.fileN)
+
+    def __repr__(self):
+        return "ChessPosn({0},{1})".format(self.rankN, self.fileN)
 
     def __eq__(self, other):
         """x.__eq__(y) <==> x==y
 
         Compares two ChessPosns for deep equality"""
-        if isinstance(other, ChessPosn):
-            return (self.rankN == other.rankN and
-                    self.fileN == other.fileN)
-        else:
-            return False
+        return (isinstance(other, ChessPosn) and
+                self.rankN == other.rankN and
+                self.fileN == other.fileN)
 
     def getTranslatedBy(self, deltaRank, deltaFile):
         """Return new ChessPosn translated by the coordinates provided"""
@@ -62,8 +63,15 @@ class ChessPiece(object):
                              ChessBoard.HUMAN_PIECE_TEXT[self.pieceType])
 
     def __repr__(self):
-        return "({},{})".format(["B", "W"][self.color == ChessBoard.WHITE],
-                                ChessBoard.HUMAN_PIECE_TEXT[self.pieceType])
+        return "ChessPiece(\"{}\",\"{}\")".format(self.color, self.pieceType)
+
+    def __eq__(self, other):
+        """"x.__eq__(y) <==> x==y
+
+        Compares two ChessPosns for deep equality"""
+        return (isinstance(other, ChessPiece) and
+                self.color == other.color and
+                self.pieceType == other.pieceType)
 
 
 class ChessBoard(object):
@@ -348,6 +356,15 @@ class ChessBoard(object):
         @return: ASCII character representing the given piece"""
         return "  " if piece is None else piece.__str__()
 
+    def __repr__(self, fullRepr=False):
+        if fullRepr:
+            fStr = "ChessBoard({}={},{}={},{}={}"
+            return fStr.format("startLayout", self.layout,
+                               "startEnpassantFlags", self.flag_enpassant,
+                               "startCanCastleFlags", self.flag_canCastle)
+        else:
+            return object.__repr__(self)
+
     def __str__(self, whitePerspective=True):
         """Prints out a human-readable ASCII version of the board
 
@@ -560,6 +577,8 @@ class ChessBoard(object):
         # Check move legality for individual piece types
         if origin_entry.pieceType == ChessBoard.PAWN:
 
+            # TODO (mattsh): Do you check that pawns only move forward?
+
             # Determine the correct starting rank and direction for each color
             pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
 
@@ -589,6 +608,7 @@ class ChessBoard(object):
 
                     # Calculate whether an en passant capture would occur
                     # in this ply
+                    # TODO (mattsh): I think you may have overlooked something
                     epCaptureP = epFlag and (toPosn.rankN == epCapRnk)
                     if destin_entry is None and not epFlag:
                         return False

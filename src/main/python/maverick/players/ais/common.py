@@ -95,7 +95,7 @@ class MaverickAI(MaverickPlayer):
 
             # Add moves to empty and enemy-occupied squares
             if (board[toPosn] is None or
-                board[toPosn].color == ChessBoard.getOtherColor(color)):
+                board[toPosn].color != ChessBoard.getOtherColor(color)):
                 moves.append(toPosn)
 
             # Stop if blocked by a piece
@@ -104,17 +104,32 @@ class MaverickAI(MaverickPlayer):
 
     @staticmethod
     def __canMoveTo_pawn(board, color, fromPosn):
+        pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
+        pawnDirection = [-1, 1][color == ChessBoard.WHITE]
+        oneAhead = fromPosn.getTranslatedBy(pawnDirection, 0)
+        twoAhead = fromPosn.getTranslatedBy(pawnDirection * 2, 0)
+
         moves = []
-        moves.append(fromPosn.getTranslatedBy(1, 0))
 
-        # TODO only if on first row
-        # TODO only if no piece one above
-        moves.append(fromPosn.getTranslatedBy(2, 0))
+        moves.append(oneAhead)
 
-#        for rankDelta, fileDelta in [(1, -1), (1, 1)]:
-#            toPosn = fromPosn.getTranslatedBy(rankDelta, fileDelta)
-#            if MaverickAI.__canMoveTo_enemyAt(board, color, toPosn):
-#                moves.append(toPosn)
+        if (fromPosn.rankN == pawnStartRank and board[oneAhead] is None):
+            moves.append(twoAhead)
+
+        for rankDelta, fileDelta in [(1, -1), (1, 1)]:
+            toPosn = fromPosn.getTranslatedBy(rankDelta, fileDelta)
+            if MaverickAI.__canMoveTo_isOnBoard(toPosn):
+                otherCol = ChessBoard.getOtherColor(color)
+                capturingP = (board[toPosn] is not None and
+                              board[toPosn].color == otherCol)
+                takeEnP_capture = board[fromPosn.getTranslatedBy(0, fileDelta)]
+                takeEnP = (board[toPosn] is None and
+                           takeEnP_capture is not None and
+                           takeEnP_capture.pieceType == ChessBoard.PAWN and
+                           board.flag_enpassant[otherCol][toPosn.fileN])
+                if capturingP or takeEnP:
+                    moves.append(toPosn)
+
         return moves
 
     @staticmethod
@@ -235,10 +250,10 @@ class MaverickAI(MaverickPlayer):
         else:
             raise MaverickAIException("Invalid fromPiece type")
 
-        # Get list of possible toPosns. Starts empty
+        # Get list of candidate toPosns (some may be invalid)
         toPosns = moveGenerator(board, fromPiece.color, fromPosn)
 
-        # Filter out toPosns that would put a fromPiece off the board
+        # Filter out toPosns that would put a piece off the board
         toPosns = filter(MaverickAI.__canMoveTo_isOnBoard, toPosns)
 
         # Filter out self-capturing toPosns
