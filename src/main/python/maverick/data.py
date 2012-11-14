@@ -57,6 +57,14 @@ class ChessPiece(object):
         self.color = color
         self.pieceType = pieceType
 
+    def __str__(self):
+        return "{}{}".format(["B", "W"][self.color == ChessBoard.WHITE],
+                             ChessBoard.HUMAN_PIECE_TEXT[self.pieceType])
+
+    def __repr__(self):
+        return "({},{})".format(["B", "W"][self.color == ChessBoard.WHITE],
+                                ChessBoard.HUMAN_PIECE_TEXT[self.pieceType])
+
 
 class ChessBoard(object):
     """Represents a chess game in Maverick"""
@@ -333,11 +341,7 @@ class ChessBoard(object):
         @param piece: A piece as defined in maverick.data.ChessBoard
 
         @return: ASCII character representing the given piece"""
-        if piece is None:
-            return "  "
-        else:
-            return "{}{}".format(["B", "W"][piece.color == ChessBoard.WHITE],
-                                 ChessBoard.HUMAN_PIECE_TEXT[piece.pieceType])
+        return "  " if piece is None else piece.__str__()
 
     def __str__(self, whitePerspective=True):
         """Prints out a human-readable ASCII version of the board
@@ -487,8 +491,6 @@ class ChessBoard(object):
                         enemyPiecePosns.append(piecePosn)
                     else:
                         pass  # This is not one of the requested pieces
-        print enemyPiecePosns
-        print myKingLoc
         return (myKingLoc, enemyPiecePosns)
 
     def isLegalMove(self, color, fromPosn, toPosn):
