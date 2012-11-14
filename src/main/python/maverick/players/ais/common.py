@@ -58,9 +58,7 @@ class MaverickAI(MaverickPlayer):
     def _showPlayerGoodbye(self):
         """Display goodbye messages if appropriate"""
         MaverickAI._logger.info("I, %s (%d), have finished game %d",
-                                self.name,
-                                self.playerID,
-                                self.gameID)
+                                self.name, self.playerID, self.gameID)
         status = self._request_getStatus()
         if status == ChessMatch.STATUS_WHITE_WON:
             result = "white won"
@@ -77,53 +75,27 @@ class MaverickAI(MaverickPlayer):
 
     def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Calculate the next move based on the provided board"""
-        raise MaverickAIException("Invalid move made: {}->{}".format(fromPosn,
-                                                                     toPosn))
+        fStr = "Invalid move made: {}->{}"
+        raise MaverickAIException(fStr.format(fromPosn, toPosn))
 
     @staticmethod
-    def _enumerateAllMoves(board, color):
-        """Enumerate all possible immediate moves for the given player
-
-        @return: a set of tuples of the form:
-            ListOf[(ChessPiece, fromPosn, toPosn)]"""
-
-        # List of all possible moves from the given board. Must be filled.
-        all_moves = []
-
-        for rankN in xrange(0, 8):
-            for fileN in xrange(0, 7):
-                fromPosn = ChessPosn(rankN, fileN)
-                fromPiece = board[fromPosn]
-
-                if fromPiece is not None and fromPiece.color == color:
-                    all_moves.extend(map(lambda toPosn: (fromPiece,
-                                                         fromPosn,
-                                                         toPosn),
-                                         MaverickAI.getPossiblePlies(board,
-                                                              fromPosn)))
-
-        return all_moves
-
-    @staticmethod
-    def __getPossiblePlies_colorPieceAtPosn(board, color, posn):
+    def __getPossPlies_colorAt(board, color, posn):
         p = board[posn]
         return p is not None and p.color == color
 
     @staticmethod
-    def __getPossiblePlies_enemyAtPosn(board, color, posn):
+    def __getPossPlies_enemyAt(board, color, posn):
         """Return True iff there is a piece of the opposite color at posn"""
         enemyColor = ChessBoard.getOtherColor(color)
-        return MaverickAI.__getPossiblePlies_colorPieceAtPosn(board,
-                                                              enemyColor,
-                                                              posn)
+        return MaverickAI.__getPossPlies_colorAt(board, enemyColor, posn)
 
     @staticmethod
-    def __getPossiblePlies_isOnBoard(posn):
+    def __getPossPlies_isOnBoard(posn):
         return (posn.rankN in range(0, 8) and
                 posn.fileN in range(0, 8))
 
     @staticmethod
-    def __getPossiblePlies_moveLoop(moves, board, color,
+    def __getPossPlies_moveLoop(moves, board, color,
                                     fromPosn, translations):
         """Add moves based on translations, stopping at an enemy piece
 
@@ -137,7 +109,7 @@ class MaverickAI(MaverickPlayer):
                 break
 
     @staticmethod
-    def __getPossiblePlies_pawn(board, color, fromPosn):
+    def __getPossPlies_pawn(board, color, fromPosn):
         moves = []
         moves.append(fromPosn.getTranslatedBy(1, 0))
 
@@ -147,42 +119,50 @@ class MaverickAI(MaverickPlayer):
 
         for rankDelta, fileDelta in [(1, -1), (1, 1)]:
             toPosn = fromPosn.getTranslatedBy(rankDelta, fileDelta)
-            if MaverickAI.__getPossiblePlies_enemyAtPosn(board, color, toPosn):
+            if MaverickAI.__getPossPlies_enemyAt(board, color, toPosn):
                 moves.append(toPosn)
         return moves
 
     @staticmethod
-    def __getPossiblePlies_rook(board, color, fromPosn):
-        # TODO (mattsh): rewrite to use __getPossiblePlies_moveLoop
+    def __getPossPlies_rook(board, color, fromPosn):
+        # TODO (mattsh): rewrite to use __getPossPlies_moveLoop
         moves = []
         # Move up
         for toRank in xrange(fromPosn.rankN + 1, 8):
             toPosn = ChessPosn(toRank, fromPosn.fileN)
-            moves.append(toPosn)
-            if MaverickAI.__getPossiblePlies_enemyAtPosn(board, color, toPosn):
+            if (board[toPosn] is None or
+                MaverickAI.__getPossPlies_enemyAt(board, color, toPosn)):
+                moves.append(toPosn)
+            if board[toPosn] is not None:
                 break
         # Move down
         for toRank in xrange(fromPosn.rankN - 1, -1, -1):
             toPosn = ChessPosn(toRank, fromPosn.fileN)
-            moves.append(toPosn)
-            if MaverickAI.__getPossiblePlies_enemyAtPosn(board, color, toPosn):
+            if (board[toPosn] is None or
+                MaverickAI.__getPossPlies_enemyAt(board, color, toPosn)):
+                moves.append(toPosn)
+            if board[toPosn] is not None:
                 break
         # Move right
         for toFile in xrange(fromPosn.fileN + 1, 8):
             toPosn = ChessPosn(fromPosn.rankN, toFile)
-            moves.append(toPosn)
-            if MaverickAI.__getPossiblePlies_enemyAtPosn(board, color, toPosn):
+            if (board[toPosn] is None or
+                MaverickAI.__getPossPlies_enemyAt(board, color, toPosn)):
+                moves.append(toPosn)
+            if board[toPosn] is not None:
                 break
         # Move left
         for toFile in xrange(fromPosn.fileN - 1, -1, -1):
             toPosn = ChessPosn(fromPosn.rankN, toFile)
-            moves.append(toPosn)
-            if MaverickAI.__getPossiblePlies_enemyAtPosn(board, color, toPosn):
+            if (board[toPosn] is None or
+                MaverickAI.__getPossPlies_enemyAt(board, color, toPosn)):
+                moves.append(toPosn)
+            if board[toPosn] is not None:
                 break
         return moves
 
     @staticmethod
-    def __getPossiblePlies_knight(board, color, fromPosn):
+    def __getPossPlies_knight(board, color, fromPosn):
         moves = []
         moves.append(fromPosn.getTranslatedBy(2, -1))
         moves.append(fromPosn.getTranslatedBy(2, 1))
@@ -195,34 +175,35 @@ class MaverickAI(MaverickPlayer):
         return moves
 
     @staticmethod
-    def __getPossiblePlies_bishop(board, color, fromPosn):
+    def __getPossPlies_bishop(board, color, fromPosn):
         moves = []
         # Move top-right
-        MaverickAI.__getPossiblePlies_moveLoop(moves, board, color, fromPosn,
-                                       zip(range(1, 8), range(1, 8)))
+        MaverickAI.__getPossPlies_moveLoop(moves, board, color, fromPosn,
+                                           zip(range(1, 8),
+                                               range(1, 8)))
         # Move top-left
-        MaverickAI.__getPossiblePlies_moveLoop(moves, board, color, fromPosn,
-                                       zip(range(1, 8), range(-1, -8, -1)))
+        MaverickAI.__getPossPlies_moveLoop(moves, board, color, fromPosn,
+                                           zip(range(1, 8),
+                                               range(-1, -8, -1)))
         # Move down-right
-        MaverickAI.__getPossiblePlies_moveLoop(moves, board, color, fromPosn,
-                                       zip(range(-1, -8, -1), range(1, 8)))
+        MaverickAI.__getPossPlies_moveLoop(moves, board, color, fromPosn,
+                                           zip(range(-1, -8, -1),
+                                               range(1, 8)))
         # Move down-left
-        MaverickAI.__getPossiblePlies_moveLoop(moves, board, color, fromPosn,
-                                       zip(range(-1, -8, -1),
-                                           range(-1, -8, -1)))
+        MaverickAI.__getPossPlies_moveLoop(moves, board, color, fromPosn,
+                                           zip(range(-1, -8, -1),
+                                               range(-1, -8, -1)))
         return moves
 
     @staticmethod
-    def __getPossiblePlies_queen(board, color, fromPosn):
+    def __getPossPlies_queen(board, color, fromPosn):
         moves = []
-        moves.extend(MaverickAI.__getPossiblePlies_bishop(board, color,
-                                                          fromPosn))
-        moves.extend(MaverickAI.__getPossiblePlies_rook(board, color,
-                                                        fromPosn))
+        moves.extend(MaverickAI.__getPossPlies_bishop(board, color, fromPosn))
+        moves.extend(MaverickAI.__getPossPlies_rook(board, color, fromPosn))
         return moves
 
     @staticmethod
-    def __getPossiblePlies_king(board, color, fromPosn):
+    def __getPossPlies_king(board, color, fromPosn):
         moves = []
         moves.append(fromPosn.getTranslatedBy(1, 1))
         moves.append(fromPosn.getTranslatedBy(1, 0))
@@ -243,7 +224,7 @@ class MaverickAI(MaverickPlayer):
         return moves
 
     @staticmethod
-    def getPossiblePlies(board, fromPosn):
+    def getPossPlies(board, fromPosn):
         """Return all possible moves for the specified piece on given board
 
         @return ListOf[toPosn]"""
@@ -254,38 +235,62 @@ class MaverickAI(MaverickPlayer):
         piece = board[fromPosn]
 
         if piece.pieceType == ChessBoard.PAWN:
-            moveGenerator = MaverickAI.__getPossiblePlies_pawn
+            moveGenerator = MaverickAI.__getPossPlies_pawn
         elif piece.pieceType == ChessBoard.ROOK:
-            moveGenerator = MaverickAI.__getPossiblePlies_rook
+            moveGenerator = MaverickAI.__getPossPlies_rook
         elif piece.pieceType == ChessBoard.KNGT:
-            moveGenerator = MaverickAI.__getPossiblePlies_knight
+            moveGenerator = MaverickAI.__getPossPlies_knight
         elif piece.pieceType == ChessBoard.BISH:
-            moveGenerator = MaverickAI.__getPossiblePlies_bishop
+            moveGenerator = MaverickAI.__getPossPlies_bishop
         elif piece.pieceType == ChessBoard.QUEN:
-            moveGenerator = MaverickAI.__getPossiblePlies_queen
+            moveGenerator = MaverickAI.__getPossPlies_queen
         elif piece.pieceType == ChessBoard.KING:
-            moveGenerator = MaverickAI.__getPossiblePlies_king
+            moveGenerator = MaverickAI.__getPossPlies_king
         else:
             raise MaverickAIException("Invalid piece type")
 
         # Get list of possible moves. Starts empty
         moves = moveGenerator(board, piece.color, fromPosn)
 
-        # Filter out moves off board
-        moves = filter(MaverickAI.__getPossiblePlies_isOnBoard, moves)
+        # Filter out moves that would put a piece off the board
+        moves = filter(MaverickAI.__getPossPlies_isOnBoard, moves)
 
         # Filter out self-capturing moves
-        def notCapturingOwnPiece(toPosn):
-            return not MaverickAI.__getPossiblePlies_colorPieceAtPosn(board,
-                                                              piece.color,
-                                                              toPosn)
-        moves = filter(notCapturingOwnPiece, moves)
+        moves = filter(lambda p: MaverickAI.__getPossPlies_colorAt(board,
+                                                                   piece.color,
+                                                                   p),
+                       moves)
 
         # Filter out Filter out moves that would put player in check
         def kingNotInCheck(toPosn):
             resultBoard = board.getResultOfPly(fromPosn, toPosn)
             return not resultBoard.isKingInCheck(piece.color)[0]
         moves = filter(kingNotInCheck, moves)
+
+        return moves
+
+    @staticmethod
+    def enumBoardMoves(board, color):
+        """Enumerate all possible immediate moves for the given player
+
+        @return: a set of tuples of the form:
+            ListOf[(ChessPiece, fromPosn, toPosn)]"""
+
+        # TODO (mattsh): Once working and complete, use generator pattern
+
+        # List of all possible moves from the given board. Must be filled.
+        moves = []
+
+        for rankN in xrange(0, 8):
+            for fileN in xrange(0, 7):
+                fromPosn = ChessPosn(rankN, fileN)
+                fromPiece = board[fromPosn]
+
+                if fromPiece is not None and fromPiece.color == color:
+                    moves.extend(map(lambda toPosn: (fromPiece,
+                                                     fromPosn,
+                                                     toPosn),
+                                     MaverickAI.getPossPlies(board, fromPosn)))
 
         return moves
 

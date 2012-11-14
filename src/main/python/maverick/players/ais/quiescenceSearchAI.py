@@ -55,8 +55,7 @@ class QLAI(MaverickAI):
         else:
             color = ChessBoard.BLACK
 
-        moveChoices = self._enumerateAllMoves(board, color)
-        print(moveChoices)
+        moveChoices = self.enumBoardMoves(board, color)
 
         # TODO (mattsh): write this
         (fromPosn, toPosn) = (None, None)
@@ -230,7 +229,7 @@ class QLAI(MaverickAI):
                     emptyLocations.append(testLoc)
 
         # Build list of possible friendly piece moves
-        friendlyMoves = self._enumerateAllMoves(board, color)
+        friendlyMoves = self.enumBoardMoves(board, color)
 
         # Find possible moves to empty squares and build up return value
 
@@ -284,7 +283,7 @@ class QLAI(MaverickAI):
             hypoBoard[lostPiecePosn] = None
 
             # Build list of possible friendly moves
-            friendlyMoves = self._enumerateAllMoves(hypoBoard, color)
+            friendlyMoves = self.enumBoardMoves(hypoBoard, color)
 
             # Test whether any move includes a move to the square in question
             for move in friendlyMoves:

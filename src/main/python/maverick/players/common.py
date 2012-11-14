@@ -105,13 +105,13 @@ class MaverickPlayer(MaverickClient):
                     break
 
             else:  # It is now our turn (wrapped in else in case of break)
-                curBoard = self._request_getState()["board"]
-                (fromPosn, toPosn) = self.getNextMove(curBoard)
+                board = self._request_getState()["board"]
+                (fromPosn, toPosn) = self.getNextMove(board)
 
                 try:
                     self._request_makePly(fromPosn, toPosn)
                 except MaverickClientException, e:
-                    self._handleBadMove(e.message, curBoard, fromPosn, toPosn)
+                    self._handleBadMove(e.message, board, fromPosn, toPosn)
 
         # When this is reached, game is over
         status = self._request_getStatus()
