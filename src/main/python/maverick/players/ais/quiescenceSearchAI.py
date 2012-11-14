@@ -263,8 +263,8 @@ class QLAI(MaverickAI):
                 whose positions could be immediately re-taken if captured,
                 weighted by piece value"""
 
-        ## TODO (James): make this find all covered pieces for WHITE - only
-        #                currently paying attention to white pawns
+        ## TODO (James): make this find all covered pieces for WHITE - not
+        #                currently considering non-pawn white pieces
 
         # Construct list of friendly pieces
         friendPiecePosns = QLAI._findPiecePosnsByColor(board, color)
@@ -298,7 +298,6 @@ class QLAI(MaverickAI):
                     if lostPiecePosn == moveDstPosn:
                         # Add piece value, to accumulator
                         weightedReturn += lostPieceValue
-                        print "added value of piece {0}".format(lostPieceType)
                         # Only add once per piece being covered
                         break
 
@@ -341,9 +340,9 @@ class QLAI(MaverickAI):
 
         # Pairing of heuristics with their weights
         ## TODO (James): research and tweak these
-        pieceValueWeight = 1
-        inCheckWeight = 1
-        piecesUnderAttackWeight = 1
+        pieceValueWeight = 3
+        inCheckWeight = 4
+        piecesUnderAttackWeight = 3
         emptySpaceCoverageWeight = 1
         piecesCoveredWeight = 1
 
@@ -406,7 +405,6 @@ class QLAI(MaverickAI):
                             pcsCoveredRes))
 
             # Return the weighted average
-            print "opinions {0}".format(opinions)
             return sum([weight * value for (_, weight, value) in opinions]) / \
                 sum([weight for (_, weight, _) in opinions])
 
