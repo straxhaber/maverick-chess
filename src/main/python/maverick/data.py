@@ -494,14 +494,16 @@ class ChessBoard(object):
 
         # TODO (mattsh): Why is a function this hack-ish here?
         #                Might be a good reason, but should discuss with James
+        #                This seems like a job for two functions:
+        #                 - getKings() => dict(WHITE: loc, BLACK: loc)
+        #                 - getPiecesOfColor => [posn, posn, posn, posn]
 
         enemyPiecePosns = []  # List of ChessPosns of non-king pieces
 
         # Locate given player's king, and opposing player's non-king pieces
         for r in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
-            row = self.layout[r]
             for f in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
-                piece = row[f]
+                piece = self.layout[r][f]
                 if piece is not None:
                     if (piece.color == color and
                         piece.pieceType == ChessBoard.KING):
