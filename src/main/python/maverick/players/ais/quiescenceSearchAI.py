@@ -298,7 +298,6 @@ class QLAI(MaverickAI):
                     if lostPiecePosn == moveDstPosn:
                         # Add piece value, to accumulator
                         weightedReturn += lostPieceValue
-                        print "added value of piece {0}".format(lostPieceType)
                         # Only add once per piece being covered
                         break
 
@@ -407,7 +406,6 @@ class QLAI(MaverickAI):
                             pcsCoveredRes))
 
             # Return the weighted average
-            print "opinions {0}".format(opinions)
             return sum([weight * value for (_, weight, value) in opinions]) / \
                 sum([weight for (_, weight, _) in opinions])
 
