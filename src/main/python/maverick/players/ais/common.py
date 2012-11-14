@@ -79,37 +79,31 @@ class MaverickAI(MaverickPlayer):
         raise MaverickAIException(fStr.format(fromPosn, toPosn))
 
     @staticmethod
-    def __getPossPlies_colorAt(board, color, posn):
-        p = board[posn]
-        return p is not None and p.color == color
+    def __canMoveTo_isOnBoard(posn):
+        return (posn.rankN in range(ChessBoard.BOARD_LAYOUT_SIZE) and
+                posn.fileN in range(ChessBoard.BOARD_LAYOUT_SIZE))
 
     @staticmethod
-    def __getPossPlies_enemyAt(board, color, posn):
-        """Return True iff there is a piece of the opposite color at posn"""
-        enemyColor = ChessBoard.getOtherColor(color)
-        return MaverickAI.__getPossPlies_colorAt(board, enemyColor, posn)
-
-    @staticmethod
-    def __getPossPlies_isOnBoard(posn):
-        return (posn.rankN in range(0, 8) and
-                posn.fileN in range(0, 8))
-
-    @staticmethod
-    def __getPossPlies_moveLoop(moves, board, color,
+    def __canMoveTo_moveLoop(moves, board, color,
                                     fromPosn, translations):
-        """Add moves based on translations, stopping at an enemy piece
+        """Add moves based on translations, stopping when blocked
 
         WARNING: mutates moves to add relevant moves (returns None)"""
         for translation in translations:
             toPosn = fromPosn.getTranslatedBy(*translation)
-            moves.append(toPosn)  # NOTE: self-capture is prevented later
+            # TODO: we should worry about self-capture all at the end
 
-            # Stop if at a piece
+            # Add moves to empty and enemy-occupied squares
+            if (board[toPosn] is None or
+                board[toPosn].color == ChessBoard.getOtherColor(color)):
+                moves.append(toPosn)
+
+            # Stop if blocked by a piece
             if board[toPosn] is not None:
                 break
 
     @staticmethod
-    def __getPossPlies_pawn(board, color, fromPosn):
+    def __canMoveTo_pawn(board, color, fromPosn):
         moves = []
         moves.append(fromPosn.getTranslatedBy(1, 0))
 
@@ -117,52 +111,41 @@ class MaverickAI(MaverickPlayer):
         # TODO only if no piece one above
         moves.append(fromPosn.getTranslatedBy(2, 0))
 
-        for rankDelta, fileDelta in [(1, -1), (1, 1)]:
-            toPosn = fromPosn.getTranslatedBy(rankDelta, fileDelta)
-            if MaverickAI.__getPossPlies_enemyAt(board, color, toPosn):
-                moves.append(toPosn)
+#        for rankDelta, fileDelta in [(1, -1), (1, 1)]:
+#            toPosn = fromPosn.getTranslatedBy(rankDelta, fileDelta)
+#            if MaverickAI.__canMoveTo_enemyAt(board, color, toPosn):
+#                moves.append(toPosn)
         return moves
 
     @staticmethod
-    def __getPossPlies_rook(board, color, fromPosn):
-        # TODO (mattsh): rewrite to use __getPossPlies_moveLoop
+    def __canMoveTo_rook(board, color, fromPosn):
+        # TODO (mattsh): rewrite to use __canMoveTo_moveLoop
         moves = []
-        # Move up
-        for toRank in xrange(fromPosn.rankN + 1, 8):
-            toPosn = ChessPosn(toRank, fromPosn.fileN)
-            if (board[toPosn] is None or
-                MaverickAI.__getPossPlies_enemyAt(board, color, toPosn)):
-                moves.append(toPosn)
-            if board[toPosn] is not None:
-                break
-        # Move down
-        for toRank in xrange(fromPosn.rankN - 1, -1, -1):
-            toPosn = ChessPosn(toRank, fromPosn.fileN)
-            if (board[toPosn] is None or
-                MaverickAI.__getPossPlies_enemyAt(board, color, toPosn)):
-                moves.append(toPosn)
-            if board[toPosn] is not None:
-                break
-        # Move right
-        for toFile in xrange(fromPosn.fileN + 1, 8):
-            toPosn = ChessPosn(fromPosn.rankN, toFile)
-            if (board[toPosn] is None or
-                MaverickAI.__getPossPlies_enemyAt(board, color, toPosn)):
-                moves.append(toPosn)
-            if board[toPosn] is not None:
-                break
-        # Move left
-        for toFile in xrange(fromPosn.fileN - 1, -1, -1):
-            toPosn = ChessPosn(fromPosn.rankN, toFile)
-            if (board[toPosn] is None or
-                MaverickAI.__getPossPlies_enemyAt(board, color, toPosn)):
-                moves.append(toPosn)
-            if board[toPosn] is not None:
-                break
+
+        (rN, fN) = (fromPosn.rankN, fromPosn.fileN)
+        bS = ChessBoard.BOARD_LAYOUT_SIZE
+
+        # Move up (rN+1..7, fN)
+        MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
+                                        zip(range(rN + 1, bS, 1),
+                                            [fN] * (bS - 1 - rN)))
+        # Move down (0..rN-1, fN)
+        MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
+                                        zip(range(rN - 1, -1, -1),
+                                            [fN] * rN))
+        # Move right (rN, fN+1..7)
+        MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
+                                        zip([rN] * (bS - 1 - fN),
+                                            range(fN + 1, bS, 1)))
+        # Move left (rN, 0..fN-1)
+        MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
+                                           zip([rN] * fN,
+                                               range(fN - 1, -1, -1)))
+
         return moves
 
     @staticmethod
-    def __getPossPlies_knight(board, color, fromPosn):
+    def __canMoveTo_knight(board, color, fromPosn):
         moves = []
         moves.append(fromPosn.getTranslatedBy(2, -1))
         moves.append(fromPosn.getTranslatedBy(2, 1))
@@ -175,35 +158,37 @@ class MaverickAI(MaverickPlayer):
         return moves
 
     @staticmethod
-    def __getPossPlies_bishop(board, color, fromPosn):
+    def __canMoveTo_bishop(board, color, fromPosn):
         moves = []
+
+        rMin = 1
+        rMax = ChessBoard.BOARD_LAYOUT_SIZE + 1
+        countUp = range(rMin, rMax, 1)
+        countDown = range(-rMin, -rMax, -1)
+
         # Move top-right
-        MaverickAI.__getPossPlies_moveLoop(moves, board, color, fromPosn,
-                                           zip(range(1, 8),
-                                               range(1, 8)))
+        MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
+                                        zip(countUp, countUp))
         # Move top-left
-        MaverickAI.__getPossPlies_moveLoop(moves, board, color, fromPosn,
-                                           zip(range(1, 8),
-                                               range(-1, -8, -1)))
+        MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
+                                        zip(countUp, countDown))
         # Move down-right
-        MaverickAI.__getPossPlies_moveLoop(moves, board, color, fromPosn,
-                                           zip(range(-1, -8, -1),
-                                               range(1, 8)))
+        MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
+                                        zip(countDown, countUp))
         # Move down-left
-        MaverickAI.__getPossPlies_moveLoop(moves, board, color, fromPosn,
-                                           zip(range(-1, -8, -1),
-                                               range(-1, -8, -1)))
+        MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
+                                        zip(countDown, countDown))
         return moves
 
     @staticmethod
-    def __getPossPlies_queen(board, color, fromPosn):
+    def __canMoveTo_queen(board, color, fromPosn):
         moves = []
-        moves.extend(MaverickAI.__getPossPlies_bishop(board, color, fromPosn))
-        moves.extend(MaverickAI.__getPossPlies_rook(board, color, fromPosn))
+        moves.extend(MaverickAI.__canMoveTo_bishop(board, color, fromPosn))
+        moves.extend(MaverickAI.__canMoveTo_rook(board, color, fromPosn))
         return moves
 
     @staticmethod
-    def __getPossPlies_king(board, color, fromPosn):
+    def __canMoveTo_king(board, color, fromPosn):
         moves = []
         moves.append(fromPosn.getTranslatedBy(1, 1))
         moves.append(fromPosn.getTranslatedBy(1, 0))
@@ -224,50 +209,56 @@ class MaverickAI(MaverickPlayer):
         return moves
 
     @staticmethod
-    def getPossPlies(board, fromPosn):
-        """Return all possible moves for the specified piece on given board
+    def canMoveTo(board, fromPosn):
+        """Return all possible toPosns for the specified piece on given board
 
         @return ListOf[toPosn]"""
 
-        ## TODO (James): Rewrite this function
+        # Pull out the color and fromPiece type from the board
+        fromPiece = board[fromPosn]
 
-        # Pull out the color and piece type from the board
-        piece = board[fromPosn]
+        # TODO: Assert piece exists
+        # TODO: Assert piece color is owned by player
 
-        if piece.pieceType == ChessBoard.PAWN:
-            moveGenerator = MaverickAI.__getPossPlies_pawn
-        elif piece.pieceType == ChessBoard.ROOK:
-            moveGenerator = MaverickAI.__getPossPlies_rook
-        elif piece.pieceType == ChessBoard.KNGT:
-            moveGenerator = MaverickAI.__getPossPlies_knight
-        elif piece.pieceType == ChessBoard.BISH:
-            moveGenerator = MaverickAI.__getPossPlies_bishop
-        elif piece.pieceType == ChessBoard.QUEN:
-            moveGenerator = MaverickAI.__getPossPlies_queen
-        elif piece.pieceType == ChessBoard.KING:
-            moveGenerator = MaverickAI.__getPossPlies_king
+        if fromPiece.pieceType == ChessBoard.PAWN:
+            moveGenerator = MaverickAI.__canMoveTo_pawn
+        elif fromPiece.pieceType == ChessBoard.ROOK:
+            moveGenerator = MaverickAI.__canMoveTo_rook
+        elif fromPiece.pieceType == ChessBoard.KNGT:
+            moveGenerator = MaverickAI.__canMoveTo_knight
+        elif fromPiece.pieceType == ChessBoard.BISH:
+            moveGenerator = MaverickAI.__canMoveTo_bishop
+        elif fromPiece.pieceType == ChessBoard.QUEN:
+            moveGenerator = MaverickAI.__canMoveTo_queen
+        elif fromPiece.pieceType == ChessBoard.KING:
+            moveGenerator = MaverickAI.__canMoveTo_king
         else:
-            raise MaverickAIException("Invalid piece type")
+            raise MaverickAIException("Invalid fromPiece type")
 
-        # Get list of possible moves. Starts empty
-        moves = moveGenerator(board, piece.color, fromPosn)
+        # Get list of possible toPosns. Starts empty
+        toPosns = moveGenerator(board, fromPiece.color, fromPosn)
 
-        # Filter out moves that would put a piece off the board
-        moves = filter(MaverickAI.__getPossPlies_isOnBoard, moves)
+        # Filter out toPosns that would put a fromPiece off the board
+        toPosns = filter(MaverickAI.__canMoveTo_isOnBoard, toPosns)
 
-        # Filter out self-capturing moves
-        moves = filter(lambda p: MaverickAI.__getPossPlies_colorAt(board,
-                                                                   piece.color,
-                                                                   p),
-                       moves)
+        # Filter out self-capturing toPosns
+        toPosns = filter(lambda p: (board[p] is None or
+                                    board[p].color != fromPiece.color),
+                         toPosns)
 
-        # Filter out Filter out moves that would put player in check
-        def kingNotInCheck(toPosn):
+        # TODO delete his after this function is finished (just a stop-gap)
+        toPosns = filter(lambda p: board.isLegalMove(fromPiece.color,
+                                                     fromPosn,
+                                                     p),
+                         toPosns)
+
+        # Filter out Filter out toPosns that would put player in check
+        def selfKingNotInCheck(toPosn):
             resultBoard = board.getResultOfPly(fromPosn, toPosn)
-            return not resultBoard.isKingInCheck(piece.color)[0]
-        moves = filter(kingNotInCheck, moves)
+            return not resultBoard.isKingInCheck(fromPiece.color)[0]
+        toPosns = filter(selfKingNotInCheck, toPosns)
 
-        return moves
+        return toPosns
 
     @staticmethod
     def enumBoardMoves(board, color):
@@ -281,8 +272,8 @@ class MaverickAI(MaverickPlayer):
         # List of all possible moves from the given board. Must be filled.
         moves = []
 
-        for rankN in xrange(0, 8):
-            for fileN in xrange(0, 7):
+        for rankN in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
+            for fileN in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
                 fromPosn = ChessPosn(rankN, fileN)
                 fromPiece = board[fromPosn]
 
@@ -290,7 +281,7 @@ class MaverickAI(MaverickPlayer):
                     moves.extend(map(lambda toPosn: (fromPiece,
                                                      fromPosn,
                                                      toPosn),
-                                     MaverickAI.getPossPlies(board, fromPosn)))
+                                     MaverickAI.canMoveTo(board, fromPosn)))
 
         return moves
 

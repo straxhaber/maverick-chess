@@ -57,6 +57,14 @@ class ChessPiece(object):
         self.color = color
         self.pieceType = pieceType
 
+    def __str__(self):
+        return "{}{}".format(["B", "W"][self.color == ChessBoard.WHITE],
+                             ChessBoard.HUMAN_PIECE_TEXT[self.pieceType])
+
+    def __repr__(self):
+        return "({},{})".format(["B", "W"][self.color == ChessBoard.WHITE],
+                                ChessBoard.HUMAN_PIECE_TEXT[self.pieceType])
+
 
 class ChessBoard(object):
     """Represents a chess game in Maverick"""
@@ -197,8 +205,13 @@ class ChessBoard(object):
     def __getitem__(self, posn):
         """x.__getitem__(y) <==> x[y]
 
-        Gets the piece object for the given position"""
-        return self.layout[posn.rankN][posn.fileN]
+        Gets the piece object for the given position,
+        None if given a position off the board"""
+        if (posn.rankN in xrange(ChessBoard.BOARD_LAYOUT_SIZE) and
+            posn.fileN in xrange(ChessBoard.BOARD_LAYOUT_SIZE)):
+            return self.layout[posn.rankN][posn.fileN]
+        else:
+            return None
 
     def __setitem__(self, posnLayoutLoc, piece):
         """x.__setitem__(i, y) <==> x[i]=y
@@ -333,11 +346,7 @@ class ChessBoard(object):
         @param piece: A piece as defined in maverick.data.ChessBoard
 
         @return: ASCII character representing the given piece"""
-        if piece is None:
-            return "  "
-        else:
-            return "{}{}".format(["B", "W"][piece.color == ChessBoard.WHITE],
-                                 ChessBoard.HUMAN_PIECE_TEXT[piece.pieceType])
+        return "  " if piece is None else piece.__str__()
 
     def __str__(self, whitePerspective=True):
         """Prints out a human-readable ASCII version of the board
