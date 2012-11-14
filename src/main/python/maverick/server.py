@@ -13,8 +13,10 @@ __version__ = "1.0"
 ## TODO (James): Once Systems has decided whether to install a new version of
 #                Python or not, decide whether command-line arguments need to
 #                be parsed without the argparse module
+
 from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
+
 import json
 import logging
 import pickle
@@ -97,7 +99,7 @@ class TournamentSystem(object):
         else:
             newID = _getUniqueInt(self.players.keys())
             self.players[newID] = name
-            TournamentSystem._logger.info("Registered %s with playerID %d",
+            TournamentSystem._logger.debug("Registered %s with playerID %d",
                                           name, newID)
             return (True, {"playerID": newID})
 
@@ -127,7 +129,7 @@ class TournamentSystem(object):
         newGame = ChessMatch(playerID)
         newID = _getUniqueInt(self.games.keys())
         self.games[newID] = newGame
-        TournamentSystem._logger.info("Added player %d to new game %d",
+        TournamentSystem._logger.debug("Added player %d to new game %d",
                                       playerID, newID)
         return (True, {"gameID": newID})
 

@@ -301,7 +301,7 @@ class ChessBoard(object):
 
         # Log the successful move
         logStrF = "Moved piece from %s, to %s"
-        ChessBoard._logger.info(logStrF, fromPosn, toPosn)
+        ChessBoard._logger.debug(logStrF, fromPosn, toPosn)
 
     def makePly(self, color, fromPosn, toPosn):
         """Make a ply on this board if legal
@@ -465,17 +465,20 @@ class ChessBoard(object):
                 Element 1: A list of ChessTuples representing
                 the location of all non-king enemy pieces"""
 
+        # TODO (mattsh): Why is a function this hack-ish here?
+        #                Might be a good reason, but should discuss with James
+
         enemyPiecePosns = []  # List of ChessPosns of non-king pieces
 
         # Locate given player's king, and opposing player's non-king pieces
-        for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
+        for r in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
             row = self.layout[r]
-            for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
+            for f in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
                 piece = row[f]
                 if piece is not None:
-                    if (piece.color == color and piece.pieceType ==
-                        ChessBoard.KING):
-                        kingLoc = ChessPosn(r, f)
+                    if (piece.color == color and
+                        piece.pieceType == ChessBoard.KING):
+                        myKingLoc = ChessPosn(r, f)
                     elif (piece.color != color and
                           piece.pieceType != ChessBoard.KING):
 
@@ -484,7 +487,9 @@ class ChessBoard(object):
                         enemyPiecePosns.append(piecePosn)
                     else:
                         pass  # This is not one of the requested pieces
-        return (kingLoc, enemyPiecePosns)
+        print enemyPiecePosns
+        print myKingLoc
+        return (myKingLoc, enemyPiecePosns)
 
     def isLegalMove(self, color, fromPosn, toPosn):
         """Returns true if the specified move is legal
@@ -753,7 +758,7 @@ class ChessBoard(object):
 
         # If none of the enemy pieces could move to the king's location, the
         # king is not in check
-        ChessBoard._logger.info("Found that %s is not in check", color)
+        ChessBoard._logger.debug("Found that %s is not in check", color)
         return (False, None)
 
     def isKingCheckmated(self, color):
@@ -840,11 +845,11 @@ class ChessBoard(object):
                 # If not, that color is not in checkmate
                 if not boardAfterMove.isKingInCheck(color):
                     logStrF = "Found that %s is not in checkmate"
-                    ChessBoard._logger.info(logStrF, color)
+                    ChessBoard._logger.debug(logStrF, color)
                     return False
 
         # All tests passed - given color is in checkmate
-        ChessBoard._logger.info("Found that %s is in checkmate", color)
+        ChessBoard._logger.debug("Found that %s is in checkmate", color)
         return True
 
     @staticmethod
@@ -1035,7 +1040,7 @@ class ChessMatch(object):
                     if None not in self.players.itervalues():
                         self.status = ChessMatch.STATUS_ONGOING
                     return color
-            ChessMatch._logger.info("Joined player %d to this game", playerID)
+            ChessMatch._logger.debug("Joined player %d to this game", playerID)
 
 
 def _main():
