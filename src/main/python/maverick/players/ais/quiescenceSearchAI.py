@@ -298,6 +298,7 @@ class QLAI(MaverickAI):
                     if lostPiecePosn == moveDstPosn:
                         # Add piece value, to accumulator
                         weightedReturn += lostPieceValue
+                        print "added value of piece {0}".format(lostPieceType)
                         # Only add once per piece being covered
                         break
 
@@ -318,8 +319,7 @@ class QLAI(MaverickAI):
         @return: the combination, calculated as follows:
                     ((res1 - res2) / ((res1 + res2) / 2))"""
 
-        ## TODO (James): deal with case where res1 + res2 is 0
-        return ((res1 - res2) / ((res1 + res2) / 2))
+        return ((res1 - res2) / 2)
 
     def evaluateBoardLikability(self, color, board):
         """Return a number in [-1,1] based on board's likability to color
@@ -406,6 +406,7 @@ class QLAI(MaverickAI):
                             pcsCoveredRes))
 
             # Return the weighted average
+            print "opinions {0}".format(opinions)
             return sum([weight * value for (_, weight, value) in opinions]) / \
                 sum([weight for (_, weight, _) in opinions])
 
