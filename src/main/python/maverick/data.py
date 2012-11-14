@@ -89,10 +89,10 @@ class ChessBoard(object):
     """The width and height of a standard chess board layout."""
 
     # Constants for the colors
-    BLACK = "X"
+    BLACK = "O"
     """Constant for the black player"""
 
-    WHITE = "O"
+    WHITE = "X"
     """Constant for the white player"""
 
     # Constants for the piece types
@@ -275,6 +275,7 @@ class ChessBoard(object):
         self[toPosn] = movedPiece
 
         otherColor = ChessBoard.getOtherColor(color)
+        # TODO (mattsh): Is this intentionally unused?
         otherPawnStartRank = ChessBoard.PAWN_STARTING_RANKS[otherColor]
 
         # Handle rook movement if castling
@@ -358,7 +359,7 @@ class ChessBoard(object):
 
     def __repr__(self, fullRepr=False):
         if fullRepr:
-            fStr = "ChessBoard({}={},{}={},{}={}"
+            fStr = "ChessBoard({}={},{}={},{}={})"
             return fStr.format("startLayout", self.layout,
                                "startEnpassantFlags", self.flag_enpassant,
                                "startCanCastleFlags", self.flag_canCastle)
