@@ -246,7 +246,7 @@ class MaverickAI(MaverickPlayer):
                                     board[p].color != fromPiece.color),
                          toPosns)
 
-        # TODO delete his after this function is finished (just a stop-gap)
+        # TODO delete this after this function is finished (just a stop-gap)
         toPosns = filter(lambda p: board.isLegalMove(fromPiece.color,
                                                      fromPosn,
                                                      p),

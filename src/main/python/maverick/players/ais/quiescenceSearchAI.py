@@ -63,18 +63,17 @@ class QLAI(MaverickAI):
         return (fromPosn, toPosn)
 
     @staticmethod
-    def __heuristicEmptySpaceCoverage_isCenterSquare(rankVal, fileVal):
+    def __heuristicEmptySpaceCoverage_isCenterSquare(square):
         """Return true if the given position is a center square
 
         Center squares are those that are one of D4,D5,E4,E5
 
-        @param rankVal: rank of the position to evaluate, integer in ([0..7])
-        @param fileVal: file of the position to evaluate, integer in ([0..7])
+        @param square: A ChessPosn representing the square to be evaluated
 
         @return: True if the given position is a center square, False
                 otherwise"""
 
-        return rankVal in [3, 4] and fileVal in [3, 4]
+        return square.rankN in [3, 4] and square.fileN in [3, 4]
 
     @staticmethod
     def _findPiecePosnsByColor(board, color):
@@ -223,10 +222,10 @@ class QLAI(MaverickAI):
         # Check each location to see if it is occupied
         for r in range(0, ChessBoard.BOARD_LAYOUT_SIZE):
             for f in range(0, ChessBoard.BOARD_LAYOUT_SIZE):
-                testLoc = (r, f)
+                testPosn = ChessPosn(r, f)
 
-                if testLoc not in pieceLocations:
-                    emptyLocations.append(testLoc)
+                if testPosn not in pieceLocations:
+                    emptyLocations.append(testPosn)
 
         # Build list of possible friendly piece moves
         friendlyMoves = self.enumBoardMoves(board, color)
@@ -264,6 +263,9 @@ class QLAI(MaverickAI):
                 whose positions could be immediately re-taken if captured,
                 weighted by piece value"""
 
+        ## TODO (James): make this find all covered pieces for WHITE - only
+        #                currently paying attention to white pawns
+
         # Construct list of friendly pieces
         friendPiecePosns = QLAI._findPiecePosnsByColor(board, color)
 
@@ -274,31 +276,39 @@ class QLAI(MaverickAI):
         # position if it were not present
         for lostPiecePosn in friendPiecePosns:
 
-            # Build hypothetical board with the lost piece removed
+            # Don't test this for kings - it's meaningless
+            if board[lostPiecePosn].pieceType != ChessBoard.KING:
+                # Build hypothetical board with the lost piece removed
 
-            ## TODO (James): consider a more efficient way of doing this,
-            #                rather than a deep copy
-            hypoBoard = copy.deepcopy(board)
-            # Eliminate the supposedly lost piece
-            hypoBoard[lostPiecePosn] = None
+                ## TODO (James): consider a more efficient way of doing this,
+                #                rather than a deep copy
+                hypoBoard = copy.deepcopy(board)
+                # Eliminate the supposedly lost piece
+                hypoBoard[lostPiecePosn] = None
 
-            # Build list of possible friendly moves
-            friendlyMoves = self.enumBoardMoves(hypoBoard, color)
+                # Build list of possible friendly moves
+                friendlyMoves = self.enumBoardMoves(hypoBoard, color)
 
-            # Test whether any move includes a move to the square in question
-            for move in friendlyMoves:
-                movedPiece = move[0]
-                moveDstPosn = move[3]
-                if lostPiecePosn == moveDstPosn:
-                    # Add piece value, if it exists, to accumulator
-                    if movedPiece.pieceType in QLAI._pieceValues:
-                        pieceVal = QLAI._pieceValues[movedPiece.pieceType]
-                        weightedReturn += pieceVal
+                lostPieceType = board[lostPiecePosn].pieceType
+                lostPieceValue = QLAI._pieceValues[lostPieceType]
 
-        numFriendPcs = len(friendPiecePosns)
+                # Test whether any move includes a move to the destination
+                for move in friendlyMoves:
+                    moveDstPosn = move[2]
+                    if lostPiecePosn == moveDstPosn:
+                        # Add piece value, to accumulator
+                        weightedReturn += lostPieceValue
+                        print "added value of piece {0}".format(lostPieceType)
+                        # Only add once per piece being covered
+                        break
+
+        # Sum the total possible piece value for all pieces of this color
+
+        pcPosnValSumF = lambda a, b: a + QLAI._pieceValues[board[b].pieceType]
+        maxCoveredValue = reduce(pcPosnValSumF, friendPiecePosns, 0)
 
         # Compress return value into range [-1..1]
-        return 1 - weightedReturn / numFriendPcs * 2
+        return -1 + weightedReturn / maxCoveredValue * 2
 
     def combineHeuristicValues(self, res1, res2):
         """Combine the given results for the same heuristic run on both colors
@@ -309,6 +319,7 @@ class QLAI(MaverickAI):
         @return: the combination, calculated as follows:
                     ((res1 - res2) / ((res1 + res2) / 2))"""
 
+        ## TODO (James): deal with case where res1 + res2 is 0
         return ((res1 - res2) / ((res1 + res2) / 2))
 
     def evaluateBoardLikability(self, color, board):
@@ -396,6 +407,7 @@ class QLAI(MaverickAI):
                             pcsCoveredRes))
 
             # Return the weighted average
+            print "opinions {0}".format(opinions)
             return sum([weight * value for (_, weight, value) in opinions]) / \
                 sum([weight for (_, weight, _) in opinions])
 
