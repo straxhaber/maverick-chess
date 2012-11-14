@@ -487,8 +487,6 @@ class ChessBoard(object):
                         enemyPiecePosns.append(piecePosn)
                     else:
                         pass  # This is not one of the requested pieces
-        print enemyPiecePosns
-        print myKingLoc
         return (myKingLoc, enemyPiecePosns)
 
     def isLegalMove(self, color, fromPosn, toPosn):
