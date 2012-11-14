@@ -4,6 +4,7 @@ Created on Nov 13, 2012
 @author: mattsh
 '''
 import unittest
+
 from maverick.data import ChessBoard
 from maverick.data import ChessPosn
 from maverick.players.ais.common import MaverickAI

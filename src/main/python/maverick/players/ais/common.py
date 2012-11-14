@@ -246,6 +246,12 @@ class MaverickAI(MaverickPlayer):
                                     board[p].color != fromPiece.color),
                          toPosns)
 
+        # TODO delete his after this function is finished (just a stop-gap)
+        toPosns = filter(lambda p: board.isLegalMove(fromPiece.color,
+                                                     fromPosn,
+                                                     p),
+                         toPosns)
+
         # Filter out Filter out toPosns that would put player in check
         def selfKingNotInCheck(toPosn):
             resultBoard = board.getResultOfPly(fromPosn, toPosn)

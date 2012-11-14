@@ -205,8 +205,13 @@ class ChessBoard(object):
     def __getitem__(self, posn):
         """x.__getitem__(y) <==> x[y]
 
-        Gets the piece object for the given position"""
-        return self.layout[posn.rankN][posn.fileN]
+        Gets the piece object for the given position,
+        None if given a position off the board"""
+        if (posn.rankN in xrange(ChessBoard.BOARD_LAYOUT_SIZE) and
+            posn.fileN in xrange(ChessBoard.BOARD_LAYOUT_SIZE)):
+            return self.layout[posn.rankN][posn.fileN]
+        else:
+            return None
 
     def __setitem__(self, posnLayoutLoc, piece):
         """x.__setitem__(i, y) <==> x[i]=y

@@ -34,7 +34,7 @@ class RandomAI(MaverickAI):
     def getNextMove(self, board):
         """TODO PyDoc"""
         color = ChessBoard.WHITE if self.isWhite else ChessBoard.BLACK
-        moveChoices = self.enumPossBoardMoves(board, color)
+        moveChoices = self.enumBoardMoves(board, color)
 
         (_, fromPosn, toPosn) = random.choice(moveChoices)
         return (fromPosn, toPosn)
