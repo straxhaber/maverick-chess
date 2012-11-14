@@ -35,7 +35,6 @@ class RandomAI(MaverickAI):
         """TODO PyDoc"""
         color = ChessBoard.WHITE if self.isWhite else ChessBoard.BLACK
         moveChoices = self._enumerateAllMoves(board, color)
-        # TODO (mattsh): Why isn't random.choice being run??
         selectedMove = random.choice(moveChoices)
         return selectedMove
 

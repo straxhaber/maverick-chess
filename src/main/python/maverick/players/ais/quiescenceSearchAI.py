@@ -360,14 +360,14 @@ class QLAI(MaverickAI):
             pieceValueFoe = self._heuristicPieceValue(otherColor, board)
             pieceValueRes = self.combineHeuristicValues(pieceValueFriend,
                                                         pieceValueFoe)
-            opinions.append("PieceValue", pieceValueWeight, pieceValueRes)
+            opinions.append(("PieceValue", pieceValueWeight, pieceValueRes))
 
             # Add in check opinion
             inCheckFriend = self._heuristicInCheck(color, board)
             inCheckFoe = self._heuristicInCheck(otherColor, board)
             inCheckRes = self.combineHeuristicValues(inCheckFriend,
                                                         inCheckFoe)
-            opinions.append("InCheck", inCheckWeight, inCheckRes)
+            opinions.append(("InCheck", inCheckWeight, inCheckRes))
 
             # Add pieces under attack opinion
             pcsUnderAtkFriend = self._heuristicPiecesUnderAttack(color, board)
@@ -375,8 +375,8 @@ class QLAI(MaverickAI):
                                                               board)
             pcsUnderAtkRes = self.combineHeuristicValues(pcsUnderAtkFriend,
                                                          pcsUnderAtkFoe)
-            opinions.append("PiecesUnderAttack", piecesUnderAttackWeight,
-                            pcsUnderAtkRes)
+            opinions.append(("PiecesUnderAttack", piecesUnderAttackWeight,
+                            pcsUnderAtkRes))
 
             # Add empty space coverage opinion
             emptySpcsCvdFriend = self._heuristicEmptySpaceCoverage(color,
@@ -385,16 +385,16 @@ class QLAI(MaverickAI):
                                                                 board)
             emptySpcsCvdRes = self.combineHeuristicValues(emptySpcsCvdFriend,
                                                           emptySpcsCvdFoe)
-            opinions.append("EmptySpaceCoverage", emptySpaceCoverageWeight,
-                            emptySpcsCvdRes)
+            opinions.append(("EmptySpaceCoverage", emptySpaceCoverageWeight,
+                            emptySpcsCvdRes))
 
             # Add pieces covered opinion
             pcsCoveredFriend = self._heuristicPiecesCovered(color, board)
             pcsCoveredFoe = self._heuristicPiecesCovered(otherColor, board)
             pcsCoveredRes = self.combineHeuristicValues(pcsCoveredFriend,
                                                         pcsCoveredFoe)
-            opinions.append("PiecesCovered", piecesCoveredWeight,
-                            pcsCoveredRes)
+            opinions.append(("PiecesCovered", piecesCoveredWeight,
+                            pcsCoveredRes))
 
             # Return the weighted average
             return sum([weight * value for (_, weight, value) in opinions]) / \

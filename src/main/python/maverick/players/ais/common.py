@@ -44,7 +44,6 @@ class MaverickAI(MaverickPlayer):
 
     def getPlayerName(self):
         """Figure out the name of the class"""
-        # TODO (mattsh): Why isn't random.randint being run??
         return "%s %d %d" % (self.__class__.__name__,
                              time.time(),
                              random.randint(1, 10 ** 9))
