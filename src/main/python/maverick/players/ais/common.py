@@ -91,12 +91,9 @@ class MaverickAI(MaverickPlayer):
         WARNING: mutates moves to add relevant moves (returns None)"""
         for translation in translations:
             toPosn = fromPosn.getTranslatedBy(*translation)
-            # TODO: we should worry about self-capture all at the end
 
-            # Add moves to empty and enemy-occupied squares
-            if (board[toPosn] is None or
-                board[toPosn].color != ChessBoard.getOtherColor(color)):
-                moves.append(toPosn)
+            # We worry about self-capture at the end of canMoveTo
+            moves.append(toPosn)
 
             # Stop if blocked by a piece
             if board[toPosn] is not None:
@@ -134,7 +131,6 @@ class MaverickAI(MaverickPlayer):
 
     @staticmethod
     def __canMoveTo_rook(board, color, fromPosn):
-        # TODO (mattsh): rewrite to use __canMoveTo_moveLoop
         moves = []
 
         (rN, fN) = (fromPosn.rankN, fromPosn.fileN)
@@ -205,6 +201,8 @@ class MaverickAI(MaverickPlayer):
     @staticmethod
     def __canMoveTo_king(board, color, fromPosn):
         moves = []
+
+        # Add moves to neighbors
         moves.append(fromPosn.getTranslatedBy(1, 1))
         moves.append(fromPosn.getTranslatedBy(1, 0))
         moves.append(fromPosn.getTranslatedBy(1, -1))
@@ -214,13 +212,20 @@ class MaverickAI(MaverickPlayer):
         moves.append(fromPosn.getTranslatedBy(-1, 0))
         moves.append(fromPosn.getTranslatedBy(-1, -1))
 
+        # Add castling moves
         (canCastleQueenSide, canCastleKingSide) = board.flag_canCastle[color]
-        if canCastleQueenSide:
-            pass  # TODO (mattsh)
-        if canCastleKingSide:
-            pass  # TODO (mattsh)
+        kingRank = [7, 0][ChessBoard.WHITE == color]
+        if (canCastleQueenSide and
+            reduce(bool.__and__,
+                   [board[ChessPosn(kingRank, fN)] is None
+                    for fN in [1, 2, 3]])):
+            moves.append(fromPosn.getTranslatedBy(0, -2))
+        if (canCastleKingSide and
+            reduce(bool.__and__,
+                   [board[ChessPosn(kingRank, fN)] is None
+                    for fN in [6, 7]])):
+            moves.append(fromPosn.getTranslatedBy(0, 2))
 
-        # TODO add castling
         return moves
 
     @staticmethod
@@ -231,9 +236,7 @@ class MaverickAI(MaverickPlayer):
 
         # Pull out the color and fromPiece type from the board
         fromPiece = board[fromPosn]
-
-        # TODO: Assert piece exists
-        # TODO: Assert piece color is owned by player
+        assert fromPiece is not None
 
         if fromPiece.pieceType == ChessBoard.PAWN:
             moveGenerator = MaverickAI.__canMoveTo_pawn
@@ -261,11 +264,15 @@ class MaverickAI(MaverickPlayer):
                                     board[p].color != fromPiece.color),
                          toPosns)
 
-        # TODO delete this after this function is finished (just a stop-gap)
-        toPosns = filter(lambda p: board.isLegalMove(fromPiece.color,
-                                                     fromPosn,
-                                                     p),
-                         toPosns)
+        # TODO (mattsh): JAMES THIS BLOWS UP IF RUN
+        #                We would delete this anyway, but it shouldn't blow up
+        #                for legal moves. Either I have a bug (don't think so)
+        #                or you do
+#        # TODO delete this after this function is finished (just a stop-gap)
+#        toPosns = filter(lambda p: board.isLegalMove(fromPiece.color,
+#                                                     fromPosn,
+#                                                     p),
+#                         toPosns)
 
         # Filter out Filter out toPosns that would put player in check
         def selfKingNotInCheck(toPosn):
@@ -282,7 +289,7 @@ class MaverickAI(MaverickPlayer):
         @return: a set of tuples of the form:
             ListOf[(ChessPiece, fromPosn, toPosn)]"""
 
-        # TODO (mattsh): Once working and complete, use generator pattern
+        # TODO (mattsh): Modify to use generator pattern
 
         # List of all possible moves from the given board. Must be filled.
         moves = []
@@ -297,6 +304,8 @@ class MaverickAI(MaverickPlayer):
                                                      fromPosn,
                                                      toPosn),
                                      MaverickAI.canMoveTo(board, fromPosn)))
+                else:
+                    pass  # can't move a non-existent piece or one we don't own
 
         return moves
 
