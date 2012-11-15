@@ -229,7 +229,6 @@ class Test_maverick_players_ais_common(unittest.TestCase):
     def test_bWD4_onlyLegalMoves(self):
         self._onlyLegalMoves(self.bWD4, ChessBoard.BLACK, self.bWD4Enum)
 
-    @unittest.expectedFailure  # TODO: legalMoves is broken
     def test_bWD4_allLegalMoves(self):
         self._allLegalMoves(self.bWD4, ChessBoard.BLACK, self.bWD4Enum)
 

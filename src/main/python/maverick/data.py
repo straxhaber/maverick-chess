@@ -611,9 +611,8 @@ class ChessBoard(object):
 
                     # Calculate whether an en passant capture would occur
                     # in this ply
-                    # TODO (mattsh): I think you may have overlooked something
                     epCaptureP = epFlag and (toPosn.rankN == epCapRnk)
-                    if destin_entry is None and not epFlag:
+                    if destin_entry is None and not epCaptureP:
                         return False
 
                 elif file_delta_abs == 0 and destin_entry is not None:
