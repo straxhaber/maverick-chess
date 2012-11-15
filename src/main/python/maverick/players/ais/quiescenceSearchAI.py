@@ -214,7 +214,7 @@ class QLAI(MaverickAI):
 
         # Build list of possible friendly piece moves
         friendlyMoves = self.enumBoardMoves(board, color)
-        friendlyMoveDestPosns = map(lambda x: x[2], friendlyMoves)
+        friendlyMoveDestPosns = map(lambda x: x[1], friendlyMoves)
 
         # Find possible moves to empty squares and build up return value
 

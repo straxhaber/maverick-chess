@@ -537,6 +537,9 @@ class ChessBoard(object):
          - can move two squares toward a rook if the canCastle flag for that
          direction ("a" file or "h" file) is True"""
 
+        # TODO: can color be checked a level up in the makePly function,
+        #       allowing isLegalMove to not take in the color?
+
         # Pull out the (color, origin_type) entry at the from/to board position
         origin_entry = self[fromPosn]
         destin_entry = self[toPosn]

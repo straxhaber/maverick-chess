@@ -37,8 +37,13 @@ class RandomAI(MaverickAI):
 
         moveChoices = self.enumBoardMoves(board, color)
 
-        (_, fromPosn, toPosn) = random.choice(moveChoices)
-        return (fromPosn, toPosn)
+        move = random.choice(moveChoices)
+
+        # Display move on console
+        print(board.__str__(whitePerspective=self.isWhite))
+        self.displayMessage("Moving {} to {}".format(move[0], move[1]))
+
+        return move
 
 
 def runAI(host=None, port=None):
