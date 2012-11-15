@@ -133,25 +133,24 @@ class MaverickAI(MaverickPlayer):
     def __canMoveTo_rook(board, color, fromPosn):
         moves = []
 
-        (rN, fN) = (fromPosn.rankN, fromPosn.fileN)
-        bS = ChessBoard.BOARD_LAYOUT_SIZE
+        rMin = 1
+        rMax = ChessBoard.BOARD_LAYOUT_SIZE + 1
+        countUp = range(rMin, rMax, 1)
+        countDown = range(-rMin, -rMax, -1)
+        stayTheCourse = [0] * (ChessBoard.BOARD_LAYOUT_SIZE - 1)
 
         # Move up (rN+1..7, fN)
         MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
-                                        zip(range(rN + 1, bS, 1),
-                                            [fN] * (bS - 1 - rN)))
+                                        zip(countUp, stayTheCourse))
         # Move down (0..rN-1, fN)
         MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
-                                        zip(range(rN - 1, -1, -1),
-                                            [fN] * rN))
+                                        zip(countDown, stayTheCourse))
         # Move right (rN, fN+1..7)
         MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
-                                        zip([rN] * (bS - 1 - fN),
-                                            range(fN + 1, bS, 1)))
+                                        zip(stayTheCourse, countUp))
         # Move left (rN, 0..fN-1)
         MaverickAI.__canMoveTo_moveLoop(moves, board, color, fromPosn,
-                                           zip([rN] * fN,
-                                               range(fN - 1, -1, -1)))
+                                        zip(stayTheCourse, countDown))
 
         return moves
 
@@ -269,10 +268,10 @@ class MaverickAI(MaverickPlayer):
         #                for legal moves. Either I have a bug (don't think so)
         #                or you do
 #        # TODO delete this after this function is finished (just a stop-gap)
-        toPosns = filter(lambda p: board.isLegalMove(fromPiece.color,
-                                                     fromPosn,
-                                                     p),
-                         toPosns)
+#        toPosns = filter(lambda p: board.isLegalMove(fromPiece.color,
+#                                                     fromPosn,
+#                                                     p),
+#                         toPosns)
 
         # Filter out Filter out toPosns that would put player in check
         def selfKingNotInCheck(toPosn):
