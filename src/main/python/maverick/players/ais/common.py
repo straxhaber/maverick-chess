@@ -108,7 +108,8 @@ class MaverickAI(MaverickPlayer):
 
         moves = []
 
-        moves.append(oneAhead)
+        if board[oneAhead] is None:
+            moves.append(oneAhead)
 
         if (fromPosn.rankN == pawnStartRank and board[oneAhead] is None):
             moves.append(twoAhead)
@@ -299,9 +300,7 @@ class MaverickAI(MaverickPlayer):
                 fromPiece = board[fromPosn]
 
                 if fromPiece is not None and fromPiece.color == color:
-                    moves.extend(map(lambda toPosn: (fromPiece,
-                                                     fromPosn,
-                                                     toPosn),
+                    moves.extend(map(lambda toPosn: (fromPosn, toPosn),
                                      MaverickAI.canMoveTo(board, fromPosn)))
                 else:
                     pass  # can't move a non-existent piece or one we don't own
