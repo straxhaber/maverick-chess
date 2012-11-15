@@ -486,8 +486,18 @@ class ChessBoard(object):
         @return: a dictionary of the form {ChessBoard.WHITE: ChessPosn,
                                             ChessBoard.BLACK: ChessPosn}
                 mapping king colors to location ChessPosns"""
-        ## TODO (James): write this
-        pass
+        kingsPosnDict = {}  # Accumulator for return value
+
+        # Locate given player's king, and opposing player's non-king pieces
+        for r in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
+            for f in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
+                piecePosn = ChessPosn(r, f)
+                piece = self[piecePosn]
+                if (piece is not None and
+                    piece.pieceType == ChessBoard.KING):
+                        kingsPosnDict[piece.color] = piecePosn
+
+        return kingsPosnDict
 
     def __isLegalMove_findKngAndEnems(self, color):
         """Return the location color's king and all opposing non-king pieces
@@ -780,17 +790,17 @@ class ChessBoard(object):
         otherColor = ChessBoard.getOtherColor(color)
 
         # Locate given player's king, and opposing player's non-king pieces
-        pieceLocations = self.__isLegalMove_findKngAndEnems(color)
-        kingLoc = pieceLocations[0]
+        kingPosn = self.__isLegalMove_findKings()[color]
         # List of ChessPosns of pieces that may have the king
         # in check
-        enemyPieceLocations = pieceLocations[1]
+        enemyPieceLocations = ChessBoardUtils.findPiecePosnsByColor(self,
+                                                                    otherColor)
 
         # Check if any enemy piece can legally move to the king's location
         for pieceLoc in enemyPieceLocations:
 
             # If a move to the king's location is legal, the king is in check
-            if self.isLegalMove(otherColor, pieceLoc, kingLoc):
+            if self.isLegalMove(otherColor, pieceLoc, kingPosn):
                 ChessBoard._logger.debug("Not in check")
                 return (True, pieceLoc)
 
@@ -835,31 +845,32 @@ class ChessBoard(object):
         checkPiecePosn = checkInfo[1]
 
         # Find the king whose checkmate status is in question
-        chkdKingLoc = self.__isLegalMove_findKngAndEnems(color)[0]
+        chkdKingLoc = self.__isLegalMove_findKings[color]
 
         # Get a list of locations that, if moved to, might alleviate check
         interruptLocations = ChessBoard.__isLegalMove_getInterruptSquares(
                                                              checkPiecePosn,
                                                              chkdKingLoc)
         # Get locations of all this player's non-king pieces
-        myNonKingPieceLocs = self.__isLegalMove_findKngAndEnems(otherColor)[1]
+        myPieceLocs = ChessBoardUtils.findPiecePosnsByColor(self, color)
 
         # Iterate through pieces, and see if any can move to potential check-
         # alleviating squares
-        for pieceLoc in myNonKingPieceLocs:
-            for intruptLoc in interruptLocations:
+        for pieceLoc in myPieceLocs:
+            if pieceLoc != chkdKingLoc:
+                for intruptLoc in interruptLocations:
 
-                # Check if the piece can move to this interrupt square
-                if self.isLegalMove(color, pieceLoc,
-                                    intruptLoc):
+                    # Check if the piece can move to this interrupt square
+                    if self.isLegalMove(color, pieceLoc,
+                                        intruptLoc):
 
-                    # Generate the board that such a move would produce
-                    boardAfterMove = self.getResultOfPly(pieceLoc,
-                                                          intruptLoc)
-                    # Check if the given color is still in check in that board
-                    # If not, that color is not in checkmate
-                    if not boardAfterMove.isKingInCheck(color):
-                        return False
+                        # Generate the board that such a move would produce
+                        boardAfterMove = self.getResultOfPly(pieceLoc,
+                                                              intruptLoc)
+                        # Check if the given color is still in check
+                        # If not, that color is not in checkmate
+                        if not boardAfterMove.isKingInCheck(color):
+                            return False
 
         possibleKingMoves = []  # List of tuples of possible king moves
 

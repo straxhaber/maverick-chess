@@ -16,6 +16,7 @@ import logging
 
 from maverick.players.ais.common import MaverickAI
 from maverick.data import ChessBoard
+from maverick.data import ChessBoardUtils
 from maverick.data import ChessPosn
 
 ## TODO (James): Make sure that heuristic functions to return an int in [-1..1]
@@ -85,10 +86,12 @@ class QLAI(MaverickAI):
         Note that the king's value is not included - the undesirability of the
         king's capture is handled elsewhere by checkmate checks."""
 
+        # Locate all of this color's pieces
+        piecePosns = ChessBoardUtils.findPiecePosnsByColor(board, color)
+
         # Loop through this color's pieces, adding to total value
         totalValue = sum([QLAI._pieceValues[board[posn].pieceType]
-                              for posn in QLAI._findPiecePosnsByColor(board,
-                                                                      color)])
+                          for posn in piecePosns])
 
         # Compress return value into range [-1..1]
         halfMaxVal = QLAI._maxTotalPieceVal / 2
@@ -123,10 +126,12 @@ class QLAI(MaverickAI):
         otherColor = ChessBoard.getOtherColor(color)
 
         # Get friendly pieces
-        attackingPiecePosns = QLAI._findPiecePosnsByColor(board, otherColor)
+        attackingPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board,
+                                                                    otherColor)
 
         # Get enemy pieces
-        attackedPiecePosns = QLAI._findPiecePosnsByColor(board, color)
+        attackedPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board,
+                                                                   color)
 
         # Record which enemy pieces are under attack
         piecesUnderAttack = []
@@ -181,13 +186,14 @@ class QLAI(MaverickAI):
         otherColor = ChessBoard.getOtherColor(color)
 
         # Find friendly piece locations and add to pieceLocations
-        friendPiecePosns = QLAI._findPiecePosnsByColor(board, color)
+        friendPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board, color)
 
         for piecePosn in friendPiecePosns:
             pieceLocations.append(piecePosn)
 
         # Find enemy piece locations and add to pieceLocations
-        enemyPiecePosns = QLAI._findPiecePosnsByColor(board, otherColor)
+        enemyPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board,
+                                                                otherColor)
 
         for enemyPiecePosn in enemyPiecePosns:
             pieceLocations.append(enemyPiecePosn)
@@ -244,7 +250,7 @@ class QLAI(MaverickAI):
         #                currently considering non-pawn white pieces
 
         # Construct list of friendly pieces
-        friendPiecePosns = QLAI._findPiecePosnsByColor(board, color)
+        friendPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board, color)
 
         # Accumulator for return value
         weightedReturn = 0

@@ -237,7 +237,7 @@ class Test_maverick_players_ais_common(unittest.TestCase):
         enum = MaverickAI.enumBoardMoves(self.bCmplx, ChessBoard.WHITE)
         self._allLegalMoves(self.bCmplx, ChessBoard.WHITE, enum)
 
-    @unittest.expectedFailure  # TODO: legalMoves is broken
+    #@unittest.expectedFailure  # TODO: legalMoves is broken
     def test_bCmplx_black_allLegalMoves(self):
         enum = MaverickAI.enumBoardMoves(self.bCmplx, ChessBoard.BLACK)
         self._allLegalMoves(self.bCmplx, ChessBoard.BLACK, enum)
