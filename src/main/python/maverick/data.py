@@ -221,11 +221,11 @@ class ChessBoard(object):
         else:
             return None
 
-    def __setitem__(self, posnLayoutLoc, piece):
+    def __setitem__(self, posn, piece):
         """x.__setitem__(i, y) <==> x[i]=y
 
         Sets the piece object at the given position"""
-        self.layout[posnLayoutLoc.rankN][posnLayoutLoc.fileN] = piece
+        self.layout[posn.rankN][posn.fileN] = piece
 
     def getPiecesOfColor(self, color):
         """TODO"""
@@ -971,7 +971,8 @@ class ChessBoard(object):
 
         return pathPosns
 
-class ChessBoardUtils(Object):
+
+class ChessBoardUtils(object):
     """Utilities for use with given ChessBoard objects"""
 
     @staticmethod
