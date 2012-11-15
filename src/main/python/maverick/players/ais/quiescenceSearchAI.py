@@ -283,7 +283,7 @@ class QLAI(MaverickAI):
 
                 # Test whether any move includes a move to the destination
                 for move in friendlyMoves:
-                    moveDstPosn = move[2]
+                    moveDstPosn = move[1]
                     if lostPiecePosn == moveDstPosn:
                         # Add piece value, to accumulator
                         weightedReturn += lostPieceValue
