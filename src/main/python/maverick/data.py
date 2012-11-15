@@ -587,8 +587,8 @@ class ChessBoard(object):
                     # rank
                     oppClr = ChessBoard.getOtherColor(color)
 
+                    # Find the rank at which a pawn could capture by en passant
                     if oppClr == ChessBoard.WHITE:
-                        # The rank at which a pawn could capture via en passant
                         epCapRnk = ChessBoard.PAWN_STARTING_RANKS[oppClr] + 1
                     else:
                         epCapRnk = ChessBoard.PAWN_STARTING_RANKS[oppClr] - 1
