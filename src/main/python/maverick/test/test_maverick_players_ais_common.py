@@ -12,13 +12,87 @@ from maverick.players.ais.common import MaverickAI
 
 class Test_maverick_players_ais_common(unittest.TestCase):
 
+    @staticmethod
+    def _getComplxChessBoard():
+        w = ChessBoard.WHITE
+        b = ChessBoard.BLACK
+
+        return ChessBoard(startLayout=[[ChessPiece(w, ChessBoard.ROOK),
+                                        ChessPiece(w, "N"),
+                                        ChessPiece(w, "B"),
+                                        ChessPiece(b, "R"),
+                                        None,
+                                        ChessPiece(w, "B"),
+                                        None,
+                                        None],
+                                       [ChessPiece(w, "P"),
+                                        ChessPiece(w, "P"),
+                                        None,
+                                        None,
+                                        ChessPiece(w, "K"),
+                                        None,
+                                        ChessPiece(w, "P"),
+                                        ChessPiece(w, "P")],
+                                       [None,
+                                        None,
+                                        None,
+                                        ChessPiece(w, "P"),
+                                        None,
+                                        None,
+                                        None,
+                                        None],
+                                       [None,
+                                        None,
+                                        ChessPiece(w, "Q"),
+                                        ChessPiece(w, "R"),
+                                        None,
+                                        None,
+                                        ChessPiece(b, "N"),
+                                        None],
+                                       [None,
+                                        ChessPiece(w, "P"),
+                                        None,
+                                        ChessPiece(w, "N"),
+                                        None,
+                                        None,
+                                        None,
+                                        None],
+                                       [None,
+                                        None,
+                                        None,
+                                        None,
+                                        ChessPiece(w, "P"),
+                                        None,
+                                        ChessPiece(w, "P"),
+                                        None],
+                                       [ChessPiece(b, "P"),
+                                        ChessPiece(b, "P"),
+                                        ChessPiece(b, "P"),
+                                        ChessPiece(b, "P"),
+                                        None,
+                                        ChessPiece(b, "P"),
+                                        ChessPiece(b, "P"),
+                                        ChessPiece(b, "P")],
+                                       [ChessPiece(b, "R"),
+                                        ChessPiece(b, "N"),
+                                        None,
+                                        ChessPiece(b, "Q"),
+                                        ChessPiece(b, "K"),
+                                        ChessPiece(b, "B"),
+                                        None,
+                                        None]],
+                          startEnpassantFlags={b: [False] * 8,
+                                               w: [False] * 8},
+                          startCanCastleFlags={b: (False, False),
+                                               w: (True, False)})
+
     def _assertEqLists(self, l1, l2):
 #        print "l1"
 #        for item in l1:
-#            print "\t{} (l1)".format(item)
+#            print "\t{}".format(item)
 #        print "l2"
 #        for item in l2:
-#            print "\t{} (l2)".format(item)
+#            print "\t{}".format(item)
 
         for item in l1:
             self.assertTrue(item in l2, "item not in l2: {}".format(item))

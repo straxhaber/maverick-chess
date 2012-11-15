@@ -89,10 +89,10 @@ class ChessBoard(object):
     """The width and height of a standard chess board layout."""
 
     # Constants for the colors
-    BLACK = "O"
+    BLACK = "B"
     """Constant for the black player"""
 
-    WHITE = "X"
+    WHITE = "W"
     """Constant for the white player"""
 
     # Constants for the piece types
