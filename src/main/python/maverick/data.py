@@ -499,44 +499,6 @@ class ChessBoard(object):
 
         return kingsPosnDict
 
-    def __isLegalMove_findKngAndEnems(self, color):
-        """Return the location color's king and all opposing non-king pieces
-
-        @param color: The color of the king to check, ChessMatch.WHITE or
-        ChessMatch.BLACK
-
-        @return: a tuple whose two elements are as follows:
-                Element 0: A ChessPosn representing the
-                location of the king of the given color
-                Element 1: A list of ChessTuples representing
-                the location of all non-king enemy pieces"""
-
-        # TODO (mattsh): Why is a function this hack-ish here?
-        #                Might be a good reason, but should discuss with James
-        #                This seems like a job for two functions:
-        #                 - getKings() => dict(WHITE: loc, BLACK: loc)
-        #                 - getPiecesOfColor => [posn, posn, posn, posn]
-
-        enemyPiecePosns = []  # List of ChessPosns of non-king pieces
-
-        # Locate given player's king, and opposing player's non-king pieces
-        for r in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
-            for f in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
-                piece = self.layout[r][f]
-                if piece is not None:
-                    if (piece.color == color and
-                        piece.pieceType == ChessBoard.KING):
-                        myKingLoc = ChessPosn(r, f)
-                    elif (piece.color != color and
-                          piece.pieceType != ChessBoard.KING):
-
-                        # Create a ChessPosn to append to the return list
-                        piecePosn = ChessPosn(r, f)
-                        enemyPiecePosns.append(piecePosn)
-                    else:
-                        pass  # This is not one of the requested pieces
-        return (myKingLoc, enemyPiecePosns)
-
     def isLegalMove(self, color, fromPosn, toPosn):
         """Returns true if the specified move is legal
 
@@ -577,9 +539,6 @@ class ChessBoard(object):
          - can move two squares toward a rook if the canCastle flag for that
          direction ("a" file or "h" file) is True"""
 
-        # TODO (mattsh): double-check that pawns can't skip over another piece
-        #                on first move
-
         # Pull out the (color, origin_type) entry at the from/to board position
         origin_entry = self[fromPosn]
         destin_entry = self[toPosn]
@@ -599,10 +558,16 @@ class ChessBoard(object):
         # Check move legality for individual piece types
         if origin_entry.pieceType == ChessBoard.PAWN:
 
-            # TODO (mattsh): Do you check that pawns only move forward?
-
             # Determine the correct starting rank and direction for each color
             pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
+
+            # The vertical distance being moved by this pawn
+            vertDist = toPosn.rankN - fromPosn.rankN
+
+            # Check that pawns only move forward
+            if ((color == ChessBoard.WHITE and vertDist < 0) or
+                (color == ChessBoard.BLACK and vertDist > 0)):
+                return False
 
             if rank_delta_abs not in [1, 2]:
                 return False
@@ -642,6 +607,10 @@ class ChessBoard(object):
                     return False  # Pawns cannot move up 2 and left/right
                 elif fromPosn.rankN != pawnStartRank:
                     return False  # Pawns can move two spaces only on 1st move
+                elif not ChessBoard.__isLegalMove_isClearLinearPath(self,
+                                                                    fromPosn,
+                                                                    toPosn):
+                    return False  # Pawns can't fly over other pieces
 
         elif origin_entry.pieceType == ChessBoard.ROOK:
 
@@ -790,9 +759,9 @@ class ChessBoard(object):
         otherColor = ChessBoard.getOtherColor(color)
 
         # Locate given player's king, and opposing player's non-king pieces
+
         kingPosn = self.__isLegalMove_findKings()[color]
-        # List of ChessPosns of pieces that may have the king
-        # in check
+        # List of ChessPosns of pieces that may have the king in check
         enemyPieceLocations = ChessBoardUtils.findPiecePosnsByColor(self,
                                                                     otherColor)
 
