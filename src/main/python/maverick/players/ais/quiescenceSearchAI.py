@@ -212,28 +212,34 @@ class QLAI(MaverickAI):
 
         # Build list of possible friendly piece moves
         friendlyMoves = self.enumBoardMoves(board, color)
+        friendlyMoveDestPosns = map(lambda x: x[2], friendlyMoves)
 
         # Find possible moves to empty squares and build up return value
 
         # Accumulator for return value
         weightedReturn = 0
 
-        for move in friendlyMoves:
-            moveDst = move[2]
+        for dest in emptyLocations:
 
             # Check if this move is to an empty square
-            if moveDst in emptyLocations:
+            if dest in friendlyMoveDestPosns:
 
                 #Check if it is a center square
-                if QLAI.__heuristicEmptySpaceCoverage_isCenterSquare(moveDst):
+                if QLAI.__heuristicEmptySpaceCoverage_isCenterSquare(dest):
                     weightedReturn += centerSquareValue
                 else:
                     weightedReturn += squareValue
 
-        numEmptyLocations = len(emptyLocations)
+        # Calculate total weight of empty squares on board
+        totalEmptyPosnWeight = 0
+        for posn in emptyLocations:
+            if QLAI.__heuristicEmptySpaceCoverage_isCenterSquare(posn):
+                totalEmptyPosnWeight += centerSquareValue
+            else:
+                totalEmptyPosnWeight += squareValue
 
         # Compress return value into range [-1..1]
-        return 1 - weightedReturn / numEmptyLocations * 2
+        return 1 - weightedReturn / totalEmptyPosnWeight * 2
 
     def _heuristicPiecesCovered(self, color, board):
         """Return a number representing how many of color's pieces are covered

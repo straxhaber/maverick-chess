@@ -275,8 +275,6 @@ class ChessBoard(object):
         self[toPosn] = movedPiece
 
         otherColor = ChessBoard.getOtherColor(color)
-        # TODO (mattsh): Is this intentionally unused?
-        otherPawnStartRank = ChessBoard.PAWN_STARTING_RANKS[otherColor]
 
         # Handle rook movement if castling
 
