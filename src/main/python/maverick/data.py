@@ -480,6 +480,15 @@ class ChessBoard(object):
 
         return interruptSquares
 
+    def __isLegalMove_findKings(self):
+        """Return the locations of the kings on the board, as a dictionary
+
+        @return: a dictionary of the form {ChessBoard.WHITE: ChessPosn,
+                                            ChessBoard.BLACK: ChessPosn}
+                mapping king colors to location ChessPosns"""
+        ## TODO (James): write this
+        pass
+
     def __isLegalMove_findKngAndEnems(self, color):
         """Return the location color's king and all opposing non-king pieces
 
@@ -961,6 +970,32 @@ class ChessBoard(object):
             pathPosns.append(posn)
 
         return pathPosns
+
+class ChessBoardUtils(Object):
+    """Utilities for use with given ChessBoard objects"""
+
+    @staticmethod
+    def findPiecePosnsByColor(board, color):
+        """Return a list of positions where the given color has pieces
+
+        @param board: The board to use for this check.
+        @param color: The color of the pieces to find, ChessMatch.WHITE or
+        ChessMatch.BLACK
+
+        @return: a list of ChessPosns representing
+                the location of all pieces of the given color"""
+
+        pieceLocations = []
+
+        for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
+            row = board.layout[r]
+            for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
+                piece = row[f]
+                if piece is not None:
+                    if piece.color == color:
+                        # Build ChessPosn for piece location
+                        pieceLocations.append(ChessPosn(r, f))
+        return pieceLocations
 
 
 class ChessMatch(object):

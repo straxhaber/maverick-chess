@@ -75,29 +75,6 @@ class QLAI(MaverickAI):
 
         return square.rankN in [3, 4] and square.fileN in [3, 4]
 
-    @staticmethod
-    def _findPiecePosnsByColor(board, color):
-        """Return a list of positions where the given color has pieces
-
-        @param board: The board to use for this check.
-        @param color: The color of the pieces to find, ChessMatch.WHITE or
-        ChessMatch.BLACK
-
-        @return: a list of ChessPosns representing
-                the location of all pieces of the given color"""
-
-        pieceLocations = []
-
-        for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
-            row = board.layout[r]
-            for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
-                piece = row[f]
-                if piece is not None:
-                    if piece.color == color:
-                        # Build ChessPosn for piece location
-                        pieceLocations.append(ChessPosn(r, f))
-        return pieceLocations
-
     def _heuristicPieceValue(self, color, board):
         """Return the total value of color's pieces on the given board.
 
