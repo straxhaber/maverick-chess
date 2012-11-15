@@ -174,6 +174,8 @@ class QLAI(MaverickAI):
                 given color can attack on the given board, with weight for
                 center squares"""
 
+        ## TODO (James): FIX THIS - IT SEEMS TO ONLY CARE ABOUT FILES 2-5
+
         # The value of regular and center squares
         ## TODO (James): research and tweak these.
         #                See http://tinyurl.com/cpjqnw4l
@@ -221,7 +223,7 @@ class QLAI(MaverickAI):
 
         for dest in emptyLocations:
 
-            # Check if this move is to an empty square
+            # Check if a move can be made to that Posn
             if dest in friendlyMoveDestPosns:
 
                 #Check if it is a center square
@@ -239,7 +241,7 @@ class QLAI(MaverickAI):
                 totalEmptyPosnWeight += squareValue
 
         # Compress return value into range [-1..1]
-        return 1 - weightedReturn / totalEmptyPosnWeight * 2
+        return -1 + weightedReturn / totalEmptyPosnWeight * 2
 
     def _heuristicPiecesCovered(self, color, board):
         """Return a number representing how many of color's pieces are covered

@@ -569,6 +569,8 @@ class ChessBoard(object):
 
             if rank_delta_abs not in [1, 2]:
                 return False
+            elif file_delta_abs == 0 and destin_entry is not None:
+                return False  # Cannot move forward and capture
             elif rank_delta_abs == 1:
 
                 # Check if pawn is moving more than 1 space horizontally
@@ -596,9 +598,6 @@ class ChessBoard(object):
                     epCaptureP = epFlag and (toPosn.rankN == epCapRnk)
                     if destin_entry is None and not epCaptureP:
                         return False
-
-                elif file_delta_abs == 0 and destin_entry is not None:
-                    return False  # Cannot move forward and capture
 
             elif rank_delta_abs == 2:
                 if file_delta_abs != 0:
@@ -975,6 +974,68 @@ class ChessBoardUtils(object):
                         # Build ChessPosn for piece location
                         pieceLocations.append(ChessPosn(r, f))
         return pieceLocations
+
+    @staticmethod
+    def genRandomLegalBoard():
+        """Returns a random ChessBoard object  with neither king in check
+
+        @return: a ChessBoard object with a subset of the standard pieces
+                where neither king is in check"""
+
+        ## TODO (James): get this working for test board generation
+
+        # Mapping of piece types to tuples of form (max number,
+        #                    probability that one is placed at each iteration)
+        boardPieces = {ChessBoard.KING: (1, 1),
+                       ChessBoard.PAWN: (8, 0.5),
+                       ChessBoard.ROOK: (2, 0.3),
+                       ChessBoard.KNGT: (2, 0.4),
+                       ChessBoard.BISH: (2, 0.3),
+                       ChessBoard.QUEN: (1, 0.7)}
+
+        emptyStartLayout = [[None] * 8] * 8
+        # The board to be built up
+        board = ChessBoard(startLayout=emptyStartLayout)
+
+        # Keep track of the remaining empty posns
+        emptyPosns = []
+        for r in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
+            for f in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
+                emptyPosns.append(ChessPosn(r, f))
+
+        # Note the number of kings on the board.  Cannot check for check until
+        # kings are placed
+        numKingsPlaced = 0
+
+        for color in [ChessBoard.WHITE, ChessBoard.BLACK]:
+            otherColor = ChessBoard.getOtherColor(color)
+            for pieceType, placementTuple in boardPieces.iteritems():
+                numPcsToPlace = placementTuple[0]
+
+                # Try to place the specified number of pieces
+                while numPcsToPlace > 0:
+                    randNum = random.random()
+                    placementChance = placementTuple[1]
+                    if randNum <= placementChance:
+                        # Choose a remaining empty posn and place this piece
+                        emptyPosnIdx = random.randrange(0, len(emptyPosns))
+                        placementPosn = emptyPosns[emptyPosnIdx]
+                        # If this is an illegal placement, try again
+                        # But don't bother checking if we haven't placed kings
+                        if ((numKingsPlaced == 2) and
+                            board.isKingInCheck(otherColor)):
+                            break
+                        else:
+                            if pieceType == ChessBoard.KING:
+                                numKingsPlaced += 1
+
+                            #Place the piece and note the posn is non-empty
+
+                            board[placementPosn] = ChessPiece(color, pieceType)
+                            del emptyPosns[emptyPosnIdx]
+                    numPcsToPlace -= 1
+
+        return board
 
 
 class ChessMatch(object):
