@@ -15,10 +15,10 @@ class Test_maverick_players_ais_common(unittest.TestCase):
     def _assertEqLists(self, l1, l2):
 #        print "l1"
 #        for item in l1:
-#            print "\t{} (l1)".format(item)
+#            print "\t{}".format(item)
 #        print "l2"
 #        for item in l2:
-#            print "\t{} (l2)".format(item)
+#            print "\t{}".format(item)
 
         for item in l1:
             self.assertTrue(item in l2, "item not in l2: {}".format(item))
