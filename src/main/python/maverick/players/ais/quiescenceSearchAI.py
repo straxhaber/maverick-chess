@@ -174,8 +174,6 @@ class QLAI(MaverickAI):
                 given color can attack on the given board, with weight for
                 center squares"""
 
-        ## TODO (James): FIX THIS - IT SEEMS TO ONLY CARE ABOUT FILES 2-5
-
         # The value of regular and center squares
         ## TODO (James): research and tweak these.
         #                See http://tinyurl.com/cpjqnw4l

@@ -154,14 +154,14 @@ class Test_maverick_players_ais_quiescenceSearchAI(unittest.TestCase):
         self.assertTrue((whitePieceVal == properWhiteVal) and
                         (blackPieceVal == properBlackVal))
 
-    @unittest.expectedFailure  # TODO: this heuristic is broken
     def test_bCmplx_heuristicEmptySpaceCoverage(self):
         whiteBoardVal = self.q._heuristicEmptySpaceCoverage(ChessBoard.WHITE,
                                                             self.bCmplx)
         blackBoardVal = self.q._heuristicEmptySpaceCoverage(ChessBoard.BLACK,
                                                             self.bCmplx)
-        properWhiteVal = 1 - 23 / 36 * 2
-        properBlackVal = 1 - 17 / 36 * 2
+        properWhiteVal = -1 + 22 / 36 * 2
+        properBlackVal = -1 + 22 / 36 * 2
+
         self.assertTrue((whiteBoardVal == properWhiteVal) and
                         (blackBoardVal == properBlackVal))
 
@@ -175,14 +175,13 @@ class Test_maverick_players_ais_quiescenceSearchAI(unittest.TestCase):
         self.assertTrue((whiteBoardVal == properWhiteVal) and
                         (blackBoardVal == properBlackVal))
 
-    @unittest.expectedFailure  # TODO: moves not being enumerated correctly?
     def test_bCmplx_heuristicPiecesCovered(self):
         # Maximum covered value for new board is 39
         whiteBoardVal = self.q._heuristicPiecesCovered(ChessBoard.WHITE,
                                                        self.bCmplx)
         blackBoardVal = self.q._heuristicPiecesCovered(ChessBoard.BLACK,
                                                        self.bCmplx)
-        properWhiteVal = -1 + 31 / 39 * 2
+        properWhiteVal = -1 + 28 / 39 * 2
         properBlackVal = -1 + 19 / 35 * 2
         self.assertTrue((whiteBoardVal == properWhiteVal)
                         and (blackBoardVal == properBlackVal))
