@@ -14,8 +14,9 @@ from argparse import ArgumentParser
 import logging
 import random
 
-from maverick.players.ais.common import MaverickAI
 from maverick.data import ChessBoard
+from maverick.players.ais.common import MaverickAI
+from maverick.players.ais.analyzers.stateExpansion import enumPossBoardMoves
 
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
@@ -35,12 +36,13 @@ class RandomAI(MaverickAI):
         """TODO PyDoc"""
         color = ChessBoard.WHITE if self.isWhite else ChessBoard.BLACK
 
-        moveChoices = self.enumBoardMoves(board, color)
+        moveChoices = enumPossBoardMoves(board, color)
 
         move = random.choice(moveChoices)
 
         # Display move on console (TODO: move to maverick.ais.common)
         print(board.__str__(whitePerspective=self.isWhite))
+        print(board)  # TODO: Print en passant flags
         self.displayMessage("Moving {} to {}".format(move[0], move[1]))
 
         return move

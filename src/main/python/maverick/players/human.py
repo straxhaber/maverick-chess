@@ -22,6 +22,8 @@ __all__ = ["HumanGamer",
 
 class HumanGamer(MaverickPlayer):
     """Represents a human player connecting to the Maverick chess system."""
+    
+    ## TODO (mattsh): print "Waiting for player" once
 
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.human.HumanGamer")

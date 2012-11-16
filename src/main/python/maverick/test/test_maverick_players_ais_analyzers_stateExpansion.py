@@ -7,7 +7,7 @@ import unittest
 
 from maverick.data import ChessBoard, ChessPiece
 from maverick.data import ChessPosn
-from maverick.players.ais.common import MaverickAI
+from maverick.players.ais.analyzers.stateExpansion import enumPossBoardMoves
 
 
 class Test_maverick_players_ais_common(unittest.TestCase):
@@ -354,8 +354,8 @@ class Test_maverick_players_ais_common(unittest.TestCase):
         self.bRand4 = Test_maverick_players_ais_common._getRand4ChessBoard()
         self.bRand5 = Test_maverick_players_ais_common._getRand5ChessBoard()
 
-        self.bNewEnum = MaverickAI.enumBoardMoves(self.bNew, ChessBoard.WHITE)
-        self.bWD4Enum = MaverickAI.enumBoardMoves(self.bWD4, ChessBoard.BLACK)
+        self.bNewEnum = enumPossBoardMoves(self.bNew, ChessBoard.WHITE)
+        self.bWD4Enum = enumPossBoardMoves(self.bWD4, ChessBoard.BLACK)
 
         w = ChessBoard.WHITE
         b = ChessBoard.BLACK
@@ -564,11 +564,11 @@ class Test_maverick_players_ais_common(unittest.TestCase):
         self._allLegalMoves(self.bWD4, ChessBoard.BLACK, self.bWD4Enum)
 
     def test_bCmplx_white_allLegalMoves(self):
-        enum = MaverickAI.enumBoardMoves(self.bCmplx, ChessBoard.WHITE)
+        enum = enumPossBoardMoves(self.bCmplx, ChessBoard.WHITE)
         self._allLegalMoves(self.bCmplx, ChessBoard.WHITE, enum)
 
     def test_bCmplx_black_allLegalMoves(self):
-        enum = MaverickAI.enumBoardMoves(self.bCmplx, ChessBoard.BLACK)
+        enum = enumPossBoardMoves(self.bCmplx, ChessBoard.BLACK)
         self._allLegalMoves(self.bCmplx, ChessBoard.BLACK, enum)
 
     def test_bRand1_LegalWhiteKingMove(self):

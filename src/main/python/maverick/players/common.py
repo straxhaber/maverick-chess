@@ -31,7 +31,7 @@ class MaverickPlayer(MaverickClient):
     # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
-    SLEEP_TIME = 0.2
+    SLEEP_TIME = 0.5
     """Amount of time to wait between requests when polling"""
 
     def __init__(self, host=None, port=None):
