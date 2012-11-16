@@ -14,9 +14,7 @@ import logging
 import time
 import random
 
-from maverick.data import ChessBoard
 from maverick.data import ChessMatch
-from maverick.data import ChessPosn
 from maverick.players.common import MaverickPlayer
 
 __all__ = ["MaverickAI",
