@@ -39,7 +39,7 @@ class RandomAI(MaverickAI):
 
         move = random.choice(moveChoices)
 
-        # Display move on console
+        # Display move on console (TODO: move to maverick.ais.common)
         print(board.__str__(whitePerspective=self.isWhite))
         self.displayMessage("Moving {} to {}".format(move[0], move[1]))
 

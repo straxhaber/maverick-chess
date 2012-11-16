@@ -13,6 +13,10 @@ from maverick.players.ais.common import MaverickAI
 class Test_maverick_players_ais_common(unittest.TestCase):
 
     @staticmethod
+    def _getbWD4():
+        return ChessBoard().getResultOfPly(ChessPosn(1, 3), ChessPosn(3, 3))
+
+    @staticmethod
     def _getComplxChessBoard():
         w = ChessBoard.WHITE
         b = ChessBoard.BLACK
@@ -122,82 +126,11 @@ class Test_maverick_players_ais_common(unittest.TestCase):
 
     def setUp(self):
         self.bNew = ChessBoard()
+        self.bWD4 = Test_maverick_players_ais_common._getbWD4()
+        self.bCmplx = Test_maverick_players_ais_common._getComplxChessBoard()
+
         self.bNewEnum = MaverickAI.enumBoardMoves(self.bNew, ChessBoard.WHITE)
-
-        self.bWD4 = self.bNew.getResultOfPly(ChessPosn(1, 3), ChessPosn(3, 3))
         self.bWD4Enum = MaverickAI.enumBoardMoves(self.bWD4, ChessBoard.BLACK)
-
-        w = ChessBoard.WHITE
-        b = ChessBoard.BLACK
-
-        self.bCmplx = ChessBoard(startLayout=[[ChessPiece(w, ChessBoard.ROOK),
-                                               ChessPiece(w, "N"),
-                                               ChessPiece(w, "B"),
-                                               ChessPiece(b, "R"),
-                                               None,
-                                               ChessPiece(w, "B"),
-                                               None,
-                                               None],
-                                              [ChessPiece(w, "P"),
-                                               ChessPiece(w, "P"),
-                                               None,
-                                               None,
-                                               ChessPiece(w, "K"),
-                                               None,
-                                               ChessPiece(w, "P"),
-                                               ChessPiece(w, "P")],
-                                              [None,
-                                               None,
-                                               None,
-                                               ChessPiece(w, "P"),
-                                               None,
-                                               None,
-                                               None,
-                                               None],
-                                              [None,
-                                               None,
-                                               ChessPiece(w, "Q"),
-                                               ChessPiece(w, "R"),
-                                               None,
-                                               None,
-                                               ChessPiece(b, "N"),
-                                               None],
-                                              [None,
-                                               ChessPiece(w, "P"),
-                                               None,
-                                               ChessPiece(w, "N"),
-                                               None,
-                                               None,
-                                               None,
-                                               None],
-                                              [None,
-                                               None,
-                                               None,
-                                               None,
-                                               ChessPiece(w, "P"),
-                                               None,
-                                               ChessPiece(w, "P"),
-                                               None],
-                                              [ChessPiece(b, "P"),
-                                               ChessPiece(b, "P"),
-                                               ChessPiece(b, "P"),
-                                               ChessPiece(b, "P"),
-                                               None,
-                                               ChessPiece(b, "P"),
-                                               ChessPiece(b, "P"),
-                                               ChessPiece(b, "P")],
-                                              [ChessPiece(b, "R"),
-                                               ChessPiece(b, "N"),
-                                               None,
-                                               ChessPiece(b, "Q"),
-                                               ChessPiece(b, "K"),
-                                               ChessPiece(b, "B"),
-                                               None,
-                                               None]],
-                                 startEnpassantFlags={b: [False] * 8,
-                                                      w: [False] * 8},
-                                 startCanCastleFlags={b: (False, False),
-                                                      w: (True, False)})
 
     def test_newB_correctValues(self):
         # "Should be 20 possible moves at start")
@@ -264,12 +197,10 @@ class Test_maverick_players_ais_common(unittest.TestCase):
     def test_bWD4_allLegalMoves(self):
         self._allLegalMoves(self.bWD4, ChessBoard.BLACK, self.bWD4Enum)
 
-    @unittest.expectedFailure  # TODO: legalMoves is broken
     def test_bCmplx_white_allLegalMoves(self):
         enum = MaverickAI.enumBoardMoves(self.bCmplx, ChessBoard.WHITE)
         self._allLegalMoves(self.bCmplx, ChessBoard.WHITE, enum)
 
-    @unittest.expectedFailure  # TODO: legalMoves is broken
     def test_bCmplx_black_allLegalMoves(self):
         enum = MaverickAI.enumBoardMoves(self.bCmplx, ChessBoard.BLACK)
         self._allLegalMoves(self.bCmplx, ChessBoard.BLACK, enum)

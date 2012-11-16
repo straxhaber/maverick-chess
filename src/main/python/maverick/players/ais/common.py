@@ -111,21 +111,23 @@ class MaverickAI(MaverickPlayer):
         if board[oneAhead] is None:
             moves.append(oneAhead)
 
-        if (fromPosn.rankN == pawnStartRank and board[oneAhead] is None):
+        if (fromPosn.rankN == pawnStartRank and
+            board[oneAhead] is None and
+            board[twoAhead] is None):
             moves.append(twoAhead)
 
-        for rankDelta, fileDelta in [(1, -1), (1, 1)]:
-            toPosn = fromPosn.getTranslatedBy(rankDelta, fileDelta)
+        otherColor = ChessBoard.getOtherColor(color)
+        otherPawnStartRank = ChessBoard.PAWN_STARTING_RANKS[otherColor]
+        for fileDelta in [-1, 1]:
+            toPosn = fromPosn.getTranslatedBy(pawnDirection, fileDelta)
+
             if MaverickAI.__canMoveTo_isOnBoard(toPosn):
-                otherCol = ChessBoard.getOtherColor(color)
-                capturingP = (board[toPosn] is not None and
-                              board[toPosn].color == otherCol)
-                takeEnP_capture = board[fromPosn.getTranslatedBy(0, fileDelta)]
-                takeEnP = (board[toPosn] is None and
-                           takeEnP_capture is not None and
-                           takeEnP_capture.pieceType == ChessBoard.PAWN and
-                           board.flag_enpassant[otherCol][toPosn.fileN])
-                if capturingP or takeEnP:
+                enemyP = (board[toPosn] is not None and
+                          board[toPosn].color == otherColor)
+                enpP = (board[toPosn] is None and
+                        board.flag_enpassant[otherColor][toPosn.fileN] and
+                        twoAhead.rankN == otherPawnStartRank)
+                if enemyP or enpP:
                     moves.append(toPosn)
 
         return moves
