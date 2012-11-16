@@ -164,6 +164,154 @@ class Test_maverick_players_ais_common(unittest.TestCase):
                           startCanCastleFlags={b: (False, False),
                                                w: (False, False)})
 
+    @staticmethod
+    def _getRand4ChessBoard():
+        w = ChessBoard.WHITE
+        b = ChessBoard.BLACK
+
+        return ChessBoard(startLayout=[[None,
+                                        ChessPiece(w, ChessBoard.ROOK),
+                                        ChessPiece(w, "B"),
+                                        ChessPiece(w, "Q"),
+                                        None,
+                                        None,
+                                        None,
+                                        ChessPiece(w, "R")],
+                                       [None,
+                                        ChessPiece(w, "P"),
+                                        None,
+                                        ChessPiece(w, "K"),
+                                        None,
+                                        ChessPiece(w, "P"),
+                                        None,
+                                        None],
+                                       [ChessPiece(w, "P"),
+                                        None,
+                                        None,
+                                        None,
+                                        ChessPiece(w, "P"),
+                                        None,
+                                        None,
+                                        ChessPiece(w, "P")],
+                                       [ChessPiece(b, "P"),
+                                        None,
+                                        ChessPiece(w, "P"),
+                                        ChessPiece(b, "P"),
+                                        None,
+                                        None,
+                                        ChessPiece(w, "P"),
+                                        ChessPiece(b, "P")],
+                                       [None,
+                                        None,
+                                        None,
+                                        None,
+                                        ChessPiece(b, "P"),
+                                        ChessPiece(w, "B"),
+                                        ChessPiece(w, "N"),
+                                        None],
+                                       [ChessPiece(b, "P"),
+                                        None,
+                                        None,
+                                        None,
+                                        None,
+                                        None,
+                                        ChessPiece(b, "P"),
+                                        ChessPiece(b, "B")],
+                                       [ChessPiece(b, "N"),
+                                        None,
+                                        None,
+                                        ChessPiece(b, "P"),
+                                        None,
+                                        ChessPiece(b, "P"),
+                                        ChessPiece(b, "R"),
+                                        None],
+                                       [ChessPiece(b, "R"),
+                                        None,
+                                        ChessPiece(b, "B"),
+                                        ChessPiece(b, "Q"),
+                                        ChessPiece(b, "K"),
+                                        None,
+                                        None,
+                                        None]],
+                          startEnpassantFlags={b: [False] * 8,
+                                               w: [False] * 8},
+                          startCanCastleFlags={b: (True, False),
+                                               w: (False, False)})
+
+    @staticmethod
+    def _getRand5ChessBoard():
+        w = ChessBoard.WHITE
+        b = ChessBoard.BLACK
+
+        return ChessBoard(startLayout=[[None,
+                                        None,
+                                        None,
+                                        None,
+                                        None,
+                                        ChessPiece("W", "R"),
+                                        ChessPiece("W", "N"),
+                                        ChessPiece("W", "R")],
+                                       [None,
+                                        None,
+                                        None,
+                                        ChessPiece("W", "K"),
+                                        None,
+                                        None,
+                                        ChessPiece("W", "P"),
+                                        None],
+                                       [None,
+                                        ChessPiece("B", "P"),
+                                        ChessPiece("W", "P"),
+                                        ChessPiece("W", "P"),
+                                        None,
+                                        ChessPiece("W", "P"),
+                                        None,
+                                        None],
+                                       [ChessPiece("W", "P"),
+                                        None,
+                                        None,
+                                        ChessPiece("B", "Q"),
+                                        None,
+                                        None,
+                                        ChessPiece("B", "N"),
+                                        ChessPiece("W", "P")],
+                                       [ChessPiece("B", "P"),
+                                        ChessPiece("W", "N"),
+                                        None,
+                                        None,
+                                        None,
+                                        ChessPiece("B", "P"),
+                                        None,
+                                        None],
+                                       [None,
+                                        ChessPiece("W", "Q"),
+                                        None,
+                                        None,
+                                        None,
+                                        ChessPiece("W", "B"),
+                                        ChessPiece("B", "P"),
+                                        None],
+                                       [None,
+                                        ChessPiece("B", "P"),
+                                        None,
+                                        None,
+                                        ChessPiece("B", "P"),
+                                        ChessPiece("B", "K"),
+                                        None,
+                                        ChessPiece("B", "P")],
+                                       [ChessPiece("B", "R"),
+                                        ChessPiece("B", "N"),
+                                        ChessPiece("B", "B"),
+                                        None,
+                                        None,
+                                        None,
+                                        None,
+                                        ChessPiece("B", "R")]],
+                          startEnpassantFlags={'B': [False] * 8,
+                                               'W': [False] * 8},
+                          startCanCastleFlags={'B': [False, False],
+                                               'W': [False, False]})
+
     def _assertEqLists(self, l1, l2):
 #        print "l1"
 #        for item in l1:
@@ -203,6 +351,8 @@ class Test_maverick_players_ais_common(unittest.TestCase):
         self.bWD4 = Test_maverick_players_ais_common._getbWD4()
         self.bCmplx = Test_maverick_players_ais_common._getComplxChessBoard()
         self.bRand3 = Test_maverick_players_ais_common._getRand3ChessBoard()
+        self.bRand4 = Test_maverick_players_ais_common._getRand4ChessBoard()
+        self.bRand5 = Test_maverick_players_ais_common._getRand5ChessBoard()
 
         self.bNewEnum = MaverickAI.enumBoardMoves(self.bNew, ChessBoard.WHITE)
         self.bWD4Enum = MaverickAI.enumBoardMoves(self.bWD4, ChessBoard.BLACK)
@@ -435,5 +585,15 @@ class Test_maverick_players_ais_common(unittest.TestCase):
         self.assertTrue(self.bRand3.isLegalMove(ChessBoard.BLACK,
                                                 ChessPosn(4, 2),
                                                 ChessPosn(3, 2)))
+
+    def test_bRand4_LegalWhiteBishopMove(self):
+        self.assertTrue(self.bRand4.isLegalMove(ChessBoard.WHITE,
+                                        ChessPosn(4, 5),
+                                        ChessPosn(6, 3)))
+
+    def test_bRand5_LegalWhiteBishopMove(self):
+        self.assertTrue(self.bRand5.isLegalMove(ChessBoard.BLACK,
+                                        ChessPosn(3, 3),
+                                        ChessPosn(2, 3)))
 if __name__ == "__main__":
     unittest.main()

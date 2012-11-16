@@ -124,14 +124,13 @@ class Test_maverick_players_ais_quiescenceSearchAI(unittest.TestCase):
                                                            self.bNew)
         self.assertTrue((whiteBoardVal == 1) and (blackBoardVal == 1))
 
-    @unittest.expectedFailure  # TODO: moves not being enumerated correctly?
     def test_newB_heuristicPiecesCovered(self):
         # Maximum covered value for new board is 39
         whiteBoardVal = self.q._heuristicPiecesCovered(ChessBoard.WHITE,
                                                        self.bNew)
         blackBoardVal = self.q._heuristicPiecesCovered(ChessBoard.BLACK,
                                                        self.bNew)
-        properRetVal = -1 + 21 / 39 * 2
+        properRetVal = -1 + 29 / 39 * 2
         self.assertTrue((whiteBoardVal == properRetVal)
                         and (blackBoardVal == properRetVal))
 
