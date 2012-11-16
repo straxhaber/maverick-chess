@@ -377,13 +377,18 @@ class ChessBoard(object):
             iterStart = ChessBoard.BOARD_LAYOUT_SIZE - 1
             iterStop = -1
             iterStep = -1
+
+            letters = [""] + list(ChessBoard.HUMAN_FILE_LETTERS)
         else:
             iterStart = 0
             iterStop = ChessBoard.BOARD_LAYOUT_SIZE
             iterStep = 1
 
+            letters = list(ChessBoard.HUMAN_FILE_LETTERS) + [""]
+            letters.reverse()
+
         boardSep = " | "
-        header = "    A    B    C    D    E    F    G    H"
+        header = "    ".join(letters)
         barrier = "  -----------------------------------------"
 
         boardStrA = []
@@ -391,10 +396,13 @@ class ChessBoard(object):
         boardStrA.append(barrier)
         for rankN in xrange(iterStart, iterStop, iterStep):
             fStr = "{1}{0}{2}{0}{1}"
+            pieceLetters = [ChessBoard.__str_getPieceChar(c)
+                            for c in self.layout[rankN]]
+            if not whitePerspective:
+                pieceLetters.reverse()
             rS = fStr.format(boardSep,
                              rankN + 1,
-                             boardSep.join([ChessBoard.__str_getPieceChar(c)
-                                            for c in self.layout[rankN]]))
+                             boardSep.join(pieceLetters))
             boardStrA.append(rS)
             boardStrA.append(barrier)
         boardStrA.append(header)
