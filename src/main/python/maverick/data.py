@@ -593,7 +593,7 @@ class ChessBoard(object):
                     else:
                         epCapRnk = ChessBoard.PAWN_STARTING_RANKS[oppClr] - 1
 
-                    # Get en passant flag for this file
+                    # Get en passant flag for destination file
                     epFlag = self.flag_enpassant[oppClr][toPosn.fileN]
 
                     # Calculate whether an en passant capture would occur
@@ -674,7 +674,7 @@ class ChessBoard(object):
                 kingStartRank = 7
 
             # Check that king only moves more than one square when castling
-            if file_delta_abs != 1 or rank_delta_abs != 1:
+            if file_delta_abs not in [0, 1] or rank_delta_abs not in [0, 1]:
 
                 # Check for illegal kingside castle
                 if (toPosn.fileN == castleFileKingside and
@@ -683,8 +683,8 @@ class ChessBoard(object):
                         return False
 
                 # Check for illegal queenside castle
-                elif (toPosn.fileN == castleFileQueenside and
-                      toPosn.rankN == kingStartRank):
+                elif ((toPosn.fileN == castleFileQueenside) and
+                      (toPosn.rankN == kingStartRank)):
                     if not castleFlagQueenside:
                         return False
 
