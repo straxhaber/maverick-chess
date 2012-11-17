@@ -49,9 +49,7 @@ class MaverickAI(MaverickPlayer):
     def _showPlayerWelcome(self):
         """Display welcome messages if appropriate"""
         MaverickAI._logger.info("I, %s (%d), have entered game %d",
-                                self.name,
-                                self.playerID,
-                                self.gameID)
+                                self.name, self.playerID, self.gameID)
 
     def _showPlayerGoodbye(self):
         """Display goodbye messages if appropriate"""
