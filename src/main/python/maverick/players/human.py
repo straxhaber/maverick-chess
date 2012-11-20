@@ -22,7 +22,7 @@ __all__ = ["HumanGamer",
 
 class HumanGamer(MaverickPlayer):
     """Represents a human player connecting to the Maverick chess system."""
-    
+
     ## TODO (mattsh): print "Waiting for player" once
 
     # Initialize class _logger
@@ -119,19 +119,15 @@ class HumanGamer(MaverickPlayer):
         self.printBoard()
         self.displayMessage("Now exiting. Run again to enter a new game.")
 
+    def _showPlayerMove(self, board, fromPosn, toPosn):
+        pass  # User doesn't need a repeat of the move they just entered
+
     def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Handle a bad move in some smart way"""
         self.displayMessage("Server didn't accept move; please retry.")
         logStrF = "Error message from server: {0}".format(errMsg)
         self.displayMessage(logStrF)
         HumanGamer._logger.debug(logStrF)
-
-    def printBoard(self):
-        """Print out an ASCII version of the chess board"""
-        board = self._request_getState()["board"]
-        print
-        print(board.__str__(whitePerspective=self.isWhite))
-        print
 
 
 def runHumanClient(host=None, port=None):

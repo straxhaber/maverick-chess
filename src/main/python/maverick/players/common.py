@@ -65,9 +65,24 @@ class MaverickPlayer(MaverickClient):
         """Display goodbye messages if appropriate"""
         raise NotImplementedError("Must be overridden by the extending class")
 
+    def _showPlayerMove(self, board, fromPosn, toPosn):
+        """Override to modify display of players' moves / associated boards"""
+
+        self.printBoard()
+        print("can castle flags: {}".format(board.flag_canCastle))
+        print("en passant flags: {}".format(board.flag_enpassant))
+        self.displayMessage("Moving {} to {}".format(fromPosn, toPosn))
+
     def displayMessage(self, message):
         """Display a message for the user"""
         print(" -- {0}".format(message))
+
+    def printBoard(self):
+        """Print out an ASCII version of the chess board"""
+        board = self._request_getState()["board"]
+        print
+        print(board.__str__(whitePerspective=self.isWhite))
+        print
 
     def startPlaying(self):
         """Enters the player into an ongoing game (blocks until successful)
@@ -95,9 +110,14 @@ class MaverickPlayer(MaverickClient):
         # While the game is in progress
         while self._request_getStatus() == ChessMatch.STATUS_ONGOING:
 
+            # Don't want to print the message many times (keep track of this)
+            waitMessagePrintedP = False
+
             # Wait until it is your turn
             while not self._request_isMyTurn():
-                self.displayMessage("Waiting until turn")
+                if not waitMessagePrintedP:
+                    self.displayMessage("Waiting until turn")
+                    waitMessagePrintedP = True
                 time.sleep(MaverickPlayer.SLEEP_TIME)
 
                 # Break if the game was stopped while sleeping
@@ -107,6 +127,8 @@ class MaverickPlayer(MaverickClient):
             else:  # It is now our turn (wrapped in else in case of break)
                 board = self._request_getState()["board"]
                 (fromPosn, toPosn) = self.getNextMove(board)
+
+                self._showPlayerMove(board, fromPosn, toPosn)
 
                 try:
                     self._request_makePly(fromPosn, toPosn)

@@ -33,18 +33,10 @@ class RandomAI(MaverickAI):
     logging.basicConfig(level=logging.INFO)
 
     def getNextMove(self, board):
-        """TODO PyDoc"""
+        """Pick a random move from an enumeration of legal moves"""
         color = ChessBoard.WHITE if self.isWhite else ChessBoard.BLACK
-
         moveChoices = enumPossBoardMoves(board, color)
-
         move = random.choice(moveChoices)
-
-        # Display move on console (TODO: move to maverick.ais.common)
-        print(board.__str__(whitePerspective=self.isWhite))
-        print(board)  # TODO: Print en passant flags
-        self.displayMessage("Moving {} to {}".format(move[0], move[1]))
-
         return move
 
 
