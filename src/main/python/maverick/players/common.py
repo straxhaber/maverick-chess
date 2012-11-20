@@ -31,7 +31,7 @@ class MaverickPlayer(MaverickClient):
     # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
-    SLEEP_TIME = 0.5
+    SLEEP_TIME = 0.1
     """Amount of time to wait between requests when polling"""
 
     def __init__(self, host=None, port=None):
@@ -92,8 +92,11 @@ class MaverickPlayer(MaverickClient):
         self.gameID = self._request_joinGame(self.playerID)
 
         # Block until game has started
+        gameStartWaitMessageDisplayedP = False
         while self._request_getStatus() == ChessMatch.STATUS_PENDING:
-            self.displayMessage("Waiting until the game starts")
+            if not gameStartWaitMessageDisplayedP:
+                self.displayMessage("Waiting until the game starts")
+                gameStartWaitMessageDisplayedP = True
             time.sleep(MaverickPlayer.SLEEP_TIME)
 
         # NOTE: Player is now in a game that is not pending
