@@ -9,7 +9,7 @@ __version__ = "1.0"
 # All Rights Reserved. Not licensed for use without express permission.
 ###############################################################################
 
-## TODO (James): For ALL MAVERICK CODE - license as BeerWare
+# # TODO (James): For ALL MAVERICK CODE - license as BeerWare
 
 import copy
 import logging
@@ -282,7 +282,7 @@ class ChessBoard(object):
         if movedPiece.pieceType == ChessBoard.KING and abs(fileDelta) == 2:
             # Find posn of the rook to be moved
 
-            #Check if this was a kingside castle
+            # Check if this was a kingside castle
             if fileDelta > 0:
                 movedRookPosn = ChessPosn(toPosn.rankN, 7)
                 rookDestPosn = ChessPosn(toPosn.rankN, 5)
@@ -566,6 +566,7 @@ class ChessBoard(object):
 
         # Check move legality for individual piece types
         if origin_entry.pieceType == ChessBoard.PAWN:
+            ChessBoard._logger.debug("Found moved piecetype to be PAWN")
 
             # Determine the correct starting rank and direction for each color
             pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
@@ -576,16 +577,20 @@ class ChessBoard(object):
             # Check that pawns only move forward
             if ((color == ChessBoard.WHITE and vertDist < 0) or
                 (color == ChessBoard.BLACK and vertDist > 0)):
+                ChessBoard._logger.debug("Illegal backward movement")
                 return False
 
             if rank_delta_abs not in [1, 2]:
+                ChessBoard._logger.debug("Illegal forward move distance")
                 return False
             elif file_delta_abs == 0 and destin_entry is not None:
+                ChessBoard._logger.debug("Illegal forward capture")
                 return False  # Cannot move forward and capture
             elif rank_delta_abs == 1:
 
                 # Check if pawn is moving more than 1 space horizontally
                 if file_delta_abs not in [0, 1]:
+                    ChessBoard._logger.debug("Illegal horiz. move distance")
                     return False
 
                 # Check if pawn is moving diagonally without capturing
@@ -608,66 +613,83 @@ class ChessBoard(object):
                     # in this ply
                     epCaptureP = epFlag and (toPosn.rankN == epCapRnk)
                     if destin_entry is None and not epCaptureP:
+                        ChessBoard._logger.debug("Illegal horiz. move")
                         return False
 
             elif rank_delta_abs == 2:
+                ChessBoard._logger.debug("Pawn moving forward two spaces")
                 if file_delta_abs != 0:
+                    ChessBoard._logger.debug("Illegal horiz. move")
                     return False  # Pawns cannot move up 2 and left/right
                 elif fromPosn.rankN != pawnStartRank:
+                    ChessBoard._logger.debug("Illegal forward move")
                     return False  # Pawns can move two spaces only on 1st move
                 elif not ChessBoard.__isLegalMove_isClearLinearPath(self,
                                                                     fromPosn,
                                                                     toPosn):
+                    ChessBoard._logger.debug("Illegal move over piece")
                     return False  # Pawns can't fly over other pieces
 
         elif origin_entry.pieceType == ChessBoard.ROOK:
+            ChessBoard._logger.debug("Found moved piecetype to be ROOK")
 
-            #check that piece either moves up/down or left/right, but not both
+            # check that piece either moves up/down or left/right, but not both
             if rank_delta_abs != 0 and file_delta_abs != 0:
+                ChessBoard._logger.debug("Illegal diagonal move")
                 return False
 
-            #check that path between origin and destination is clear
+            # check that path between origin and destination is clear
             if not ChessBoard.__isLegalMove_isClearLinearPath(self,
                                                               fromPosn,
                                                               toPosn):
+                ChessBoard._logger.debug("Illegal move over piece")
                 return False
 
         elif origin_entry.pieceType == ChessBoard.KNGT:
+            ChessBoard._logger.debug("Found moved piecetype to be KNGT")
 
             # Check that destination rank is offset by 1 and file is offset by
             # 2, or vice versa.
             if  ((rank_delta_abs == 2 and file_delta_abs != 1) or
                  (rank_delta_abs == 1 and file_delta_abs != 2) or
                  (rank_delta_abs != 1 and rank_delta_abs != 2)):
+                ChessBoard._logger.debug("Non L-shaped move")
                 return False
 
         elif origin_entry.pieceType == ChessBoard.BISH:
+            ChessBoard._logger.debug("Found moved piecetype to be BISH")
 
             # Check that piece moves diagonally
             if rank_delta_abs != file_delta_abs:
+                ChessBoard._logger.debug("Illegal non-diagonal move")
                 return False
 
             # Check that path between origin and destination is clear
             if not ChessBoard.__isLegalMove_isClearLinearPath(self,
                                                               fromPosn,
                                                               toPosn):
+                ChessBoard._logger.debug("Illegal move over piece")
                 return False
 
         elif origin_entry.pieceType == ChessBoard.QUEN:
+            ChessBoard._logger.debug("Found moved piecetype to be QUEN")
 
             # Check that if piece isn't moving horizontally or vertically, it's
             # moving diagonally
             if (rank_delta_abs != 0 and file_delta_abs != 0 and
                 rank_delta_abs != file_delta_abs):
+                ChessBoard._logger.debug("Illegal move path shape")
                 return False
 
             # Check that path between origin and destination is clear
             if not ChessBoard.__isLegalMove_isClearLinearPath(self,
                                                               fromPosn,
                                                               toPosn):
+                ChessBoard._logger.debug("Illegal move over piece")
                 return False
 
         elif origin_entry.pieceType == ChessBoard.KING:
+            ChessBoard._logger.debug("Found moved piecetype to be KING")
 
             # Retrieve the kingside and queenside castle flags for this color
             castleFlagQueenside = self.flag_canCastle[color][0]
@@ -688,29 +710,35 @@ class ChessBoard(object):
                 if (toPosn.fileN == castleFileKingside and
                     toPosn.rankN == kingStartRank):
                     if not castleFlagKingside:
+                        ChessBoard._logger.debug("Illegal kingside castle")
                         return False
 
                 # Check for illegal queenside castle
                 elif ((toPosn.fileN == castleFileQueenside) and
                       (toPosn.rankN == kingStartRank)):
                     if not castleFlagQueenside:
+                        ChessBoard._logger.debug("Illegal queenside castle")
                         return False
 
                 # Otherwise, moves of more than one square are illegal
                 else:
+                    ChessBoard._logger.debug("Illegal move distance")
                     return False
 
         # If we own a piece at the destination, we cannot move there
         if destin_entry is not None and destin_entry.color == color:
+            ChessBoard._logger.debug("Illegal friendly piece capture")
             return False
 
         # Check that a move is being made
         elif fromPosn == toPosn:
+            ChessBoard._logger.debug("Illegal 0-distance move")
             return False
 
         # Check that the proposed move is to a square on the board
         elif (toPosn.rankN not in range(0, 8) or
               toPosn.fileN not in range(0, 8)):
+            ChessBoard._logger.debug("Illegal move off of board")
             return False
 
         # The ply could be made, but may result in a check
@@ -720,7 +748,9 @@ class ChessBoard(object):
             boardAfterMove = self.getResultOfPly(fromPosn, toPosn)
 
             # Check that the king would not be in check after the move
+            ChessBoard._logger.debug("Checking for move to in-check state")
             if boardAfterMove.isKingInCheck(color)[0]:
+                ChessBoard._logger.debug("Illegal move to in-check state")
                 return False
             else:
                 return True  # All of the error checks passed
@@ -822,7 +852,7 @@ class ChessBoard(object):
         checkPiecePosn = checkInfo[1]
 
         # Find the king whose checkmate status is in question
-        chkdKingLoc = self.__isLegalMove_findKings[color]
+        chkdKingLoc = self.__isLegalMove_findKings()[color]
 
         # Get a list of locations that, if moved to, might alleviate check
         interruptLocations = ChessBoard.__isLegalMove_getInterruptSquares(
@@ -924,7 +954,7 @@ class ChessBoard(object):
                 if f not in [fromPosn.fileN, toPosn.fileN]:
                     path_file_values.append(f)
 
-        #Check if the path is horizontal
+        # Check if the path is horizontal
         elif rank_delta_abs == 0:
             # Build up lists of rank and file values to be included in path
             for f in range(fromPosn.fileN, toPosn.fileN, fileStep):
@@ -933,9 +963,9 @@ class ChessBoard(object):
                     path_file_values.append(f)
             path_rank_values = [fromPosn.rankN] * len(path_file_values)
 
-        #Check if the path is vertical
+        # Check if the path is vertical
         elif rank_delta_abs != 0:
-            #Build up lists of rank and file values to be included in path
+            # Build up lists of rank and file values to be included in path
             for r in range(fromPosn.rankN, toPosn.rankN, rankStep):
                 # Check that origin and destination aren't included
                 if r not in [fromPosn.rankN, toPosn.rankN]:
@@ -993,7 +1023,7 @@ class ChessBoardUtils(object):
         @return: a ChessBoard object with a subset of the standard pieces
                 where neither king is in check"""
 
-        ## TODO (James): get this working for test board generation
+        # # TODO (James): get this working for test board generation
 
         # Mapping of piece types to tuples of form (max number,
         #                    probability that one is placed at each iteration)
@@ -1040,7 +1070,7 @@ class ChessBoardUtils(object):
                             if pieceType == ChessBoard.KING:
                                 numKingsPlaced += 1
 
-                            #Place the piece and note the posn is non-empty
+                            # Place the piece and note the posn is non-empty
 
                             board[placementPosn] = ChessPiece(color, pieceType)
                             del emptyPosns[emptyPosnIdx]
@@ -1057,12 +1087,12 @@ class ChessMatch(object):
     _logger.setLevel("INFO")
 
     # Constants for game status
-    STATUS_PENDING = "PENDING"   # Game is waiting for players
-    STATUS_ONGOING = "ONGOING"   # Game is in progress
-    STATUS_BLACK_WON = "W_BLACK"   # Black won the game
-    STATUS_WHITE_WON = "W_WHITE"   # White won the game
-    STATUS_DRAWN = "W_DRAWN"   # White won the game
-    STATUS_CANCELLED = "CANCELD"   # Game was halted early
+    STATUS_PENDING = "PENDING"  # Game is waiting for players
+    STATUS_ONGOING = "ONGOING"  # Game is in progress
+    STATUS_BLACK_WON = "W_BLACK"  # Black won the game
+    STATUS_WHITE_WON = "W_WHITE"  # White won the game
+    STATUS_DRAWN = "W_DRAWN"  # White won the game
+    STATUS_CANCELLED = "CANCELD"  # Game was halted early
 
     def __init__(self, firstPlayerID=None):
         """Initialize a new chess match with initial state
@@ -1120,6 +1150,7 @@ class ChessMatch(object):
 
             if self.board.makePly(color, fromPosn, toPosn):
                 # Check for checkmates
+                ChessMatch._logger.debug("Checking for end of game")
                 if self.board.isKingCheckmated(ChessBoard.WHITE):
                     self.status = ChessMatch.STATUS_BLACK_WON
                 elif self.board.isKingCheckmated(ChessBoard.BLACK):
