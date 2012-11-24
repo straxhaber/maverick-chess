@@ -882,8 +882,8 @@ class ChessBoard(object):
         possibleKingMoves = []  # List of tuples of possible king moves
 
         # If no alleviating moves found, enumerate king's possible moves
-        for r in range(chkdKingLoc.rankN - 1, chkdKingLoc.rankN + 1):
-            for f in range(chkdKingLoc.fileN - 1, chkdKingLoc.fileN + 1):
+        for r in range(chkdKingLoc.rankN - 1, chkdKingLoc.rankN + 2):
+            for f in range(chkdKingLoc.fileN - 1, chkdKingLoc.fileN + 2):
                 if r != chkdKingLoc.rankN or f != chkdKingLoc.fileN:
 
                     # Build ChessPosn object to append to list
@@ -899,7 +899,7 @@ class ChessBoard(object):
 
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
-                if not boardAfterMove.isKingInCheck(color):
+                if not (boardAfterMove.isKingInCheck(color)[0]):
                     logStrF = "Found that %s is not in checkmate"
                     ChessBoard._logger.debug(logStrF, color)
                     return False
