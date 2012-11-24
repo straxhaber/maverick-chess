@@ -4,6 +4,8 @@ Created on Nov 16, 2012
 @author: mattsh
 '''
 
+from __future__ import division
+
 import copy
 
 from maverick.data import ChessBoard
@@ -26,8 +28,7 @@ _maxTotalPieceVal = (8 * _pieceValues[ChessBoard.PAWN] +
                      2 * _pieceValues[ChessBoard.KNGT] +
                      2 * _pieceValues[ChessBoard.BISH] +
                      2 * _pieceValues[ChessBoard.ROOK] +
-                     1 * _pieceValues[ChessBoard.QUEN] +
-                     1 * _pieceValues[ChessBoard.KNGT])
+                     1 * _pieceValues[ChessBoard.QUEN])
 """The sum of piece values for a full set of one player's chess pieces"""
 
 

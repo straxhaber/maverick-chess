@@ -167,6 +167,12 @@ class Test_maverick_players_ais_common(unittest.TestCase):
                                       ChessPosn(3, 3),
                                       ChessPosn(2, 3)))
 
+    @unittest.expectedFailure
+    def test_bRand6_WhiteInCheckmate(self):
+        b = commonTest.getBoardRand6()
+        print b
+        self.assertFalse(b.isKingCheckmated(ChessBoard.WHITE))
+
 
 if __name__ == "__main__":
     unittest.main()

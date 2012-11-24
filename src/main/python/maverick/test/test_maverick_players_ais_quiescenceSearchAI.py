@@ -78,14 +78,14 @@ class Test_maverick_players_ais_quiescenceSearchAI(unittest.TestCase):
                                             commonTest.getBoardComplex())
         properWhiteVal = (39 - 19.5) / 19.5
         properBlackVal = (35 - 19.5) / 19.5
+
         self.assertTrue((whitePieceVal == properWhiteVal) and
                         (blackPieceVal == properBlackVal))
 
     def test_bCmplx_heuristicEmptySpaceCoverage(self):
-        whiteBoardVal = heuristicEmptySpaceCvrg(ChessBoard.WHITE,
-                                                commonTest.getBoardComplex())
-        blackBoardVal = heuristicEmptySpaceCvrg(ChessBoard.BLACK,
-                                                commonTest.getBoardComplex())
+        b = commonTest.getBoardComplex()
+        whiteBoardVal = heuristicEmptySpaceCvrg(ChessBoard.WHITE, b)
+        blackBoardVal = heuristicEmptySpaceCvrg(ChessBoard.BLACK, b)
         properWhiteVal = -1 + 22 / 36 * 2
         properBlackVal = -1 + 22 / 36 * 2
 
