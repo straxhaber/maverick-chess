@@ -1183,6 +1183,8 @@ class ChessMatch(object):
                 return "It is not your turn"
 
             if self.board.makePly(color, fromPosn, toPosn):
+                # TODO (James): Deal with no-move stalemates
+
                 # Check for checkmates
                 ChessMatch._logger.debug("Checking for end of game")
                 if self.board.isKingCheckmated(ChessBoard.WHITE):
