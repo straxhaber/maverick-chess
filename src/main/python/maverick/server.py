@@ -442,10 +442,13 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
                     errMsg = fStr.format(",".join(list(expArgs)))
                 else:
                     try:
+                        import traceback
                         # Dispatch command to TournamentSystem instance
                         (successP, result) = tsCommand(self._ts, **requestArgs)
 
                     except:
+                        tb = traceback.format_exc()
+                        print tb
                         # Give an error if caught an exception
                         errMsg = "Uncaught exception"
                     else:

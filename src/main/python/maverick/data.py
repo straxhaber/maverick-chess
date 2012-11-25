@@ -505,50 +505,23 @@ class ChessBoard(object):
 
         return kingsPosnDict
 
-    def isLegalMove(self, color, fromPosn, toPosn):
-        """Returns true if the specified move is legal
+    def __isLegalMove_IsPieceMovementInPattern(self, color,
+                                               fromPosn, toPosn):
+        """Check whether the given move is possible for the piece at the origin
 
-        Arguments are the same as ChessBoard.makePly
+        NOTE: Does not apply all move legality checks - the checks for moves
+        resulting in a check state are done in isLegalMove
 
-        Checks if:
-         - there is a piece at the from position
-         - the to position doesn't contain a piece owned by the color
-         - flags don't preclude the move (i.e., castling)
-         - the path to make the move is free (for bishops, rooks, queens, etc.)
-         - this is a legal move for the piece pieceType
-         - the king would not be in check after the move
-         - the move alters the board state
+        Returns true if the given move is possible considering the movement
+        pattern of the piece at fromPosn, false otherwise.
 
-        Pawns:
-         - normally move one space up away from their color's starting position
-         - can move two spaces on first move
-         - can capture diagonally if there is a piece to be captured
+        @param color: The color of the player making the move
+        @param fromPosn: The location of the piece being moved
+        @param toPosn: The location to which the piece is being moved
 
-        Rooks:
-         - move horizontally and vertically
-         - require a clear path between origin and destination
+        @return: True if the move is possible for the given piece, False
+                otherwise"""
 
-        Knights:
-         - move in the traditional "L" pattern
-         - do not require a clear path between origin and destination
-
-        Bishops:
-         - move diagonally
-         - require a clear path between origin and destination
-
-        Queens:
-         - can make all moves that a rook or bishop would make from the same
-         position
-
-        Kings:
-         - can move one square in any direction
-         - can move two squares toward a rook if the canCastle flag for that
-         direction ("a" file or "h" file) is True"""
-
-        # TODO: can color be checked a level up in the makePly function,
-        #       allowing isLegalMove to not take in the color?
-
-        # Pull out the (color, origin_type) entry at the from/to board position
         origin_entry = self[fromPosn]
         destin_entry = self[toPosn]
 
@@ -564,7 +537,6 @@ class ChessBoard(object):
         # Number of spaces moved horizontally
         file_delta_abs = abs(toPosn.fileN - fromPosn.fileN)
 
-        # Check move legality for individual piece types
         if origin_entry.pieceType == ChessBoard.PAWN:
             ChessBoard._logger.debug("Found moved piecetype to be PAWN")
 
@@ -725,9 +697,70 @@ class ChessBoard(object):
                     ChessBoard._logger.debug("Illegal move distance")
                     return False
 
+        # All of the checks passed
+        return True
+
+    def isLegalMove(self, color, fromPosn, toPosn):
+        """Returns true if the specified move is legal
+
+        Arguments are the same as ChessBoard.makePly
+
+        Checks if:
+         - there is a piece at the from position
+         - the to position doesn't contain a piece owned by the color
+         - flags don't preclude the move (i.e., castling)
+         - the path to make the move is free (for bishops, rooks, queens, etc.)
+         - this is a legal move for the piece pieceType
+         - the king would not be in check after the move
+         - the move alters the board state
+
+        Pawns:
+         - normally move one space up away from their color's starting position
+         - can move two spaces on first move
+         - can capture diagonally if there is a piece to be captured
+
+        Rooks:
+         - move horizontally and vertically
+         - require a clear path between origin and destination
+
+        Knights:
+         - move in the traditional "L" pattern
+         - do not require a clear path between origin and destination
+
+        Bishops:
+         - move diagonally
+         - require a clear path between origin and destination
+
+        Queens:
+         - can make all moves that a rook or bishop would make from the same
+         position
+
+        Kings:
+         - can move one square in any direction
+         - can move two squares toward a rook if the canCastle flag for that
+         direction ("a" file or "h" file) is True"""
+
+        # TODO: can color be checked a level up in the makePly function,
+        #       allowing isLegalMove to not take in the color?
+
+        # Pull out the (color, origin_type) entry at the from/to board position
+        origin_entry = self[fromPosn]
+        destin_entry = self[toPosn]
+
+        if not self.__isLegalMove_IsPieceMovementInPattern(color,
+                                                           fromPosn, toPosn):
+            return False
+
         # If we own a piece at the destination, we cannot move there
-        if destin_entry is not None and destin_entry.color == color:
+        elif destin_entry is not None and destin_entry.color == color:
             ChessBoard._logger.debug("Illegal friendly piece capture")
+            return False
+
+        # If the move is to a king's position, it is illegal (this is a handler
+        # for checkmates at the board level, basically)
+        elif (destin_entry is not None and
+            destin_entry.pieceType == ChessBoard.KING):
+            ChessBoard._logger.debug("Illegal King capture")
             return False
 
         # Check that a move is being made
@@ -807,7 +840,8 @@ class ChessBoard(object):
         for pieceLoc in enemyPieceLocations:
 
             # If a move to the king's location is legal, the king is in check
-            if self.isLegalMove(otherColor, pieceLoc, kingPosn):
+            if self.__isLegalMove_IsPieceMovementInPattern(otherColor,
+                                                           pieceLoc, kingPosn):
                 ChessBoard._logger.debug("Not in check")
                 return (True, pieceLoc)
 
