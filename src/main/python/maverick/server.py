@@ -206,13 +206,10 @@ class TournamentSystem(object):
 
         for ply in history:
             # Create dictionary of this ply and append it to accumulator
-
-            plyDict = {}
-            plyDict['fromRank'] = ply[0].rankN
-            plyDict['fromFile'] = ply[0].fileN
-            plyDict['toRank'] = ply[1].rankN
-            plyDict['toFile'] = ply[1].fileN
-
+            plyDict = {'fromRank': ply[0].rankN,
+                       'fromFile': ply[0].fileN,
+                       'toRank': ply[1].rankN,
+                       'toFile': ply[1].fileN}
             plyDictList.append(plyDict)
 
         return plyDictList
