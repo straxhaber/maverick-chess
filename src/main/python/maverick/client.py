@@ -14,9 +14,9 @@ import json
 import logging
 from telnetlib import Telnet
 
-from maverick.data import ChessBoard
-from maverick.data import ChessPiece
-from maverick.data import ChessPosn
+from maverick.data.structs import ChessBoard
+from maverick.data.structs import ChessPiece
+from maverick.data.structs import ChessPosn
 
 __all__ = ["MaverickClient",
            "MaverickClientException"]

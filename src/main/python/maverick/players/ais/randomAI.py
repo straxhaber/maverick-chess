@@ -14,7 +14,7 @@ from argparse import ArgumentParser
 import logging
 import random
 
-from maverick.data import ChessBoard
+from maverick.data.structs import ChessBoard
 from maverick.players.ais.common import MaverickAI, MaverickAIException
 from maverick.players.ais.analyzers.stateExpansion import enumMoves
 

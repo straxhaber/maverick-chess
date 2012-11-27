@@ -8,9 +8,9 @@ from __future__ import division
 
 import copy
 
-from maverick.data import ChessBoard
-from maverick.data import ChessBoardUtils
-from maverick.data import ChessPosn
+from maverick.data.structs import ChessBoard
+from maverick.data.structs import ChessBoardUtils
+from maverick.data.structs import ChessPosn
 from maverick.players.ais.analyzers.stateExpansion import enumMoves
 
 

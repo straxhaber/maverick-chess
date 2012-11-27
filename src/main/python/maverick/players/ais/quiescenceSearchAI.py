@@ -14,7 +14,7 @@ from argparse import ArgumentParser
 import logging
 
 from maverick.players.ais.common import MaverickAI
-from maverick.data import ChessBoard
+from maverick.data.structs import ChessBoard
 
 ## TODO (James): Make sure that heuristic functions to return an int in [-1..1]
 

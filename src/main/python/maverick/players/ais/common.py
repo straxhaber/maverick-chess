@@ -14,7 +14,7 @@ import logging
 import time
 import random
 
-from maverick.data import ChessMatch
+from maverick.data.structs import ChessMatch
 from maverick.players.common import MaverickPlayer
 
 __all__ = ["MaverickAI",

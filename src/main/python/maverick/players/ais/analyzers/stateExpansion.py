@@ -4,8 +4,8 @@ Created on Nov 16, 2012
 @author: mattsh
 '''
 
-from maverick.data import ChessBoard
-from maverick.data import ChessPosn
+from maverick.data.structs import ChessBoard
+from maverick.data.structs import ChessPosn
 from maverick.players.ais.common import MaverickAIException
 
 

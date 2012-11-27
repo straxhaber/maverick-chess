@@ -22,9 +22,9 @@ import logging
 import pickle
 import random
 
-from maverick.data import ChessBoard
-from maverick.data import ChessMatch
-from maverick.data import ChessPosn
+from maverick.data.structs import ChessBoard
+from maverick.data.structs import ChessMatch
+from maverick.data.structs import ChessPosn
 
 from twisted.internet import endpoints
 from twisted.internet import protocol

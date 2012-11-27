@@ -15,8 +15,8 @@ import time
 
 from maverick.client import MaverickClient
 from maverick.client import MaverickClientException
-from maverick.data import ChessBoard
-from maverick.data import ChessMatch
+from maverick.data.structs import ChessBoard
+from maverick.data.structs import ChessMatch
 
 __all__ = ["MaverickPlayer"]
 

@@ -1,5 +1,5 @@
 #!/usr/bin/python
-"""data.py: common data structures for chess games"""
+"""maverick.data.structs: common data structures for chess games"""
 
 __author__ = "Matthew Strax-Haber, James Magnarelli, and Brad Fournier"
 __version__ = "1.0"
@@ -822,7 +822,7 @@ class ChessBoard(object):
         kingPosn = self.__isLegal_findKings()[color]
 
         # Check if any enemy piece can legally move to the king's location
-        for loc in ChessBoardUtils.findPiecePosnsByColor(self, other):
+        for loc in self.__getPiecesOfColor(other):
 
             # If a move to the king's location is legal, the king is in check
             if self.__isLegal_IsPieceMovementInPattern(other, loc, kingPosn):
@@ -833,6 +833,27 @@ class ChessBoard(object):
         # king is not in check
         ChessBoard._logger.debug("Found that %s is not in check", color)
         return None
+
+    def __getPiecesOfColor(self, color):
+        """Return a list of positions where the given color has pieces
+
+        @param board: The board to use for this check.
+        @param color: The color of the pieces to find
+
+        @return: a list of ChessPosns representing
+                the location of all pieces of the given color"""
+
+        pieceLocations = []
+
+        for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
+            row = self.layout[r]
+            for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
+                piece = row[f]
+                if piece is not None:
+                    if piece.color == color:
+                        # Build ChessPosn for piece location
+                        pieceLocations.append(ChessPosn(r, f))
+        return pieceLocations
 
     def isKingCheckmated(self, color):
         """Returns True if the given color is in checkmate on this board
@@ -871,7 +892,7 @@ class ChessBoard(object):
                                                              checkPiecePosn,
                                                              chkdKingLoc)
         # Get locations of all this player's non-king pieces
-        myPieceLocs = ChessBoardUtils.findPiecePosnsByColor(self, color)
+        myPieceLocs = self.__getPiecesOfColor(color)
 
         # Iterate through pieces, and see if any can move to potential check-
         # alleviating squares
@@ -991,96 +1012,6 @@ class ChessBoard(object):
             pathPosns.append(posn)
 
         return pathPosns
-
-
-class ChessBoardUtils(object):
-    """Utilities for use with given ChessBoard objects"""
-
-    @staticmethod
-    def findPiecePosnsByColor(board, color):
-        """Return a list of positions where the given color has pieces
-
-        @param board: The board to use for this check.
-        @param color: The color of the pieces to find, ChessMatch.WHITE or
-        ChessMatch.BLACK
-
-        @return: a list of ChessPosns representing
-                the location of all pieces of the given color"""
-
-        pieceLocations = []
-
-        for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
-            row = board.layout[r]
-            for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
-                piece = row[f]
-                if piece is not None:
-                    if piece.color == color:
-                        # Build ChessPosn for piece location
-                        pieceLocations.append(ChessPosn(r, f))
-        return pieceLocations
-
-    @staticmethod
-    def genRandomLegalBoard():
-        """Returns a random ChessBoard object  with neither king in check
-
-        @return: a ChessBoard object with a subset of the standard pieces
-                where neither king is in check"""
-
-        # # TODO (James): get this working for test board generation
-
-        # Mapping of piece types to tuples of form (max number,
-        #                    probability that one is placed at each iteration)
-        boardPieces = {ChessBoard.KING: (1, 1),
-                       ChessBoard.PAWN: (8, 0.5),
-                       ChessBoard.ROOK: (2, 0.3),
-                       ChessBoard.KNGT: (2, 0.4),
-                       ChessBoard.BISH: (2, 0.3),
-                       ChessBoard.QUEN: (1, 0.7)}
-
-        emptyStartLayout = [[None] * 8] * 8
-        # The board to be built up
-        board = ChessBoard(startLayout=emptyStartLayout)
-
-        # Keep track of the remaining empty posns
-        emptyPosns = []
-        for r in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
-            for f in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
-                emptyPosns.append(ChessPosn(r, f))
-
-        # Note the number of kings on the board.  Cannot check for check until
-        # kings are placed
-        numKingsPlaced = 0
-
-        for color in [ChessBoard.WHITE, ChessBoard.BLACK]:
-            otherColor = ChessBoard.getOtherColor(color)
-            for pieceType, placementTuple in boardPieces.iteritems():
-                numPcsToPlace = placementTuple[0]
-
-                # Try to place the specified number of pieces
-                while numPcsToPlace > 0:
-                    randNum = random.random()
-                    placementChance = placementTuple[1]
-                    if randNum <= placementChance:
-                        # Choose a remaining empty posn and place this piece
-                        emptyPosnIdx = random.randrange(0, len(emptyPosns))
-                        placementPosn = emptyPosns[emptyPosnIdx]
-                        # If this is an illegal placement, try again
-                        # But don't bother checking if we haven't placed kings
-                        if ((numKingsPlaced == 2) and
-                            ## TODO: should this check is None or is not None?
-                            board.pieceCheckingKing(otherColor) is None):
-                            break
-                        else:
-                            if pieceType == ChessBoard.KING:
-                                numKingsPlaced += 1
-
-                            # Place the piece and note the posn is non-empty
-
-                            board[placementPosn] = ChessPiece(color, pieceType)
-                            del emptyPosns[emptyPosnIdx]
-                    numPcsToPlace -= 1
-
-        return board
 
 
 class ChessMatch(object):

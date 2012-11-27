@@ -13,7 +13,7 @@ from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
 import logging
 
-from maverick.data import ChessPosn
+from maverick.data.structs import ChessPosn
 from maverick.players.common import MaverickPlayer
 
 __all__ = ["HumanGamer",
