@@ -41,7 +41,7 @@ class MaverickAI(MaverickPlayer):
         raise NotImplementedError("Must be overridden by the extending class")
 
     def getPlayerName(self):
-        """Figure out the name of the class"""
+        """Figure out the name of the player"""
         return "%s %d %d" % (self.__class__.__name__,
                              time.time(),
                              random.randint(1, 10 ** 9))
@@ -70,9 +70,9 @@ class MaverickAI(MaverickPlayer):
         MaverickAI._logger.info("The result was: %s", result)
 
     def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
-        """Calculate the next move based on the provided board"""
-        fStr = "Invalid move made: {}->{}"
-        raise MaverickAIException(fStr.format(fromPosn, toPosn))
+        """Handle a bad move in some smart way"""
+        fStr = "Server didn't accept move {}->{}, providing message \"{}\""
+        raise MaverickAIException(fStr.format(fromPosn, toPosn, errMsg))
 
 
 def _main():

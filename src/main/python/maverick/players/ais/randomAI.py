@@ -16,7 +16,7 @@ import random
 
 from maverick.data import ChessBoard
 from maverick.players.ais.common import MaverickAI, MaverickAIException
-from maverick.players.ais.analyzers.stateExpansion import enumPossBoardMoves
+from maverick.players.ais.analyzers.stateExpansion import enumMoves
 
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"
@@ -35,7 +35,7 @@ class RandomAI(MaverickAI):
     def getNextMove(self, board):
         """Pick a random move from an enumeration of legal moves"""
         color = ChessBoard.WHITE if self.isWhite else ChessBoard.BLACK
-        moveChoices = enumPossBoardMoves(board, color)
+        moveChoices = enumMoves(board, color)
         if moveChoices:
             move = random.choice(moveChoices)
             return move

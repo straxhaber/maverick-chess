@@ -9,12 +9,12 @@ from maverick.data import ChessPosn
 from maverick.players.ais.common import MaverickAIException
 
 
-def __canMoveTo_isOnBoard(posn):
+def __enumMoves_isOnBoard(posn):
     return (posn.rankN in range(ChessBoard.BOARD_LAYOUT_SIZE) and
             posn.fileN in range(ChessBoard.BOARD_LAYOUT_SIZE))
 
 
-def __canMoveTo_moveLoop(moves, board, color,
+def __enumMoves_moveLoop(moves, board, color,
                                 fromPosn, translations):
     """Add moves based on translations, stopping when blocked
 
@@ -22,7 +22,7 @@ def __canMoveTo_moveLoop(moves, board, color,
     for translation in translations:
         toPosn = fromPosn.getTranslatedBy(*translation)
 
-        # We worry about self-capture at the end of canMoveTo
+        # We worry about self-capture at the end of enumPossPieceMoves
         moves.append(toPosn)
 
         # Stop if blocked by a piece
@@ -30,7 +30,7 @@ def __canMoveTo_moveLoop(moves, board, color,
             break
 
 
-def _canMoveTo_pawn(board, color, fromPosn):
+def _enumMoves_pawn(board, color, fromPosn):
     pawnStartRank = ChessBoard.PAWN_STARTING_RANKS[color]
     pawnDirection = [-1, 1][color == ChessBoard.WHITE]
     oneAhead = fromPosn.getTranslatedBy(pawnDirection, 0)
@@ -51,7 +51,7 @@ def _canMoveTo_pawn(board, color, fromPosn):
     for fileDelta in [-1, 1]:
         toPosn = fromPosn.getTranslatedBy(pawnDirection, fileDelta)
 
-        if __canMoveTo_isOnBoard(toPosn):
+        if __enumMoves_isOnBoard(toPosn):
             enemyP = (board[toPosn] is not None and
                       board[toPosn].color == otherColor)
             enpP = (board[toPosn] is None and
@@ -63,7 +63,7 @@ def _canMoveTo_pawn(board, color, fromPosn):
     return moves
 
 
-def _canMoveTo_rook(board, color, fromPosn):
+def _enumMoves_rook(board, color, fromPosn):
     moves = []
 
     rMin = 1
@@ -73,22 +73,22 @@ def _canMoveTo_rook(board, color, fromPosn):
     stayTheCourse = [0] * (ChessBoard.BOARD_LAYOUT_SIZE - 1)
 
     # Move up (rN+1..7, fN)
-    __canMoveTo_moveLoop(moves, board, color, fromPosn,
+    __enumMoves_moveLoop(moves, board, color, fromPosn,
                                     zip(countUp, stayTheCourse))
     # Move down (0..rN-1, fN)
-    __canMoveTo_moveLoop(moves, board, color, fromPosn,
+    __enumMoves_moveLoop(moves, board, color, fromPosn,
                                     zip(countDown, stayTheCourse))
     # Move right (rN, fN+1..7)
-    __canMoveTo_moveLoop(moves, board, color, fromPosn,
+    __enumMoves_moveLoop(moves, board, color, fromPosn,
                                     zip(stayTheCourse, countUp))
     # Move left (rN, 0..fN-1)
-    __canMoveTo_moveLoop(moves, board, color, fromPosn,
+    __enumMoves_moveLoop(moves, board, color, fromPosn,
                                     zip(stayTheCourse, countDown))
 
     return moves
 
 
-def _canMoveTo_knight(board, color, fromPosn):
+def _enumMoves_knight(board, color, fromPosn):
     moves = []
     moves.append(fromPosn.getTranslatedBy(2, -1))
     moves.append(fromPosn.getTranslatedBy(2, 1))
@@ -101,7 +101,7 @@ def _canMoveTo_knight(board, color, fromPosn):
     return moves
 
 
-def _canMoveTo_bishop(board, color, fromPosn):
+def _enumMoves_bishop(board, color, fromPosn):
     moves = []
 
     rMin = 1
@@ -110,28 +110,28 @@ def _canMoveTo_bishop(board, color, fromPosn):
     countDown = range(-rMin, -rMax, -1)
 
     # Move top-right
-    __canMoveTo_moveLoop(moves, board, color, fromPosn,
+    __enumMoves_moveLoop(moves, board, color, fromPosn,
                                     zip(countUp, countUp))
     # Move top-left
-    __canMoveTo_moveLoop(moves, board, color, fromPosn,
+    __enumMoves_moveLoop(moves, board, color, fromPosn,
                                     zip(countUp, countDown))
     # Move down-right
-    __canMoveTo_moveLoop(moves, board, color, fromPosn,
+    __enumMoves_moveLoop(moves, board, color, fromPosn,
                                     zip(countDown, countUp))
     # Move down-left
-    __canMoveTo_moveLoop(moves, board, color, fromPosn,
+    __enumMoves_moveLoop(moves, board, color, fromPosn,
                                     zip(countDown, countDown))
     return moves
 
 
-def _canMoveTo_queen(board, color, fromPosn):
+def _enumMoves_queen(board, color, fromPosn):
     moves = []
-    moves.extend(_canMoveTo_bishop(board, color, fromPosn))
-    moves.extend(_canMoveTo_rook(board, color, fromPosn))
+    moves.extend(_enumMoves_bishop(board, color, fromPosn))
+    moves.extend(_enumMoves_rook(board, color, fromPosn))
     return moves
 
 
-def _canMoveTo_king(board, color, fromPosn):
+def _enumMoves_king(board, color, fromPosn):
     moves = []
 
     # Add moves to neighbors
@@ -161,7 +161,7 @@ def _canMoveTo_king(board, color, fromPosn):
     return moves
 
 
-def canMoveTo(board, fromPosn):
+def enumPossPieceMoves(board, fromPosn):
     """Return all possible toPosns for the specified piece on given board
 
     @return ListOf[toPosn]"""
@@ -171,17 +171,17 @@ def canMoveTo(board, fromPosn):
     assert fromPiece is not None
 
     if fromPiece.pieceType == ChessBoard.PAWN:
-        moveGenerator = _canMoveTo_pawn
+        moveGenerator = _enumMoves_pawn
     elif fromPiece.pieceType == ChessBoard.ROOK:
-        moveGenerator = _canMoveTo_rook
+        moveGenerator = _enumMoves_rook
     elif fromPiece.pieceType == ChessBoard.KNGT:
-        moveGenerator = _canMoveTo_knight
+        moveGenerator = _enumMoves_knight
     elif fromPiece.pieceType == ChessBoard.BISH:
-        moveGenerator = _canMoveTo_bishop
+        moveGenerator = _enumMoves_bishop
     elif fromPiece.pieceType == ChessBoard.QUEN:
-        moveGenerator = _canMoveTo_queen
+        moveGenerator = _enumMoves_queen
     elif fromPiece.pieceType == ChessBoard.KING:
-        moveGenerator = _canMoveTo_king
+        moveGenerator = _enumMoves_king
     else:
         raise MaverickAIException("Invalid fromPiece type")
 
@@ -189,7 +189,7 @@ def canMoveTo(board, fromPosn):
     toPosns = moveGenerator(board, fromPiece.color, fromPosn)
 
     # Filter out toPosns that would put a piece off the board
-    toPosns = filter(__canMoveTo_isOnBoard, toPosns)
+    toPosns = filter(__enumMoves_isOnBoard, toPosns)
 
     # Filter out self-capturing toPosns
     toPosns = filter(lambda p: (board[p] is None or
@@ -200,7 +200,7 @@ def canMoveTo(board, fromPosn):
     #                We would delete this anyway, but it shouldn't blow up
     #                for legal moves. Either I have a bug (don't think so)
     #                or you do
-    #        # TODO delete this after this function is finished (just a stop-gap)
+    #        # TODO delete this after this function is finished (temp stop-gap)
     #        toPosns = filter(lambda p: board.isLegalMove(fromPiece.color,
     #                                                     fromPosn,
     #                                                     p),
@@ -209,13 +209,13 @@ def canMoveTo(board, fromPosn):
     # Filter out Filter out toPosns that would put player in check
     def selfKingNotInCheck(toPosn):
         resultBoard = board.getResultOfPly(fromPosn, toPosn)
-        return not resultBoard.pieceCheckingKing(fromPiece.color)[0]
+        return resultBoard.pieceCheckingKing(fromPiece.color) is None
     toPosns = filter(selfKingNotInCheck, toPosns)
 
     return toPosns
 
 
-def enumPossBoardMoves(board, color):
+def enumMoves(board, color):
     """Enumerate all possible immediate moves for the given player
 
     @return: a set of tuples of the form:
@@ -233,7 +233,7 @@ def enumPossBoardMoves(board, color):
 
             if fromPiece is not None and fromPiece.color == color:
                 moves.extend(map(lambda toPosn: (fromPosn, toPosn),
-                                 canMoveTo(board, fromPosn)))
+                                 enumPossPieceMoves(board, fromPosn)))
             else:
                 pass  # can't move a non-existent piece or one we don't own
 

@@ -40,7 +40,7 @@ class QLAI(MaverickAI):
         else:
             color = ChessBoard.BLACK
 
-        moveChoices = self.enumPossBoardMoves(board, color)
+        moveChoices = self.enumMoves(board, color)
 
         # TODO (mattsh): write this
         (fromPosn, toPosn) = (None, None)

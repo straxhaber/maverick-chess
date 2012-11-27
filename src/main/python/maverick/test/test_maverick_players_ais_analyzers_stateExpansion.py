@@ -7,7 +7,7 @@ import unittest
 
 from maverick.data import ChessBoard
 from maverick.data import ChessPosn
-from maverick.players.ais.analyzers.stateExpansion import enumPossBoardMoves
+from maverick.players.ais.analyzers.stateExpansion import enumPossMovesOnBoard
 from maverick.test import common as commonTest
 
 
@@ -52,7 +52,7 @@ class Test_maverick_players_ais_common(unittest.TestCase):
 
     def test_newB_correctValues(self):
         # "Should be 20 possible moves at start")
-        enum = enumPossBoardMoves(commonTest.getBoardNew(), ChessBoard.WHITE)
+        enum = enumPossMovesOnBoard(commonTest.getBoardNew(), ChessBoard.WHITE)
         self._assertEqLists(enum,
                             [(ChessPosn(0, 1), ChessPosn(2, 0)),
                              (ChessPosn(0, 1), ChessPosn(2, 2)),
@@ -76,19 +76,19 @@ class Test_maverick_players_ais_common(unittest.TestCase):
                              (ChessPosn(1, 7), ChessPosn(3, 7))])
 
     def test_newB_correctLen(self):
-        enum = enumPossBoardMoves(commonTest.getBoardNew(), ChessBoard.WHITE)
+        enum = enumPossMovesOnBoard(commonTest.getBoardNew(), ChessBoard.WHITE)
         self.assertEqual(20, len(enum))
 
     def test_newB_onlyLegalMoves(self):
-        enum = enumPossBoardMoves(commonTest.getBoardNew(), ChessBoard.WHITE)
+        enum = enumPossMovesOnBoard(commonTest.getBoardNew(), ChessBoard.WHITE)
         self._onlyLegalMoves(commonTest.getBoardNew(), ChessBoard.WHITE, enum)
 
     def test_newB_allLegalMoves(self):
-        enum = enumPossBoardMoves(commonTest.getBoardNew(), ChessBoard.WHITE)
+        enum = enumPossMovesOnBoard(commonTest.getBoardNew(), ChessBoard.WHITE)
         self._allLegalMoves(commonTest.getBoardNew(), ChessBoard.WHITE, enum)
 
     def test_bWD4_correctValues(self):
-        enum = enumPossBoardMoves(commonTest.getBoardWD4(), ChessBoard.BLACK)
+        enum = enumPossMovesOnBoard(commonTest.getBoardWD4(), ChessBoard.BLACK)
         self._assertEqLists(enum,
                             [(ChessPosn(6, 0), ChessPosn(5, 0)),
                              (ChessPosn(6, 0), ChessPosn(4, 0)),
@@ -112,26 +112,26 @@ class Test_maverick_players_ais_common(unittest.TestCase):
                              (ChessPosn(7, 6), ChessPosn(5, 7))])
 
     def test_bWD4_correctLen(self):
-        enum = enumPossBoardMoves(commonTest.getBoardWD4(), ChessBoard.WHITE)
+        enum = enumPossMovesOnBoard(commonTest.getBoardWD4(), ChessBoard.WHITE)
         self.assertEqual(28, len(enum))
 
     def test_bWD4_onlyLegalMoves(self):
-        enum = enumPossBoardMoves(commonTest.getBoardWD4(), ChessBoard.BLACK)
+        enum = enumPossMovesOnBoard(commonTest.getBoardWD4(), ChessBoard.BLACK)
         self._onlyLegalMoves(commonTest.getBoardWD4(), ChessBoard.BLACK, enum)
 
     def test_bWD4_allLegalMoves(self):
-        enum = enumPossBoardMoves(commonTest.getBoardWD4(), ChessBoard.BLACK)
+        enum = enumPossMovesOnBoard(commonTest.getBoardWD4(), ChessBoard.BLACK)
         self._allLegalMoves(commonTest.getBoardWD4(), ChessBoard.BLACK, enum)
 
     def test_bCmplx_white_allLegalMoves(self):
-        enum = enumPossBoardMoves(commonTest.getBoardComplex(),
+        enum = enumPossMovesOnBoard(commonTest.getBoardComplex(),
                                   ChessBoard.WHITE)
         self._allLegalMoves(commonTest.getBoardComplex(),
                             ChessBoard.WHITE,
                             enum)
 
     def test_bCmplx_black_allLegalMoves(self):
-        enum = enumPossBoardMoves(commonTest.getBoardComplex(),
+        enum = enumPossMovesOnBoard(commonTest.getBoardComplex(),
                                   ChessBoard.BLACK)
         self._allLegalMoves(commonTest.getBoardComplex(),
                             ChessBoard.BLACK,

@@ -448,6 +448,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
                         print tb
                         # Give an error if caught an exception
                         errMsg = "Uncaught exception"
+
                     else:
                         if successP:
                             # TODO (mattsh): check keys of response

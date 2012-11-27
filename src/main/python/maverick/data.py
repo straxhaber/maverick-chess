@@ -743,23 +743,20 @@ class ChessBoard(object):
         # TODO: can color be checked a level up in the makePly function,
         #       allowing isLegalMove to not take in the color?
 
-        # Pull out the (color, origin_type) entry at the from/to board position
-        destin_entry = self[toPosn]
-
         if not self.__isLegalMove_IsPieceMovementInPattern(color,
                                                            fromPosn, toPosn):
             return False
 
         # If we own a piece at the destination, we cannot move there
-        elif destin_entry is not None and destin_entry.color == color:
+        elif self[toPosn] is not None and self[toPosn].color == color:
             ChessBoard._logger.debug("Illegal friendly piece capture")
             return False
 
         # If the move is to a king's position, it is illegal (this is a handler
         # for checkmates at the board level, basically)
-        elif (destin_entry is not None and
-            destin_entry.pieceType == ChessBoard.KING):
-            ChessBoard._logger.debug("Illegal King capture")
+        elif (self[toPosn] is not None and
+            self[toPosn].pieceType == ChessBoard.KING):
+            ChessBoard._logger.debug("Can't take king (should be impossible)")
             return False
 
         # Check that a move is being made
@@ -775,7 +772,6 @@ class ChessBoard(object):
 
         # The ply could be made, but may result in a check
         else:
-
             # Create the board that the proposed move would result in
             boardAfterMove = self.getResultOfPly(fromPosn, toPosn)
 

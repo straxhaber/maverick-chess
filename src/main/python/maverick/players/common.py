@@ -65,6 +65,10 @@ class MaverickPlayer(MaverickClient):
         """Display goodbye messages if appropriate"""
         raise NotImplementedError("Must be overridden by the extending class")
 
+    def _handleBadMove(self):
+        """Handle a bad move in some smart way"""
+        raise NotImplementedError("Must be overridden by the extending class")
+
     def _showPlayerMove(self, board, fromPosn, toPosn):
         """Override to modify display of players' moves / associated boards"""
 

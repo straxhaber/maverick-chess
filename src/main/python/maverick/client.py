@@ -110,7 +110,7 @@ class MaverickClient(object):
                 raise MaverickClientException("Invalid JSON in response")
             return result
         elif statusString == "ERROR":
-            errMsg = value[:]
+            errMsg = value.rstrip()     # Trim trailing new line
             MaverickClient._logger.debug("Received error response: %s", errMsg)
             raise MaverickClientException(errMsg)
         else:

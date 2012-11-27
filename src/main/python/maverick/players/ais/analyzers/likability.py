@@ -11,7 +11,7 @@ import copy
 from maverick.data import ChessBoard
 from maverick.data import ChessBoardUtils
 from maverick.data import ChessPosn
-from maverick.players.ais.analyzers.stateExpansion import enumPossBoardMoves
+from maverick.players.ais.analyzers.stateExpansion import enumMoves
 
 
 # Standard piece values, from
@@ -183,7 +183,7 @@ def heuristicEmptySpaceCvrg(color, board):
                 emptyLocations.append(testPosn)
 
     # Build list of possible friendly piece moves
-    friendlyMoves = enumPossBoardMoves(board, color)
+    friendlyMoves = enumMoves(board, color)
     friendlyMoveDestPosns = map(lambda x: x[1], friendlyMoves)
 
     # Find possible moves to empty squares and build up return value
@@ -249,7 +249,7 @@ def heuristicPiecesCovered(color, board):
             hypoBoard[lostPiecePosn] = None
 
             # Build list of possible friendly moves
-            friendlyMoves = enumPossBoardMoves(hypoBoard, color)
+            friendlyMoves = enumMoves(hypoBoard, color)
 
             lostPieceType = board[lostPiecePosn].pieceType
             lostPieceValue = _pieceValues[lostPieceType]
