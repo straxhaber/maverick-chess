@@ -77,7 +77,7 @@ def heuristicInCheck(color, board):
     @return: -1 if the given color is in check on the given board, 1
             otherwise"""
 
-    if board.isKingInCheck(color)[0]:
+    if board.pieceCheckingKing(color)[0]:
         return -1
     else:
         return 1

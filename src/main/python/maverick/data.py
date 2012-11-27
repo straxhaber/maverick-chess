@@ -744,7 +744,6 @@ class ChessBoard(object):
         #       allowing isLegalMove to not take in the color?
 
         # Pull out the (color, origin_type) entry at the from/to board position
-        origin_entry = self[fromPosn]
         destin_entry = self[toPosn]
 
         if not self.__isLegalMove_IsPieceMovementInPattern(color,
@@ -782,7 +781,7 @@ class ChessBoard(object):
 
             # Check that the king would not be in check after the move
             ChessBoard._logger.debug("Checking for move to in-check state")
-            if boardAfterMove.isKingInCheck(color)[0]:
+            if boardAfterMove.pieceCheckingKing(color)[0]:
                 ChessBoard._logger.debug("Illegal move to in-check state")
                 return False
             else:
@@ -809,18 +808,18 @@ class ChessBoard(object):
         postMoveBoard._executePly(color, fromPosn, toPosn)
         return postMoveBoard
 
-    def isKingInCheck(self, color):
-        """Return true if color's king is in check on the given self
+    def pieceCheckingKing(self, color):
+        """Determines what if any piece is checking the specified color's king
 
         @param color: The color of the king to check, ChessMatch.WHITE or
         ChessMatch.BLACK
 
         @return: A tuple containing two values, as follows:
                 Element 0: True if the king is in check, false otherwise
-                Element 1: A ChessPosn representing the
-                location of a piece which is placing the king in check.
-                NOTE: this is only the first such piece detected.  There may be
-                others.
+                Element 1: A ChessPosn representing the location of a piece
+                            which is placing the king in check.
+                           NOTE: this is only the first such piece detected.
+                            There may be others.
 
         Finds the location of the king of the given color, and checks whether
         any of the other player's non-king pieces could legally move to that
@@ -870,11 +869,8 @@ class ChessBoard(object):
         board where the given color king was not in check. If one does, then
         there is no checkmate."""
 
-        # Get other color
-        otherColor = ChessBoard.getOtherColor(color)
-
         # Get check information
-        checkInfo = self.isKingInCheck(color)
+        checkInfo = self.pieceCheckingKing(color)
 
         # Check that the king is in check
         if not checkInfo[0]:
@@ -910,7 +906,7 @@ class ChessBoard(object):
                                                               intruptLoc)
                         # Check if the given color is still in check
                         # If not, that color is not in checkmate
-                        if not boardAfterMove.isKingInCheck(color):
+                        if not boardAfterMove.pieceCheckingKing(color):
                             return False
 
         possibleKingMoves = []  # List of tuples of possible king moves
@@ -933,7 +929,7 @@ class ChessBoard(object):
 
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
-                if not (boardAfterMove.isKingInCheck(color)[0]):
+                if not (boardAfterMove.pieceCheckingKing(color)[0]):
                     logStrF = "Found that %s is not in checkmate"
                     ChessBoard._logger.debug(logStrF, color)
                     return False
@@ -1098,7 +1094,7 @@ class ChessBoardUtils(object):
                         # If this is an illegal placement, try again
                         # But don't bother checking if we haven't placed kings
                         if ((numKingsPlaced == 2) and
-                            board.isKingInCheck(otherColor)):
+                            board.pieceCheckingKing(otherColor)):
                             break
                         else:
                             if pieceType == ChessBoard.KING:

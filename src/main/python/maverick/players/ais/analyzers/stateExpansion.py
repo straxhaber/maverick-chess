@@ -209,7 +209,7 @@ def canMoveTo(board, fromPosn):
     # Filter out Filter out toPosns that would put player in check
     def selfKingNotInCheck(toPosn):
         resultBoard = board.getResultOfPly(fromPosn, toPosn)
-        return not resultBoard.isKingInCheck(fromPiece.color)[0]
+        return not resultBoard.pieceCheckingKing(fromPiece.color)[0]
     toPosns = filter(selfKingNotInCheck, toPosns)
 
     return toPosns

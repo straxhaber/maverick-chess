@@ -173,7 +173,7 @@ class Test_maverick_players_ais_common(unittest.TestCase):
 
     def test_bRand7_BlackInCheck(self):
         b = commonTest.getBoardRand7()
-        self.assertTrue(b.isKingInCheck(ChessBoard.BLACK)[0])
+        self.assertTrue(b.pieceCheckingKing(ChessBoard.BLACK)[0])
 
 
 if __name__ == "__main__":
