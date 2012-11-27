@@ -858,7 +858,7 @@ class ChessBoard(object):
         checkPiecePosn = self.pieceCheckingKing(color)
 
         # Check that the king is in check
-        if checkPiecePosn is not None:
+        if checkPiecePosn is None:
             return False
 
         # TODO (James): Verify this function's functionality
