@@ -15,7 +15,7 @@ import logging
 import random
 
 from maverick.data import ChessBoard
-from maverick.players.ais.common import MaverickAI
+from maverick.players.ais.common import MaverickAI, MaverickAIException
 from maverick.players.ais.analyzers.stateExpansion import enumPossBoardMoves
 
 
@@ -36,8 +36,15 @@ class RandomAI(MaverickAI):
         """Pick a random move from an enumeration of legal moves"""
         color = ChessBoard.WHITE if self.isWhite else ChessBoard.BLACK
         moveChoices = enumPossBoardMoves(board, color)
-        move = random.choice(moveChoices)
-        return move
+        if moveChoices:
+            move = random.choice(moveChoices)
+            return move
+        else:
+            # NOTE: This code should be unreachable. If it gets here,
+            #       either stale-mate detection is broken or a race condition
+            #       is leading to the AI being asked for a move guess before
+            #       stale-mate is properly updated
+            raise MaverickAIException("No possible moves... SEE CODE COMMENT")
 
 
 def runAI(host=None, port=None):
