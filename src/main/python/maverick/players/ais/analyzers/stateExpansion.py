@@ -208,7 +208,7 @@ def enumPossPieceMoves(board, fromPosn):
 
     # Filter out Filter out toPosns that would put player in check
     def selfKingNotInCheck(toPosn):
-        resultBoard = board.getResultOfPly(fromPosn, toPosn)
+        resultBoard = board.getPlyResult(fromPosn, toPosn)
         return resultBoard.pieceCheckingKing(fromPiece.color) is None
     toPosns = filter(selfKingNotInCheck, toPosns)
 

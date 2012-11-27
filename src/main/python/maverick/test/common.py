@@ -16,7 +16,7 @@ def getBoardNew():
 
 
 def getBoardWD4():
-    return ChessBoard().getResultOfPly(ChessPosn(1, 3), ChessPosn(3, 3))
+    return ChessBoard().getPlyResult(ChessPosn(1, 3), ChessPosn(3, 3))
 
 
 def getBoardComplex():

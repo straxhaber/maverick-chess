@@ -303,17 +303,16 @@ class ChessBoard(object):
         # Remove en passant pawns, if relevant
 
         if movedPiece.pieceType == ChessBoard.PAWN:
-
             # Build up information for en passant capture check
-            if otherColor == ChessBoard.WHITE:
-                # The rank at which a pawn could capture via en passant
-                epCapRnk = ChessBoard.PAWN_STARTING_RANKS[otherColor] + 1
-                # Location of the pawn being captured
-                pawnPosn = ChessPosn(epCapRnk + 1, toPosn.fileN)
-            else:
-                epCapRnk = ChessBoard.PAWN_STARTING_RANKS[otherColor] - 1
-                # Location of the pawn being captured
-                pawnPosn = ChessPosn(epCapRnk - 1, toPosn.fileN)
+
+            # The normal direction for pawns of the color
+            pawnMoveDir = 1 if otherColor == ChessBoard.WHITE else -1
+
+            # The rank at which a pawn could capture via en passant
+            epCapRnk = ChessBoard.PAWN_STARTING_RANKS[otherColor] + pawnMoveDir
+
+            # Location of the pawn being captured
+            pawnPosn = ChessPosn(epCapRnk + pawnMoveDir, toPosn.fileN)
 
             # Check whether a pawn was captured by en passant
             if (self.flag_enpassant[otherColor][toPosn.fileN] and
@@ -344,6 +343,8 @@ class ChessBoard(object):
 
         # Check if the move is legal
         isLegal = self.isLegalMove(color, fromPosn, toPosn)
+
+        # Move iff the move is legal
         if isLegal:
             self._executePly(color, fromPosn, toPosn)
 
@@ -403,9 +404,7 @@ class ChessBoard(object):
                             for c in self.layout[rankN]]
             if not whitePerspective:
                 pieceLetters.reverse()
-            rS = fStr.format(boardSep,
-                             rankN + 1,
-                             boardSep.join(pieceLetters))
+            rS = fStr.format(boardSep, rankN + 1, boardSep.join(pieceLetters))
             boardStrA.append(rS)
             boardStrA.append(barrier)
         boardStrA.append(header)
@@ -637,8 +636,8 @@ class ChessBoard(object):
                 return False
 
             # Check that path between origin and destination is clear
-            if not ChessBoard.__isLegal_isClearLinearPath(self,
-                                                          fromPosn, toPosn):
+            elif not ChessBoard.__isLegal_isClearLinearPath(self,
+                                                            fromPosn, toPosn):
                 ChessBoard._logger.debug("Illegal move over piece")
                 return False
 
@@ -647,14 +646,16 @@ class ChessBoard(object):
 
             # Check that if piece isn't moving horizontally or vertically, it's
             # moving diagonally
-            if (rank_delta_abs != 0 and file_delta_abs != 0 and
+            if (rank_delta_abs != 0 and
+                file_delta_abs != 0 and
                 rank_delta_abs != file_delta_abs):
+
                 ChessBoard._logger.debug("Illegal move path shape")
                 return False
 
             # Check that path between origin and destination is clear
-            if not ChessBoard.__isLegal_isClearLinearPath(self,
-                                                          fromPosn, toPosn):
+            elif not ChessBoard.__isLegal_isClearLinearPath(self,
+                                                            fromPosn, toPosn):
                 ChessBoard._logger.debug("Illegal move over piece")
                 return False
 
@@ -766,7 +767,7 @@ class ChessBoard(object):
         # The ply could be made, but may result in a check
         else:
             # Create the board that the proposed move would result in
-            boardAfterMove = self.getResultOfPly(fromPosn, toPosn)
+            boardAfterMove = self.getPlyResult(fromPosn, toPosn)
 
             # Check that the king would not be in check after the move
             ChessBoard._logger.debug("Checking for move to in-check state")
@@ -776,7 +777,7 @@ class ChessBoard(object):
             else:
                 return True  # All of the error checks passed
 
-    def getResultOfPly(self, fromPosn, toPosn):
+    def getPlyResult(self, fromPosn, toPosn):
         """Returns the board object resulting from the given ply
 
         NOTE: Does not check legality of move, and creates a copy for operation
@@ -815,23 +816,18 @@ class ChessBoard(object):
         location."""
 
         # Determine enemy player's color
-        otherColor = ChessBoard.getOtherColor(color)
+        other = ChessBoard.getOtherColor(color)
 
         # Locate given player's king, and opposing player's non-king pieces
-
         kingPosn = self.__isLegal_findKings()[color]
-        # List of ChessPosns of pieces that may have the king in check
-        enemyPieceLocations = ChessBoardUtils.findPiecePosnsByColor(self,
-                                                                    otherColor)
 
         # Check if any enemy piece can legally move to the king's location
-        for pieceLoc in enemyPieceLocations:
+        for loc in ChessBoardUtils.findPiecePosnsByColor(self, other):
 
             # If a move to the king's location is legal, the king is in check
-            if self.__isLegal_IsPieceMovementInPattern(otherColor,
-                                                           pieceLoc, kingPosn):
+            if self.__isLegal_IsPieceMovementInPattern(other, loc, kingPosn):
                 ChessBoard._logger.debug("Not in check")
-                return pieceLoc
+                return loc
 
         # If none of the enemy pieces could move to the king's location, the
         # king is not in check
@@ -881,15 +877,14 @@ class ChessBoard(object):
         # alleviating squares
         for pieceLoc in myPieceLocs:
             if pieceLoc != chkdKingLoc:
-                for intruptLoc in interruptLocations:
+                for intrptLoc in interruptLocations:
 
                     # Check if the piece can move to this interrupt square
-                    if self.isLegalMove(color, pieceLoc,
-                                        intruptLoc):
+                    if self.isLegalMove(color, pieceLoc, intrptLoc):
 
                         # Generate the board that such a move would produce
-                        boardAfterMove = self.getResultOfPly(pieceLoc,
-                                                              intruptLoc)
+                        boardAfterMove = self.getPlyResult(pieceLoc, intrptLoc)
+
                         # Check if the given color is still in check
                         # If not, that color is not in checkmate
                         if boardAfterMove.pieceCheckingKing(color) is None:
@@ -900,10 +895,9 @@ class ChessBoard(object):
         # If no alleviating moves found, enumerate king's possible moves
         for r in range(chkdKingLoc.rankN - 1, chkdKingLoc.rankN + 2):
             for f in range(chkdKingLoc.fileN - 1, chkdKingLoc.fileN + 2):
-                if r != chkdKingLoc.rankN or f != chkdKingLoc.fileN:
-
-                    # Build ChessPosn object to append to list
-                    kingMove = ChessPosn(r, f)
+                kingMove = ChessPosn(r, f)
+                # Build ChessPosn object to append to list
+                if kingMove != chkdKingLoc:
                     possibleKingMoves.append(kingMove)
 
         # For each possible king move, test if it is legal.
@@ -911,7 +905,7 @@ class ChessBoard(object):
 
             if self.isLegalMove(color, chkdKingLoc, kingMove):
                 # Generate the board that such a move would produce
-                boardAfterMove = self.getResultOfPly(chkdKingLoc, kingMove)
+                boardAfterMove = self.getPlyResult(chkdKingLoc, kingMove)
 
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
