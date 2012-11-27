@@ -69,11 +69,13 @@ class QLAI(MaverickAI):
                     leaf node terminating the path
 
         Implementation based on information found here: http://bit.ly/t1dHKA"""
-        ##TODO (James): Incorporate quiescent search
+        ## TODO (James): Incorporate quiescent search
         ## TODO (James): Incorporate timeout
         ## TODO (James): This gets stuck on depth == 0. Why?
 
-        self._logger.info("Searching for best move to depth {0}".format(depth))
+        ## TODO (James): Remove print statements from this method
+
+        print("Searching for best move to depth {0}".format(depth))
 
         otherColor = ChessBoard.getOtherColor(color)
 
@@ -84,6 +86,7 @@ class QLAI(MaverickAI):
             return (None, evaluateBoardLikability(color, board))
         else:
             moveChoices = enumPossBoardMoves(board, color)
+            print "Considering {0} possible moves".format(len(moveChoices))
 
             # Check whether seeking to find minimum or maximum value
             if isMaxNode:
@@ -94,10 +97,10 @@ class QLAI(MaverickAI):
                     # Find the next move for this node, and how likable the
                     # enemy will consider this child node
                     (_, nodeEnemyLikability) = self._boardSearch(nodeBoard,
-                                                                otherColor,
-                                                                depth - 1,
-                                                                newMin, max,
-                                                                not isMaxNode)
+                                                                 otherColor,
+                                                                 depth - 1,
+                                                                 newMin, max,
+                                                                 not isMaxNode)
                     # Make note of the least likable branches that it still
                     # makes sense to pursue, given how likable this one is
                     if nodeEnemyLikability > newMin:
@@ -114,10 +117,10 @@ class QLAI(MaverickAI):
 
                     # Find how likable the enemy will consider this child node
                     (_, nodeEnemyLikability) = self._boardSearch(nodeBoard,
-                                                                otherColor,
-                                                                depth - 1,
-                                                                min, newMax,
-                                                                not isMaxNode)
+                                                                 otherColor,
+                                                                 depth - 1,
+                                                                 min, newMax,
+                                                                 not isMaxNode)
 
                     # Make note of the most likable branches that it still
                     # makes sense to pursue, given how likable this one is
