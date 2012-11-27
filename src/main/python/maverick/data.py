@@ -40,14 +40,18 @@ class ChessPosn(object):
         """x.__eq__(y) <==> x==y
 
         Compares two ChessPosns for deep equality"""
-        return (isinstance(other, ChessPosn) and
-                self.rankN == other.rankN and
-                self.fileN == other.fileN)
+        if isinstance(other, ChessPosn):
+            return (self.rankN == other.rankN and
+                    self.fileN == other.fileN)
+        elif isinstance(other, tuple):
+            return (len(other) == 2 and
+                    self.__eq__(ChessPosn(other[0], other[1])))
+        else:
+            return False
 
     def getTranslatedBy(self, deltaRank, deltaFile):
         """Return new ChessPosn translated by the coordinates provided"""
-        return ChessPosn(self.rankN + deltaRank,
-                         self.fileN + deltaFile)
+        return ChessPosn(self.rankN + deltaRank, self.fileN + deltaFile)
 
 
 class ChessPiece(object):
@@ -171,8 +175,7 @@ class ChessBoard(object):
                         KING: "K"}
     """Mapping of piece constants to their visual represenataion"""
 
-    def __init__(self,
-                 startLayout=None,
+    def __init__(self, startLayout=None,
                  startEnpassantFlags=None,
                  startCanCastleFlags=None):
         """Initialize a new Chess game according to normal Chess rules
@@ -426,7 +429,7 @@ class ChessBoard(object):
         else:
             raise ValueError("Invalid color code")
 
-    def __isLegalMove_isClearLinearPath(self, fromPosn, toPosn):
+    def __isLegal_isClearLinearPath(self, fromPosn, toPosn):
         """True if there is a clear straight path from origin to destination
 
         To be used for horizontal, vertical, or diagonal moves.
@@ -441,7 +444,7 @@ class ChessBoard(object):
         clarity, then checks them all for clarity."""
 
         # Get the squares in the path, if there is one
-        pathPosns = ChessBoard.__isLegalMove_getSquaresInPath(fromPosn, toPosn)
+        pathPosns = ChessBoard.__isLegal_getSquaresInPath(fromPosn, toPosn)
 
         # Number spaces moved vertically
         rank_delta_abs = abs(toPosn.rankN - fromPosn.rankN)
@@ -461,7 +464,7 @@ class ChessBoard(object):
         return True  # None of the path squares contained a piece
 
     @staticmethod
-    def __isLegalMove_getInterruptSquares(fromPosn, toPosn):
+    def __isLegal_getInterruptSquares(fromPosn, toPosn):
         """Return a list of squares that block the given path if moved to
 
         NOTE: This list will always include fromPosn
@@ -479,14 +482,13 @@ class ChessBoard(object):
         interruptSquares.append(fromPosn)
 
         # Build up list of squares in path from origin to destination
-        pathSquares = ChessBoard.__isLegalMove_getSquaresInPath(fromPosn,
-                                                                toPosn)
+        pathSquares = ChessBoard.__isLegal_getSquaresInPath(fromPosn, toPosn)
 
         interruptSquares += (pathSquares)
 
         return interruptSquares
 
-    def __isLegalMove_findKings(self):
+    def __isLegal_findKings(self):
         """Return the locations of the kings on the board, as a dictionary
 
         @return: a dictionary of the form {ChessBoard.WHITE: ChessPosn,
@@ -505,8 +507,7 @@ class ChessBoard(object):
 
         return kingsPosnDict
 
-    def __isLegalMove_IsPieceMovementInPattern(self, color,
-                                               fromPosn, toPosn):
+    def __isLegal_IsPieceMovementInPattern(self, color, fromPosn, toPosn):
         """Check whether the given move is possible for the piece at the origin
 
         NOTE: Does not apply all move legality checks - the checks for moves
@@ -596,9 +597,9 @@ class ChessBoard(object):
                 elif fromPosn.rankN != pawnStartRank:
                     ChessBoard._logger.debug("Illegal forward move")
                     return False  # Pawns can move two spaces only on 1st move
-                elif not ChessBoard.__isLegalMove_isClearLinearPath(self,
-                                                                    fromPosn,
-                                                                    toPosn):
+                elif not ChessBoard.__isLegal_isClearLinearPath(self,
+                                                                fromPosn,
+                                                                toPosn):
                     ChessBoard._logger.debug("Illegal move over piece")
                     return False  # Pawns can't fly over other pieces
 
@@ -611,9 +612,8 @@ class ChessBoard(object):
                 return False
 
             # check that path between origin and destination is clear
-            if not ChessBoard.__isLegalMove_isClearLinearPath(self,
-                                                              fromPosn,
-                                                              toPosn):
+            if not ChessBoard.__isLegal_isClearLinearPath(self,
+                                                          fromPosn, toPosn):
                 ChessBoard._logger.debug("Illegal move over piece")
                 return False
 
@@ -637,9 +637,8 @@ class ChessBoard(object):
                 return False
 
             # Check that path between origin and destination is clear
-            if not ChessBoard.__isLegalMove_isClearLinearPath(self,
-                                                              fromPosn,
-                                                              toPosn):
+            if not ChessBoard.__isLegal_isClearLinearPath(self,
+                                                          fromPosn, toPosn):
                 ChessBoard._logger.debug("Illegal move over piece")
                 return False
 
@@ -654,9 +653,8 @@ class ChessBoard(object):
                 return False
 
             # Check that path between origin and destination is clear
-            if not ChessBoard.__isLegalMove_isClearLinearPath(self,
-                                                              fromPosn,
-                                                              toPosn):
+            if not ChessBoard.__isLegal_isClearLinearPath(self,
+                                                          fromPosn, toPosn):
                 ChessBoard._logger.debug("Illegal move over piece")
                 return False
 
@@ -670,24 +668,19 @@ class ChessBoard(object):
             # Determine the locations to which the king would move if castling
             castleFileQueenside = 2
             castleFileKingside = 6
-            if color == ChessBoard.WHITE:
-                kingStartRank = 0
-            else:
-                kingStartRank = 7
+            kingStartRank = 0 if color == ChessBoard.WHITE else 7
 
             # Check that king only moves more than one square when castling
             if file_delta_abs not in [0, 1] or rank_delta_abs not in [0, 1]:
 
                 # Check for illegal kingside castle
-                if (toPosn.fileN == castleFileKingside and
-                    toPosn.rankN == kingStartRank):
+                if (toPosn == ChessPosn(castleFileKingside, kingStartRank)):
                     if not castleFlagKingside:
                         ChessBoard._logger.debug("Illegal kingside castle")
                         return False
 
                 # Check for illegal queenside castle
-                elif ((toPosn.fileN == castleFileQueenside) and
-                      (toPosn.rankN == kingStartRank)):
+                elif (toPosn == ChessPosn(castleFileQueenside, kingStartRank)):
                     if not castleFlagQueenside:
                         ChessBoard._logger.debug("Illegal queenside castle")
                         return False
@@ -743,7 +736,7 @@ class ChessBoard(object):
         # TODO: can color be checked a level up in the makePly function,
         #       allowing isLegalMove to not take in the color?
 
-        if not self.__isLegalMove_IsPieceMovementInPattern(color,
+        if not self.__isLegal_IsPieceMovementInPattern(color,
                                                            fromPosn, toPosn):
             return False
 
@@ -826,7 +819,7 @@ class ChessBoard(object):
 
         # Locate given player's king, and opposing player's non-king pieces
 
-        kingPosn = self.__isLegalMove_findKings()[color]
+        kingPosn = self.__isLegal_findKings()[color]
         # List of ChessPosns of pieces that may have the king in check
         enemyPieceLocations = ChessBoardUtils.findPiecePosnsByColor(self,
                                                                     otherColor)
@@ -835,7 +828,7 @@ class ChessBoard(object):
         for pieceLoc in enemyPieceLocations:
 
             # If a move to the king's location is legal, the king is in check
-            if self.__isLegalMove_IsPieceMovementInPattern(otherColor,
+            if self.__isLegal_IsPieceMovementInPattern(otherColor,
                                                            pieceLoc, kingPosn):
                 ChessBoard._logger.debug("Not in check")
                 return pieceLoc
@@ -875,10 +868,10 @@ class ChessBoard(object):
         # TODO (James): Verify this function's functionality
 
         # Find the king whose checkmate status is in question
-        chkdKingLoc = self.__isLegalMove_findKings()[color]
+        chkdKingLoc = self.__isLegal_findKings()[color]
 
         # Get a list of locations that, if moved to, might alleviate check
-        interruptLocations = ChessBoard.__isLegalMove_getInterruptSquares(
+        interruptLocations = ChessBoard.__isLegal_getInterruptSquares(
                                                              checkPiecePosn,
                                                              chkdKingLoc)
         # Get locations of all this player's non-king pieces
@@ -932,7 +925,7 @@ class ChessBoard(object):
         return True
 
     @staticmethod
-    def __isLegalMove_getSquaresInPath(fromPosn, toPosn):
+    def __isLegal_getSquaresInPath(fromPosn, toPosn):
         """Returns a list of squares in the straight path from origin to dest
 
         NOTE: Return path does not include the origin or destination
@@ -950,20 +943,13 @@ class ChessBoard(object):
 
         # Number of spaces moved horizontally
         file_delta_abs = abs(toPosn.fileN - fromPosn.fileN)
+
         path_rank_values = []  # Rank values of squares that must be open
         path_file_values = []  # File values of squares that must be open
 
         # Determine step values to use in range finding
-
-        if toPosn.rankN > fromPosn.rankN:
-            rankStep = 1
-        else:
-            rankStep = -1
-
-        if toPosn.fileN > fromPosn.fileN:
-            fileStep = 1
-        else:
-            fileStep = -1
+        rankStep = 1 if toPosn.rankN > fromPosn.rankN else -1
+        fileStep = 1 if toPosn.fileN > fromPosn.fileN else -1
 
         # Check if the path is diagonal
         if rank_delta_abs == file_delta_abs:
