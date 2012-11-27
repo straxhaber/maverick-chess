@@ -9,14 +9,14 @@ from __future__ import division
 import copy
 
 from maverick.data.structs import ChessBoard
-from maverick.data.structs import ChessBoardUtils
 from maverick.data.structs import ChessPosn
-from maverick.players.ais.analyzers.stateExpansion import enumMoves
+
+from maverick.data.utils import enumMoves
 
 
 # Standard piece values, from
 # http://en.wikipedia.org/wiki/Chess_piece_values
-_pieceValues = {ChessBoard.PAWN: 1,
+PIECE_VALUES = {ChessBoard.PAWN: 1,
                 ChessBoard.KNGT: 3,
                 ChessBoard.BISH: 3,
                 ChessBoard.ROOK: 5,
@@ -24,11 +24,11 @@ _pieceValues = {ChessBoard.PAWN: 1,
                 ChessBoard.KING: 0}
 """Point values for all pieces. King's value is reflected in checkmate"""
 
-_maxTotalPieceVal = (8 * _pieceValues[ChessBoard.PAWN] +
-                     2 * _pieceValues[ChessBoard.KNGT] +
-                     2 * _pieceValues[ChessBoard.BISH] +
-                     2 * _pieceValues[ChessBoard.ROOK] +
-                     1 * _pieceValues[ChessBoard.QUEN])
+MAX_TOTAL_PIECE_VALUE = (8 * PIECE_VALUES[ChessBoard.PAWN] +
+                         2 * PIECE_VALUES[ChessBoard.KNGT] +
+                         2 * PIECE_VALUES[ChessBoard.BISH] +
+                         2 * PIECE_VALUES[ChessBoard.ROOK] +
+                         1 * PIECE_VALUES[ChessBoard.QUEN])
 """The sum of piece values for a full set of one player's chess pieces"""
 
 
@@ -55,15 +55,12 @@ def heuristicPieceValue(color, board):
     Note that the king's value is not included - the undesirability of the
     king's capture is handled elsewhere by checkmate checks."""
 
-    # Locate all of this color's pieces
-    piecePosns = ChessBoardUtils.findPiecePosnsByColor(board, color)
-
     # Loop through this color's pieces, adding to total value
-    totalValue = sum([_pieceValues[board[posn].pieceType]
-                      for posn in piecePosns])
+    totalValue = sum([PIECE_VALUES[board[posn].pieceType]
+                      for posn in board.getPiecesOfColor(color)])
 
     # Compress return value into range [-1..1]
-    halfMaxVal = _maxTotalPieceVal / 2
+    halfMaxVal = MAX_TOTAL_PIECE_VALUE / 2
     return (totalValue - halfMaxVal) / halfMaxVal
 
 
@@ -77,7 +74,7 @@ def heuristicInCheck(color, board):
     @return: -1 if the given color is in check on the given board, 1
             otherwise"""
 
-    if board.pieceCheckingKing(color)[0]:
+    if board.pieceCheckingKing(color) is not None:
         return -1
     else:
         return 1
@@ -94,28 +91,18 @@ def heuristicPcsUnderAttack(color, board):
     @return: A number representing the value of the given color's
             pieces that are under attack, weighted by piece value"""
 
-    otherColor = ChessBoard.getOtherColor(color)
-
-    # Get friendly pieces
-    attackingPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board,
-                                                                otherColor)
-
-    # Get enemy pieces
-    attackedPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board,
-                                                               color)
+    other = ChessBoard.getOtherColor(color)
 
     # Record which enemy pieces are under attack
     piecesUnderAttack = []
 
     # For each enemyPiece, check whether any friendlyPiece can capture it
-    for attackedPiecePosn in attackedPiecePosns:
+    for attackedPiecePosn in board.getPiecesOfColor(color):
 
-        for attackingPiecePosn in attackingPiecePosns:
+        for attackingPiecePosn in board.getPiecesOfColor(other):
 
             # Check if this piece can capture the enemy piece
-            if board.isLegalMove(otherColor,
-                                 attackingPiecePosn,
-                                 attackedPiecePosn):
+            if board.isLegalMove(other, attackingPiecePosn, attackedPiecePosn):
 
                 # Note that this enemyPiece is under attack
                 piecesUnderAttack.append(attackedPiecePosn)
@@ -128,11 +115,11 @@ def heuristicPcsUnderAttack(color, board):
 
         piece = board[piecePosn]
         # Check if there is a value for this piece in the mappings
-        if piece.pieceType in _pieceValues:
-            weightedTotal += _pieceValues[piece.pieceType]
+        if piece.pieceType in PIECE_VALUES:
+            weightedTotal += PIECE_VALUES[piece.pieceType]
 
     # Compress return value into range [-1..1]
-    return 1 - 2 * (weightedTotal / _maxTotalPieceVal)
+    return 1 - 2 * (weightedTotal / MAX_TOTAL_PIECE_VALUE)
 
 
 def heuristicEmptySpaceCvrg(color, board):
@@ -158,14 +145,13 @@ def heuristicEmptySpaceCvrg(color, board):
     otherColor = ChessBoard.getOtherColor(color)
 
     # Find friendly piece locations and add to pieceLocations
-    friendPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board, color)
+    friendPiecePosns = board.getPiecesOfColor(color)
 
     for piecePosn in friendPiecePosns:
         pieceLocations.append(piecePosn)
 
     # Find enemy piece locations and add to pieceLocations
-    enemyPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board,
-                                                            otherColor)
+    enemyPiecePosns = board.getPiecesOfColor(otherColor)
 
     for enemyPiecePosn in enemyPiecePosns:
         pieceLocations.append(enemyPiecePosn)
@@ -229,7 +215,7 @@ def heuristicPiecesCovered(color, board):
     #                currently considering non-pawn white pieces
 
     # Construct list of friendly pieces
-    friendPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board, color)
+    friendPiecePosns = board.getPiecesOfColor(color)
 
     # Accumulator for return value
     weightedReturn = 0
@@ -252,7 +238,7 @@ def heuristicPiecesCovered(color, board):
             friendlyMoves = enumMoves(hypoBoard, color)
 
             lostPieceType = board[lostPiecePosn].pieceType
-            lostPieceValue = _pieceValues[lostPieceType]
+            lostPieceValue = PIECE_VALUES[lostPieceType]
 
             # Test whether any move includes a move to the destination
             for move in friendlyMoves:
@@ -265,7 +251,7 @@ def heuristicPiecesCovered(color, board):
 
     # Sum the total possible piece value for all pieces of this color
 
-    pcPosnValSumF = lambda a, b: a + _pieceValues[board[b].pieceType]
+    pcPosnValSumF = lambda a, b: a + PIECE_VALUES[board[b].pieceType]
     maxCoveredValue = reduce(pcPosnValSumF, friendPiecePosns, 0)
 
     # Compress return value into range [-1..1]

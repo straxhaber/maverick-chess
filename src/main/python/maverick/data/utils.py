@@ -14,9 +14,12 @@ import random
 from maverick.data.structs import ChessBoard
 from maverick.data.structs import ChessPiece
 from maverick.data.structs import ChessPosn
+
 from maverick.players.ais.common import MaverickAIException
 
-__all__ = ["genRandomLegalBoard", "enumMoves", "enumPossPieceMoves"]
+__all__ = ["genRandomLegalBoard",
+           "enumMoves",
+           "enumPossPieceMoves"]
 
 
 def genRandomLegalBoard():
@@ -311,3 +314,4 @@ def enumMoves(board, color):
                 pass  # can't move a non-existent piece or one we don't own
 
     return moves
+

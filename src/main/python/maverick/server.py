@@ -34,7 +34,7 @@ from twisted.protocols import basic as basicProtocols
 
 __all__ = ["TournamentSystem",
            "MaverickServerProtocol",
-           "MaverickServerProt",
+           "MaverickServerProtFactory",
            "startServer"]
 
 

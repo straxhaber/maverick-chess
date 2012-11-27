@@ -15,6 +15,7 @@ import time
 
 from maverick.client import MaverickClient
 from maverick.client import MaverickClientException
+
 from maverick.data.structs import ChessBoard
 from maverick.data.structs import ChessMatch
 

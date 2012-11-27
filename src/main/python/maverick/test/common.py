@@ -3,9 +3,9 @@ Created on Nov 16, 2012
 
 @author: mattsh
 '''
-from maverick.data import ChessBoard
-from maverick.data import ChessPosn
-from maverick.data import ChessPiece
+from maverick.data.structs import ChessBoard
+from maverick.data.structs import ChessPosn
+from maverick.data.structs import ChessPiece
 
 _w = ChessBoard.WHITE
 _b = ChessBoard.BLACK
@@ -90,7 +90,7 @@ def getBoardComplex():
                                            _w: (True, False)})
 
 
-def getBoardRand1():
+def getBoard1():
     return ChessBoard(startLayout=[[ChessPiece(_w, ChessBoard.ROOK),
                                    ChessPiece(_w, "N"),
                                    ChessPiece(_w, "B"),
@@ -161,7 +161,7 @@ def getBoardRand1():
                                           _w: (False, False)})
 
 
-def getBoardRand2():
+def getBoard2():
     return ChessBoard(startLayout=[[None,
                                     None,
                                     None,
@@ -232,7 +232,7 @@ def getBoardRand2():
                                            _w: (False, False)})
 
 
-def getBoardRand3():
+def getBoard3():
     return ChessBoard(startLayout=[[None,
                                     ChessPiece(_w, ChessBoard.ROOK),
                                     ChessPiece(_w, "B"),
@@ -303,7 +303,7 @@ def getBoardRand3():
                                            _w: (False, False)})
 
 
-def getBoardRand4():
+def getBoard4():
     return ChessBoard(startLayout=[[None,
                                     ChessPiece(_w, ChessBoard.ROOK),
                                     ChessPiece(_w, "B"),
@@ -374,7 +374,7 @@ def getBoardRand4():
                                            _w: (False, False)})
 
 
-def getBoardRand5():
+def getBoard5():
     return ChessBoard(startLayout=[[None,
                                     None,
                                     None,
@@ -445,7 +445,7 @@ def getBoardRand5():
                                            'W': [False, False]})
 
 
-def getBoardRand6():
+def getBoard6():
     return ChessBoard(startLayout=[[None,
                                     None,
                                     ChessPiece(_w, ChessBoard.ROOK),
@@ -515,15 +515,9 @@ def getBoardRand6():
                       startCanCastleFlags={_b: (False, False),
                                            _w: (False, False)})
 
-def getBoardRand7():
-    return ChessBoard(startLayout=[[None,
-                                    None,
-                                    None,
-                                    None,
-                                    None,
-                                    None,
-                                    None,
-                                    None],
+
+def getBoard7():
+    return ChessBoard(startLayout=[[None] * 8,
                                    [ChessPiece(_w, "P"),
                                     ChessPiece(_w, "B"),
                                     None,
@@ -548,14 +542,7 @@ def getBoardRand7():
                                     None,
                                     None,
                                     None],
-                                   [None,
-                                    None,
-                                    None,
-                                    None,
-                                    None,
-                                    None,
-                                    None,
-                                    None],
+                                   [None] * 8,
                                    [None,
                                     ChessPiece(_w, "P"),
                                     None,

@@ -85,7 +85,7 @@ class ChessBoard(object):
     # TODO (mattsh): Represent threefold repetition draw rule
 
     # Initialize class logger
-    _logger = logging.getLogger("maverick.data.ChessBoard")
+    _logger = logging.getLogger("maverick.data.structs.ChessBoard")
     # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
@@ -229,14 +229,6 @@ class ChessBoard(object):
 
         Sets the piece object at the given position"""
         self.layout[posn.rankN][posn.fileN] = piece
-
-    def getPiecesOfColor(self, color):
-        """TODO"""
-        for row in self.layout:
-            for col in row:
-                p = self.layout[row][col]
-                if p is not None and p.color == color:
-                    yield p
 
     def _executePly(self, color, fromPosn, toPosn):
         """Make a ply on this board, assuming that it is legal
@@ -822,7 +814,7 @@ class ChessBoard(object):
         kingPosn = self.__isLegal_findKings()[color]
 
         # Check if any enemy piece can legally move to the king's location
-        for loc in self.__getPiecesOfColor(other):
+        for loc in self.getPiecesOfColor(other):
 
             # If a move to the king's location is legal, the king is in check
             if self.__isLegal_IsPieceMovementInPattern(other, loc, kingPosn):
@@ -834,25 +826,20 @@ class ChessBoard(object):
         ChessBoard._logger.debug("Found that %s is not in check", color)
         return None
 
-    def __getPiecesOfColor(self, color):
+    def getPiecesOfColor(self, color):
         """Return a list of positions where the given color has pieces
 
-        @param board: The board to use for this check.
-        @param color: The color of the pieces to find
+        @param color: color of the pieces to find
 
-        @return: a list of ChessPosns representing
-                the location of all pieces of the given color"""
+        @return: a list of ChessPosns enumerating pieces of the given color"""
 
         pieceLocations = []
-
-        for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
-            row = self.layout[r]
-            for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
-                piece = row[f]
-                if piece is not None:
-                    if piece.color == color:
-                        # Build ChessPosn for piece location
-                        pieceLocations.append(ChessPosn(r, f))
+        for rankN in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
+            for fileN in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
+                posn = ChessPosn(rankN, fileN)
+                piece = self[posn]
+                if piece is not None and piece.color == color:
+                    pieceLocations.append(ChessPosn(rankN, fileN))
         return pieceLocations
 
     def isKingCheckmated(self, color):
@@ -892,7 +879,7 @@ class ChessBoard(object):
                                                              checkPiecePosn,
                                                              chkdKingLoc)
         # Get locations of all this player's non-king pieces
-        myPieceLocs = self.__getPiecesOfColor(color)
+        myPieceLocs = self.getPiecesOfColor(color)
 
         # Iterate through pieces, and see if any can move to potential check-
         # alleviating squares
@@ -1018,7 +1005,7 @@ class ChessMatch(object):
     """Represents a chess game in Maverick"""
 
     # Initialize class logger
-    _logger = logging.getLogger("maverick.data.ChessMatch")
+    _logger = logging.getLogger("maverick.data.structs.ChessMatch")
     _logger.setLevel("INFO")
 
     # Constants for game status

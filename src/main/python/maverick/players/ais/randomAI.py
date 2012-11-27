@@ -16,7 +16,7 @@ import random
 
 from maverick.data.structs import ChessBoard
 from maverick.players.ais.common import MaverickAI, MaverickAIException
-from maverick.players.ais.analyzers.stateExpansion import enumMoves
+from maverick.data.utils import enumMoves
 
 
 __author__ = "Matthew Strax-Haber and James Magnarelli"

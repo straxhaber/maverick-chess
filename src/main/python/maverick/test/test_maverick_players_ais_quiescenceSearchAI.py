@@ -8,110 +8,104 @@ from __future__ import division
 
 import unittest
 
-from maverick.data import ChessBoard
+from maverick.data.structs import ChessBoard
 from maverick.players.ais.analyzers.likability import heuristicInCheck
 from maverick.players.ais.analyzers.likability import heuristicPcsUnderAttack
 from maverick.players.ais.analyzers.likability import heuristicPieceValue
 from maverick.players.ais.analyzers.likability import heuristicPiecesCovered
 from maverick.players.ais.analyzers.likability import heuristicEmptySpaceCvrg
-from maverick.test import common as commonTest
+from maverick.test.common import getBoardNew, getBoardComplex
 
 
 class Test_maverick_players_ais_quiescenceSearchAI(unittest.TestCase):
 
-    def setUp(self):
-        pass
-
     def test_newB_heuristicInCheck(self):
         # Neither player should be in check at the start
-        whiteInCheckVal = heuristicInCheck(ChessBoard.WHITE,
-                                           commonTest.getBoardNew())
-        blackInCheckVal = heuristicInCheck(ChessBoard.BLACK,
-                                           commonTest.getBoardNew())
-        self.assertTrue((whiteInCheckVal == 1) and
-                        (blackInCheckVal == 1))
+        wVal = heuristicInCheck(ChessBoard.WHITE, getBoardNew())
+        bVal = heuristicInCheck(ChessBoard.BLACK, getBoardNew())
+
+        self.assertTrue(wVal == 1)
+        self.assertTrue(bVal == 1)
 
     def test_newB_heuristicPieceValue(self):
-        whitePieceVal = heuristicPieceValue(ChessBoard.WHITE,
-                                            commonTest.getBoardNew())
-        blackPieceVal = heuristicPieceValue(ChessBoard.BLACK,
-                                            commonTest.getBoardNew())
-        self.assertTrue((whitePieceVal == 1) and (blackPieceVal == 1))
+        wVal = heuristicPieceValue(ChessBoard.WHITE, getBoardNew())
+        bVal = heuristicPieceValue(ChessBoard.BLACK, getBoardNew())
+
+        self.assertTrue(wVal == 1)
+        self.assertTrue(bVal == 1)
 
     def test_newB_heuristicEmptySpaceCoverage(self):
-        whiteBoardVal = heuristicEmptySpaceCvrg(ChessBoard.WHITE,
-                                                commonTest.getBoardNew())
-        blackBoardVal = heuristicEmptySpaceCvrg(ChessBoard.BLACK,
-                                                commonTest.getBoardNew())
-        self.assertTrue((whiteBoardVal == 0) and (blackBoardVal == 0))
+        wVal = heuristicEmptySpaceCvrg(ChessBoard.WHITE, getBoardNew())
+        bVal = heuristicEmptySpaceCvrg(ChessBoard.BLACK, getBoardNew())
+
+        self.assertTrue(wVal == 0)
+        self.assertTrue(bVal == 0)
 
     def test_newB_heuristicPiecesUnderAttack(self):
-        whiteBoardVal = heuristicPcsUnderAttack(ChessBoard.WHITE,
-                                                commonTest.getBoardNew())
-        blackBoardVal = heuristicPcsUnderAttack(ChessBoard.BLACK,
-                                                commonTest.getBoardNew())
-        self.assertTrue((whiteBoardVal == 1) and (blackBoardVal == 1))
+        wVal = heuristicPcsUnderAttack(ChessBoard.WHITE, getBoardNew())
+        bVal = heuristicPcsUnderAttack(ChessBoard.BLACK, getBoardNew())
+
+        self.assertTrue(wVal == 1)
+        self.assertTrue(bVal == 1)
 
     def test_newB_heuristicPiecesCovered(self):
         # Maximum covered value for new board is 39
-        whiteBoardVal = heuristicPiecesCovered(ChessBoard.WHITE,
-                                               commonTest.getBoardNew())
-        blackBoardVal = heuristicPiecesCovered(ChessBoard.BLACK,
-                                               commonTest.getBoardNew())
+        wVal = heuristicPiecesCovered(ChessBoard.WHITE, getBoardNew())
+        bVal = heuristicPiecesCovered(ChessBoard.BLACK, getBoardNew())
+
         properRetVal = -1 + 29 / 39 * 2
-        self.assertTrue((whiteBoardVal == properRetVal)
-                        and (blackBoardVal == properRetVal))
+        self.assertTrue(wVal == properRetVal)
+        self.assertTrue(bVal == properRetVal)
 
     def test_bCmplx_heuristicInCheck(self):
         # Neither player should be in check at the start
-        whiteInCheckVal = heuristicInCheck(ChessBoard.WHITE,
-                                           commonTest.getBoardComplex())
-        blackInCheckVal = heuristicInCheck(ChessBoard.BLACK,
-                                           commonTest.getBoardComplex())
-        self.assertTrue((whiteInCheckVal == 1) and
-                        (blackInCheckVal == 1))
+        wVal = heuristicInCheck(ChessBoard.WHITE, getBoardComplex())
+        bVal = heuristicInCheck(ChessBoard.BLACK, getBoardComplex())
+
+        self.assertTrue(wVal == 1)
+        self.assertTrue(bVal == 1)
 
     def test_bCmplx_heuristicPieceValue(self):
-        whitePieceVal = heuristicPieceValue(ChessBoard.WHITE,
-                                            commonTest.getBoardComplex())
-        blackPieceVal = heuristicPieceValue(ChessBoard.BLACK,
-                                            commonTest.getBoardComplex())
+        wVal = heuristicPieceValue(ChessBoard.WHITE, getBoardComplex())
+        bVal = heuristicPieceValue(ChessBoard.BLACK, getBoardComplex())
+
         properWhiteVal = (39 - 19.5) / 19.5
         properBlackVal = (35 - 19.5) / 19.5
 
-        self.assertTrue((whitePieceVal == properWhiteVal) and
-                        (blackPieceVal == properBlackVal))
+        self.assertTrue(wVal == properWhiteVal)
+        self.assertTrue(bVal == properBlackVal)
 
     def test_bCmplx_heuristicEmptySpaceCoverage(self):
-        b = commonTest.getBoardComplex()
-        whiteBoardVal = heuristicEmptySpaceCvrg(ChessBoard.WHITE, b)
-        blackBoardVal = heuristicEmptySpaceCvrg(ChessBoard.BLACK, b)
+        b = getBoardComplex()
+        wVal = heuristicEmptySpaceCvrg(ChessBoard.WHITE, b)
+        bVal = heuristicEmptySpaceCvrg(ChessBoard.BLACK, b)
+
         properWhiteVal = -1 + 22 / 36 * 2
         properBlackVal = -1 + 22 / 36 * 2
 
-        self.assertTrue((whiteBoardVal == properWhiteVal) and
-                        (blackBoardVal == properBlackVal))
+        self.assertTrue(wVal == properWhiteVal)
+        self.assertTrue(bVal == properBlackVal)
 
     def test_bCmplx_heuristicPiecesUnderAttack(self):
-        whiteBoardVal = heuristicPcsUnderAttack(ChessBoard.WHITE,
-                                                commonTest.getBoardComplex())
-        blackBoardVal = heuristicPcsUnderAttack(ChessBoard.BLACK,
-                                                commonTest.getBoardComplex())
+        wVal = heuristicPcsUnderAttack(ChessBoard.WHITE, getBoardComplex())
+        bVal = heuristicPcsUnderAttack(ChessBoard.BLACK, getBoardComplex())
+
         properWhiteVal = 1 - 2 * (10 / 39)
         properBlackVal = 1 - 2 * (12 / 39)
-        self.assertTrue((whiteBoardVal == properWhiteVal) and
-                        (blackBoardVal == properBlackVal))
+
+        self.assertTrue(wVal == properWhiteVal)
+        self.assertTrue(bVal == properBlackVal)
 
     def test_bCmplx_heuristicPiecesCovered(self):
         # Maximum covered value for new board is 39
-        whiteBoardVal = heuristicPiecesCovered(ChessBoard.WHITE,
-                                               commonTest.getBoardComplex())
-        blackBoardVal = heuristicPiecesCovered(ChessBoard.BLACK,
-                                               commonTest.getBoardComplex())
+        wVal = heuristicPiecesCovered(ChessBoard.WHITE, getBoardComplex())
+        bVal = heuristicPiecesCovered(ChessBoard.BLACK, getBoardComplex())
+
         properWhiteVal = -1 + 28 / 39 * 2
         properBlackVal = -1 + 19 / 35 * 2
-        self.assertTrue((whiteBoardVal == properWhiteVal)
-                        and (blackBoardVal == properBlackVal))
+
+        self.assertTrue(wVal == properWhiteVal)
+        self.assertTrue(bVal == properBlackVal)
 
 
 if __name__ == "__main__":
