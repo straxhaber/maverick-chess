@@ -175,6 +175,10 @@ class Test_maverick_players_ais_common(unittest.TestCase):
         b = commonTest.getBoardRand7()
         self.assertTrue(b.isKingInCheck(ChessBoard.BLACK)[0])
 
+    def test_bRand8_WhiteInCheckmate(self):
+        b = commonTest.getBoardRand8()
+        self.assertFalse(b.isKingCheckmated(ChessBoard.WHITE))
+
 
 if __name__ == "__main__":
     unittest.main()

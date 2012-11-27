@@ -15,6 +15,8 @@ import logging
 
 from maverick.players.ais.common import MaverickAI
 from maverick.data import ChessBoard
+from maverick.players.ais.analyzers.likability import evaluateBoardLikability
+
 
 ## TODO (James): Make sure that heuristic functions to return an int in [-1..1]
 
@@ -34,18 +36,50 @@ class QLAI(MaverickAI):
     def getNextMove(self, board):
         """TODO PyDoc"""
 
+        SEARCH_DEPTH = 4
+
         # Figure out our color
         if self.isWhite:
             color = ChessBoard.WHITE
         else:
             color = ChessBoard.BLACK
 
-        moveChoices = self.enumPossBoardMoves(board, color)
+        nextMove = self.boardSearch(board, color, SEARCH_DEPTH, -1, 1)
 
-        # TODO (mattsh): write this
-        (fromPosn, toPosn) = (None, None)
+        (fromPosn, toPosn) = nextMove
 
         return (fromPosn, toPosn)
+
+    def boardSearch(self, board, color, depth, alpha, beta):
+        """Performs a search of the given board using alpha-beta pruning
+
+        @param board: The starting board state to evaluate
+        @param color: The color of the player to generate a move for
+        @param depth: The number of plies forward that should be explored
+        @param alpha: Nodes with a likability below this will be ignored
+        @param beta: Nodes with a likability above this will be ignored
+
+        @return: A tuple with the following elements:
+                1. None, or a move of the form (fromChessPosn, toChessPosn)
+                    representing the next move that should be made by the given
+                    player
+                2. The likability of this move's path in the tree, as followed
+                    by the search and as determined by the likability of the
+                    leaf node terminating the path
+
+        Implementation based on information found here: http://bit.ly/t1dHKA"""
+        ##TODO (James): Write this
+
+        otherColor = ChessBoard.getOtherColor(color)
+
+        # Check if we are at a leaf node
+        if ((depth == 0) or
+            board.isKingCheckmated(color) or
+            board.isKingCheckmated(otherColor)):
+            return (None, evaluateBoardLikability(board))
+        else:
+            moveChoices = self.enumPossBoardMoves(board, color)
+            pass
 
 
 def runAI(host=None, port=None):

@@ -910,7 +910,7 @@ class ChessBoard(object):
                                                               intruptLoc)
                         # Check if the given color is still in check
                         # If not, that color is not in checkmate
-                        if not boardAfterMove.isKingInCheck(color):
+                        if not boardAfterMove.isKingInCheck(color)[0]:
                             return False
 
         possibleKingMoves = []  # List of tuples of possible king moves
