@@ -225,8 +225,7 @@ def heuristicPiecesCovered(color, board):
             whose positions could be immediately re-taken if captured,
             weighted by piece value"""
 
-    ## TODO (James): make this find all covered pieces for WHITE - not
-    #                currently considering non-pawn white pieces
+    ## TODO (James): speed this UP. It's a huge performance bottleneck
 
     # Construct list of friendly pieces
     friendPiecePosns = ChessBoardUtils.findPiecePosnsByColor(board, color)
@@ -242,17 +241,17 @@ def heuristicPiecesCovered(color, board):
         if board[lostPiecePosn].pieceType != ChessBoard.KING:
             # Build hypothetical board with the lost piece removed
 
-            ## TODO (James): consider a more efficient way of doing this,
-            #                rather than a deep copy
-            hypoBoard = copy.deepcopy(board)
+            # Store the supposedly lost piece for later replacement
+            # (this avoids having to make a slow deep copy)
+            lostPiece = board[lostPiecePosn]
+
             # Eliminate the supposedly lost piece
-            hypoBoard[lostPiecePosn] = None
+            board[lostPiecePosn] = None
 
             # Build list of possible friendly moves
-            friendlyMoves = enumPossBoardMoves(hypoBoard, color)
+            friendlyMoves = enumPossBoardMoves(board, color)
 
-            lostPieceType = board[lostPiecePosn].pieceType
-            lostPieceValue = _pieceValues[lostPieceType]
+            lostPieceValue = _pieceValues[lostPiece.pieceType]
 
             # Test whether any move includes a move to the destination
             for move in friendlyMoves:
@@ -262,6 +261,10 @@ def heuristicPiecesCovered(color, board):
                     weightedReturn += lostPieceValue
                     # Only add once per piece being covered
                     break
+
+            # VERY IMPORTANT - restore supposedly lost piece to original
+            # location
+            board[lostPiecePosn] = lostPiece
 
     # Sum the total possible piece value for all pieces of this color
 
@@ -360,13 +363,16 @@ def evaluateBoardLikability(color, board):
         opinions.append(("EmptySpaceCoverage", emptySpaceCoverageWeight,
                         emptySpcsCvdRes))
 
+
+        ## TODO (James): Re-enable this when it is more efficient
+
         # Add pieces covered opinion
-        pcsCoveredFriend = heuristicPiecesCovered(color, board)
-        pcsCoveredFoe = heuristicPiecesCovered(otherColor, board)
-        pcsCoveredRes = combineHeuristicValues(pcsCoveredFriend,
-                                                    pcsCoveredFoe)
-        opinions.append(("PiecesCovered", piecesCoveredWeight,
-                        pcsCoveredRes))
+#        pcsCoveredFriend = heuristicPiecesCovered(color, board)
+#        pcsCoveredFoe = heuristicPiecesCovered(otherColor, board)
+#        pcsCoveredRes = combineHeuristicValues(pcsCoveredFriend,
+#                                                    pcsCoveredFoe)
+#        opinions.append(("PiecesCovered", piecesCoveredWeight,
+#                        pcsCoveredRes))
 
         # Return the weighted average
         return sum([weight * value for (_, weight, value) in opinions]) / \

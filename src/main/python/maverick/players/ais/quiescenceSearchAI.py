@@ -12,6 +12,7 @@ from __future__ import division
 from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
 import logging
+from time import time
 
 from maverick.data import ChessBoard
 from maverick.players.ais.analyzers.likability import evaluateBoardLikability
@@ -31,12 +32,19 @@ class QLAI(MaverickAI):
     # Initialize class _logger
     _logger = logging.getLogger("maverick.players.ais.quiescenceSearchAI.QLAI")
     # Initialize if not already initialized
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
 
     def getNextMove(self, board):
         """TODO PyDoc"""
 
+        # TODO (James): Remove this - show us the board, just for development
+        self.printBoard
+
         SEARCH_DEPTH = 2
+
+        # How long we want to allow the search to run before it starts
+        # terminating - most tournaments allow 3 minutes per turn
+        SEARCH_TIME_SECONDS = (MaverickAI.CALCULATION_TIMEOUT - 1) * 60
 
         # Figure out our color
         if self.isWhite:
@@ -44,21 +52,29 @@ class QLAI(MaverickAI):
         else:
             color = ChessBoard.BLACK
 
+        QLAI._logger.info("Calculating next move")
         (nextMove, _) = self._boardSearch(board, color, SEARCH_DEPTH, -1, 1,
-                                          True)
+                                          True, time() + SEARCH_TIME_SECONDS)
 
         (fromPosn, toPosn) = nextMove
 
         return (fromPosn, toPosn)
 
-    def _boardSearch(self, board, color, depth, min, max, isMaxNode):
+    def _boardSearch(self, board, color, depth, min, max,
+                     isMaxNode, stopSrchTime):
         """Performs a search of the given board using alpha-beta pruning
+
+        NOTE: Not guaranteed to stop promptly at stopSrchTime - may take some
+        time to terminate. Leave a time buffer.
 
         @param board: The starting board state to evaluate
         @param color: The color of the player to generate a move for
         @param depth: The number of plies forward that should be explored
         @param min: Nodes with a likability below this will be ignored
         @param max: Nodes with a likability above this will be ignored
+        @param isMaxNode: Is this a max node? (Is this node seeking to
+                        maximize the value of child nodes?)
+        @param stopSrchTime: Time at which the search should begin to terminate
 
         @return: A tuple with the following elements:
                 1. None, or a move of the form (fromChessPosn, toChessPosn)
@@ -69,24 +85,25 @@ class QLAI(MaverickAI):
                     leaf node terminating the path
 
         Implementation based on information found here: http://bit.ly/t1dHKA"""
-        ## TODO (James): Incorporate quiescent search
-        ## TODO (James): Incorporate timeout
-        ## TODO (James): This gets stuck on depth == 0. Why?
+        ## TODO (James): Incorporate quiescence search
+        ## TODO (James): Check timeout less than once per iteration
 
-        ## TODO (James): Remove print statements from this method
-
-        print("Searching for best move to depth {0}".format(depth))
+        logStrF = "Performing minimax search to depth {0}.".format(depth)
+        QLAI._logger.debug(logStrF)
 
         otherColor = ChessBoard.getOtherColor(color)
 
-        # Check if we are at a leaf node
+        # Check if we are at a leaf node, or should otherwise terminate
         if ((depth == 0) or
+            time() > stopSrchTime or
             board.isKingCheckmated(color) or
             board.isKingCheckmated(otherColor)):
             return (None, evaluateBoardLikability(color, board))
+
         else:
             moveChoices = enumPossBoardMoves(board, color)
-            print "Considering {0} possible moves".format(len(moveChoices))
+            logStrF = "Considering {0} possible moves".format(len(moveChoices))
+            QLAI._logger.debug(logStrF)
 
             # Check whether seeking to find minimum or maximum value
             if isMaxNode:
@@ -100,7 +117,8 @@ class QLAI(MaverickAI):
                                                                  otherColor,
                                                                  depth - 1,
                                                                  newMin, max,
-                                                                 not isMaxNode)
+                                                                 not isMaxNode,
+                                                                 stopSrchTime)
                     # Make note of the least likable branches that it still
                     # makes sense to pursue, given how likable this one is
                     if nodeEnemyLikability > newMin:
@@ -108,6 +126,7 @@ class QLAI(MaverickAI):
 
                     # Don't search outside of the target range
                     elif nodeEnemyLikability > max:
+                        QLAI._logger.debug("Pruning because new value > max")
                         return (move, max)
                 return (move, newMin)
             else:
@@ -120,7 +139,8 @@ class QLAI(MaverickAI):
                                                                  otherColor,
                                                                  depth - 1,
                                                                  min, newMax,
-                                                                 not isMaxNode)
+                                                                 not isMaxNode,
+                                                                 stopSrchTime)
 
                     # Make note of the most likable branches that it still
                     # makes sense to pursue, given how likable this one is
@@ -129,8 +149,12 @@ class QLAI(MaverickAI):
 
                     # Don't bother searching outside of our target range
                     elif nodeEnemyLikability < min:
-                        return min
+                        QLAI._logger.debug("pruning because new value < min")
+                        return (move, min)
                 return (move, newMax)
+
+    def _showPlayerMove(self, board, fromPosn, toPosn):
+        pass  # No printouts needed for AI
 
 
 def runAI(host=None, port=None):
