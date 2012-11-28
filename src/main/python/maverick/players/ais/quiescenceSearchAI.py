@@ -34,17 +34,20 @@ class QLAI(MaverickAI):
     # Initialize if not already initialized
     logging.basicConfig(level=logging.DEBUG)
 
+    numNodesCovered = 0
+
     def getNextMove(self, board):
         """TODO PyDoc"""
 
         # TODO (James): Remove this - show us the board, just for development
         self.printBoard()
 
-        SEARCH_DEPTH = 3
+        SEARCH_DEPTH = 4
 
         # How long we want to allow the search to run before it starts
-        # terminating - most tournaments allow 3 minutes per turn
-        SEARCH_TIME_SECONDS = (MaverickAI.CALCULATION_TIMEOUT - 1) * 60
+        # terminating - most tournaments allow 3 minutes per turn.
+        # Experience shows that 0.5 seconds is more than enough buffer time
+        SEARCH_TIME_SECONDS = (MaverickAI.CALCULATION_TIMEOUT - 0.5) * 60
 
         # Figure out our color
         if self.isWhite:
@@ -54,11 +57,17 @@ class QLAI(MaverickAI):
 
         QLAI._logger.info("Calculating next move")
         startTime = clock()
+        QLAI.numNodesCovered = 0
         (nextMove, _) = self._boardSearch(board, color, SEARCH_DEPTH, -1, 1,
                                           True, time() + SEARCH_TIME_SECONDS)
         srchTime = clock() - startTime
         logStrF = "Elapsed CPU time for search was about {0}s".format(srchTime)
         QLAI._logger.info(logStrF)
+        logStrF = "Best found move was {0} -> {1}".format(nextMove[0],
+                                                          nextMove[1])
+        QLAI._logger.info(logStrF)
+
+        print "Evaluated {0} nodes".format(QLAI.numNodesCovered)
 
         (fromPosn, toPosn) = nextMove
 
@@ -91,6 +100,9 @@ class QLAI(MaverickAI):
         Implementation based on information found here: http://bit.ly/t1dHKA"""
         ## TODO (James): Incorporate quiescence search
         ## TODO (James): Check timeout less than once per iteration
+        ## TODO (James): remove references to QLAI.numNodesCovered - it is only
+        #                here for testing purposes
+        QLAI.numNodesCovered += 1
 
         logStrF = "Performing minimax search to depth {0}.".format(depth)
         QLAI._logger.debug(logStrF)
