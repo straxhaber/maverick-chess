@@ -12,7 +12,7 @@ from __future__ import division
 from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
 import logging
-from time import time
+from time import clock, time
 
 from maverick.data import ChessBoard
 from maverick.players.ais.analyzers.likability import evaluateBoardLikability
@@ -38,9 +38,9 @@ class QLAI(MaverickAI):
         """TODO PyDoc"""
 
         # TODO (James): Remove this - show us the board, just for development
-        self.printBoard
+        self.printBoard()
 
-        SEARCH_DEPTH = 2
+        SEARCH_DEPTH = 3
 
         # How long we want to allow the search to run before it starts
         # terminating - most tournaments allow 3 minutes per turn
@@ -53,14 +53,18 @@ class QLAI(MaverickAI):
             color = ChessBoard.BLACK
 
         QLAI._logger.info("Calculating next move")
+        startTime = clock()
         (nextMove, _) = self._boardSearch(board, color, SEARCH_DEPTH, -1, 1,
                                           True, time() + SEARCH_TIME_SECONDS)
+        srchTime = clock() - startTime
+        logStrF = "Elapsed CPU time for search was about {0}s".format(srchTime)
+        QLAI._logger.info(logStrF)
 
         (fromPosn, toPosn) = nextMove
 
         return (fromPosn, toPosn)
 
-    def _boardSearch(self, board, color, depth, min, max,
+    def _boardSearch(self, board, color, depth, alpha, beta,
                      isMaxNode, stopSrchTime):
         """Performs a search of the given board using alpha-beta pruning
 
@@ -70,9 +74,9 @@ class QLAI(MaverickAI):
         @param board: The starting board state to evaluate
         @param color: The color of the player to generate a move for
         @param depth: The number of plies forward that should be explored
-        @param min: Nodes with a likability below this will be ignored
-        @param max: Nodes with a likability above this will be ignored
-        @param isMaxNode: Is this a max node? (Is this node seeking to
+        @param alpha: Nodes with a likability below this will be ignored
+        @param beta: Nodes with a likability above this will be ignored
+        @param isMaxNode: Is this a beta node? (Is this node seeking to
                         maximize the value of child nodes?)
         @param stopSrchTime: Time at which the search should begin to terminate
 
@@ -107,7 +111,7 @@ class QLAI(MaverickAI):
 
             # Check whether seeking to find minimum or maximum value
             if isMaxNode:
-                newMin = min
+                newMin = alpha
                 for move in moveChoices:
                     nodeBoard = board.getResultOfPly(move[0], move[1])
 
@@ -116,7 +120,7 @@ class QLAI(MaverickAI):
                     (_, nodeEnemyLikability) = self._boardSearch(nodeBoard,
                                                                  otherColor,
                                                                  depth - 1,
-                                                                 newMin, max,
+                                                                 newMin, beta,
                                                                  not isMaxNode,
                                                                  stopSrchTime)
                     # Make note of the least likable branches that it still
@@ -125,12 +129,12 @@ class QLAI(MaverickAI):
                         newMin = nodeEnemyLikability
 
                     # Don't search outside of the target range
-                    elif nodeEnemyLikability > max:
-                        QLAI._logger.debug("Pruning because new value > max")
-                        return (move, max)
+                    elif nodeEnemyLikability > beta:
+                        QLAI._logger.debug("Pruning because new value > beta")
+                        return (move, beta)
                 return (move, newMin)
             else:
-                newMax = max
+                newMax = beta
                 for move in moveChoices:
                     nodeBoard = board.getResultOfPly(move[0], move[1])
 
@@ -138,7 +142,7 @@ class QLAI(MaverickAI):
                     (_, nodeEnemyLikability) = self._boardSearch(nodeBoard,
                                                                  otherColor,
                                                                  depth - 1,
-                                                                 min, newMax,
+                                                                 alpha, newMax,
                                                                  not isMaxNode,
                                                                  stopSrchTime)
 
@@ -148,9 +152,9 @@ class QLAI(MaverickAI):
                         newMax = nodeEnemyLikability
 
                     # Don't bother searching outside of our target range
-                    elif nodeEnemyLikability < min:
-                        QLAI._logger.debug("pruning because new value < min")
-                        return (move, min)
+                    elif nodeEnemyLikability < alpha:
+                        QLAI._logger.debug("pruning because new value < alpha")
+                        return (move, alpha)
                 return (move, newMax)
 
     def _showPlayerMove(self, board, fromPosn, toPosn):
