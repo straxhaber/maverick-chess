@@ -12,6 +12,7 @@ from __future__ import division
 from argparse import ArgumentDefaultsHelpFormatter
 from argparse import ArgumentParser
 import logging
+import random
 from time import clock, time
 
 from maverick.data import ChessBoard
@@ -69,6 +70,11 @@ class QLAI(MaverickAI):
 
         print "Evaluated {0} nodes".format(QLAI.numNodesCovered)
 
+        # Make sure we found a move
+        if nextMove is None:
+            possMoves = enumPossBoardMoves(board, color)
+            nextMove = random.choice(possMoves)
+
         (fromPosn, toPosn) = nextMove
 
         return (fromPosn, toPosn)
@@ -124,6 +130,7 @@ class QLAI(MaverickAI):
             # Check whether seeking to find minimum or maximum value
             if isMaxNode:
                 newMin = alpha
+                newMoveChoice = None
                 for move in moveChoices:
                     nodeBoard = board.getResultOfPly(move[0], move[1])
 
@@ -139,14 +146,16 @@ class QLAI(MaverickAI):
                     # makes sense to pursue, given how likable this one is
                     if nodeEnemyLikability > newMin:
                         newMin = nodeEnemyLikability
+                        newMoveChoice = move
 
                     # Don't search outside of the target range
                     elif nodeEnemyLikability > beta:
                         QLAI._logger.debug("Pruning because new value > beta")
                         return (move, beta)
-                return (move, newMin)
+                return (newMoveChoice, newMin)
             else:
                 newMax = beta
+                newMoveChoice = None
                 for move in moveChoices:
                     nodeBoard = board.getResultOfPly(move[0], move[1])
 
@@ -162,12 +171,13 @@ class QLAI(MaverickAI):
                     # makes sense to pursue, given how likable this one is
                     if nodeEnemyLikability < newMax:
                         newMax = nodeEnemyLikability
+                        newMoveChoice = move
 
                     # Don't bother searching outside of our target range
                     elif nodeEnemyLikability < alpha:
                         QLAI._logger.debug("pruning because new value < alpha")
                         return (move, alpha)
-                return (move, newMax)
+                return (newMoveChoice, newMax)
 
     def _showPlayerMove(self, board, fromPosn, toPosn):
         pass  # No printouts needed for AI
