@@ -307,11 +307,11 @@ def evaluateBoardLikability(color, board):
 
     # Pairing of heuristics with their weights
     ## TODO (James): research and tweak these
-    pieceValueWeight = 3
-    inCheckWeight = 4
-    piecesUnderAttackWeight = 3
-    emptySpaceCoverageWeight = 1
-    piecesCoveredWeight = 1
+    pieceValueWeight = 8
+    inCheckWeight = 10
+    piecesUnderAttackWeight = 5
+    emptySpaceCoverageWeight = 3
+    piecesCoveredWeight = 2
 
     # Determine opposing player color
     otherColor = ChessBoard.getOtherColor(color)
