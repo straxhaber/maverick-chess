@@ -33,7 +33,7 @@ class MaverickAI(MaverickPlayer):
     # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
-    CALCULATION_TIMEOUT = 5
+    CALCULATION_TIMEOUT = 2
     """Maximum amount of time for the AI to take to make its move"""
 
     def getNextMove(self, board):

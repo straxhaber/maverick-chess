@@ -21,6 +21,11 @@ __all__ = ["ChessBoard",
            "ChessPosn"]
 
 
+class MaverickDataException(Exception):
+    """Base class for maverick data representation exceptions"""
+    pass
+
+
 class ChessPosn(object):
     """Represents a position on a chess board"""
 
@@ -238,11 +243,17 @@ class ChessBoard(object):
     def _executePly(self, color, fromPosn, toPosn):
         """Make a ply on this board, assuming that it is legal
 
-        Arguments and are the same as makePly for a legal move"""
+        Arguments  are the same as makePly for a legal move
+
+        @return: A list of (ChessPiece, ChessPosn) tuples mapping
+                pieces moved by this function to their original locations"""
 
         # Remove moving piece from starting position
         movedPiece = self[fromPosn]
         self[fromPosn] = None
+
+        # Accumulator for return value
+        movedList = [(movedPiece, fromPosn)]
 
         # Reset en passant flags to false
         self.flag_enpassant[color] = [False] * ChessBoard.BOARD_LAYOUT_SIZE
@@ -271,7 +282,8 @@ class ChessBoard(object):
             rankDeltaAbs == 2):
             self.flag_enpassant[color][fromPosn.fileN] = True
 
-        # Move piece to destination
+        # Move piece to destination, noting what was originally there
+        movedList.append((self[toPosn], toPosn))
         self[toPosn] = movedPiece
 
         otherColor = ChessBoard.getOtherColor(color)
@@ -292,10 +304,15 @@ class ChessBoard(object):
                 movedRookPosn = ChessPosn(toPosn.rankN, 0)
                 rookDestPosn = ChessPosn(toPosn.rankN, 3)
 
-            # Move the rook
+            # Move the rook, noting what was originally at its position
+
+            movedList.append((self[rookDestPosn], rookDestPosn))
             movedRook = self[movedRookPosn]
             self[movedRookPosn] = None
             self[rookDestPosn] = movedRook
+
+            # Note this movement
+            movedList.append((movedRook, movedRookPosn))
 
         # Remove en passant pawns, if relevant
 
@@ -316,12 +333,19 @@ class ChessBoard(object):
             if (self.flag_enpassant[otherColor][toPosn.fileN] and
                 toPosn.rankN == epCapRnk):
 
-                    # If a pawn was captured, remove it
+                    # If a pawn was captured, note this and remove it
+                    movedList.append((self[pawnPosn], pawnPosn))
+
                     self[pawnPosn] = None
+
+                    # Reset the en passant flag, pre-emptively
+                    self.flag_enpassant[otherColor][toPosn.fileN] = False
 
         # Log the successful move
         logStrF = "Moved piece from %s, to %s"
         ChessBoard._logger.debug(logStrF, fromPosn, toPosn)
+
+        return movedList
 
     def makePly(self, color, fromPosn, toPosn):
         """Make a ply on this board if legal
@@ -486,24 +510,24 @@ class ChessBoard(object):
 
         return interruptSquares
 
-    def __isLegalMove_findKings(self):
-        """Return the locations of the kings on the board, as a dictionary
+    def __isLegalMove_findKings(self, color):
+        """Return the locations of the given color king, as a ChessPosn
 
-        @return: a dictionary of the form {ChessBoard.WHITE: ChessPosn,
-                                            ChessBoard.BLACK: ChessPosn}
-                mapping king colors to location ChessPosns"""
-        kingsPosnDict = {}  # Accumulator for return value
+        @param color: The color of the king to find
+        @return: the location of the king of the given color, as a ChessPosn"""
 
-        # Locate given player's king, and opposing player's non-king pieces
+        # Locate given player's king
         for r in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
             for f in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
                 piecePosn = ChessPosn(r, f)
                 piece = self[piecePosn]
                 if (piece is not None and
-                    piece.pieceType == ChessBoard.KING):
-                        kingsPosnDict[piece.color] = piecePosn
+                    piece.pieceType == ChessBoard.KING and
+                    piece.color == color):
+                        return piecePosn
 
-        return kingsPosnDict
+        # Raise exception - we have a deficit of kings
+        raise MaverickDataException("No King of given color found")
 
     def __isLegalMove_IsPieceMovementInPattern(self, color,
                                                fromPosn, toPosn):
@@ -778,11 +802,17 @@ class ChessBoard(object):
         else:
 
             # Create the board that the proposed move would result in
-            boardAfterMove = self.getResultOfPly(fromPosn, toPosn)
+            boardMoveUndoDict = self.getResultOfPly(fromPosn, toPosn)
 
             # Check that the king would not be in check after the move
             ChessBoard._logger.debug("Checking for move to in-check state")
-            if boardAfterMove.isKingInCheck(color)[0]:
+            isKingInCheck = self.isKingInCheck(color)[0]
+
+            # Restore the old board state (prior to hypothesization)
+            self.unGetResultOfPly(boardMoveUndoDict)
+
+            # Perform the check
+            if isKingInCheck:
                 ChessBoard._logger.debug("Illegal move to in-check state")
                 return False
             else:
@@ -791,26 +821,58 @@ class ChessBoard(object):
     def getResultOfPly(self, fromPosn, toPosn):
         """Returns the board object resulting from the given ply
 
-        NOTE: Does not check legality of move, and creates a copy for operation
+        WARNING: Modifies the state of the board - be sure to call
+                unGetResultOfPly to restore board state
+
+        NOTE: Does not check legality of move
 
         @param fromPosn: a ChessPosn representing the origin position
         @param toPosn: a ChessPosn representing the destination position
 
-        @return: a ChessBoard object identical to that which would result from
-                the given ply being made on this board"""
+        @return: a dictionary of the following form:
+                {"oldCastleFlags": the original castle flags of this board,
+                "oldEnPassantFlags": the original enpassant flags,
+                "movedPieces" A list of (ChessPiece, ChessPosn) tuples mapping
+                pieces moved by this function to their original locations}
+
+                This dictionary can be supplied as an argument to
+                unGetResultOfPly to restore board state"""
 
         # Figure out the color being moved
         color = self[fromPosn].color
 
-        # Copy the board, so as not to modify anything real
-        postMoveBoard = copy.deepcopy(self)
+        # Accumulator for return value
+        returnDict = {}
+
+        returnDict['oldCastleFlags'] = self.flag_canCastle.copy()
+        returnDict['oldEnPassantFlags'] = self.flag_enpassant.copy()
 
         # Make the proposed ply on the hypothetical board
-        postMoveBoard._executePly(color, fromPosn, toPosn)
-        return postMoveBoard
+        returnDict['movedPieces'] = self._executePly(color, fromPosn, toPosn)
+        return returnDict
+
+    def unGetResultOfPly(self, undoDict):
+        """Undoes the call to getResultOfPly described in the given undoDict
+
+        NOTE: This function should only be used to undo a call to
+            getResultOfPly. There is no reason to ever call it if
+            getResultOfPly wasn't ever called first
+
+        @param undoDict: a dictionary of the following form:
+                {"oldCastleFlags": the original castle flags of this board,
+                "oldEnPassantFlags": the original enpassant flags,
+                "movedPieces" A list of (ChessPiece, ChessPosn) tuples mapping
+                pieces moved by this function to their original locations}
+                As produced by a call to getResultOfPly"""
+
+        self.flag_canCastle = undoDict['oldCastleFlags']
+        self.flag_enpassant = undoDict['oldEnPassantFlags']
+
+        for pieceRestoration in undoDict['movedPieces']:
+            self[pieceRestoration[1]] = pieceRestoration[0]
 
     def isKingInCheck(self, color):
-        """Return true if color's king is in check on the given self
+        """Return whether the color's king is in check on this board
 
         @param color: The color of the king to check, ChessMatch.WHITE or
         ChessMatch.BLACK
@@ -831,7 +893,7 @@ class ChessBoard(object):
 
         # Locate given player's king, and opposing player's non-king pieces
 
-        kingPosn = self.__isLegalMove_findKings()[color]
+        kingPosn = self.__isLegalMove_findKings(color)
         # List of ChessPosns of pieces that may have the king in check
         enemyPieceLocations = ChessBoardUtils.findPiecePosnsByColor(self,
                                                                     otherColor)
@@ -886,7 +948,7 @@ class ChessBoard(object):
         checkPiecePosn = checkInfo[1]
 
         # Find the king whose checkmate status is in question
-        chkdKingLoc = self.__isLegalMove_findKings()[color]
+        chkdKingLoc = self.__isLegalMove_findKings(color)
 
         # Get a list of locations that, if moved to, might alleviate check
         interruptLocations = ChessBoard.__isLegalMove_getInterruptSquares(
@@ -906,11 +968,18 @@ class ChessBoard(object):
                                         intruptLoc):
 
                         # Generate the board that such a move would produce
-                        boardAfterMove = self.getResultOfPly(pieceLoc,
-                                                              intruptLoc)
+                        boardMoveUndoDict = self.getResultOfPly(pieceLoc,
+                                                                intruptLoc)
                         # Check if the given color is still in check
                         # If not, that color is not in checkmate
-                        if not boardAfterMove.isKingInCheck(color)[0]:
+
+                        isNotInCheck = not self.isKingInCheck(color)[0]
+
+                        # Undo the hypothetical move
+                        self.unGetResultOfPly(boardMoveUndoDict)
+
+                        # Perform the check
+                        if isNotInCheck:
                             return False
 
         possibleKingMoves = []  # List of tuples of possible king moves
@@ -929,11 +998,18 @@ class ChessBoard(object):
 
             if self.isLegalMove(color, chkdKingLoc, kingMove):
                 # Generate the board that such a move would produce
-                boardAfterMove = self.getResultOfPly(chkdKingLoc, kingMove)
+                boardMoveUndoDict = self.getResultOfPly(chkdKingLoc, kingMove)
 
                 # Check if the given color is still in check in that board
                 # If not, that color is not in checkmate
-                if not (boardAfterMove.isKingInCheck(color)[0]):
+
+                isNotStillInCheck = not self.isKingInCheck(color)[0]
+
+                # Restore the previous state of the board
+                self.unGetResultOfPly(boardMoveUndoDict)
+
+                # Perform the check
+                if isNotStillInCheck:
                     logStrF = "Found that %s is not in checkmate"
                     ChessBoard._logger.debug(logStrF, color)
                     return False
