@@ -183,7 +183,7 @@ class TournamentSystem(object):
                  Otherwise, the string \"GAME NOT STARTED\""""
 
         if not board.layout:
-            return "GAME NOT STARTED"
+            return "BOARD NOT INITIALIZED"
 
         # Accumulator for return value
         rowsList = []
