@@ -133,7 +133,7 @@ class HumanGamer(MaverickPlayer):
 def runHumanClient(host=None, port=None):
     """Run human client that connects to host:port (None means use default)"""
     p = HumanGamer(host=host, port=port)
-    p.run()
+    p.run(startFreshP=True)
 
 
 def main():

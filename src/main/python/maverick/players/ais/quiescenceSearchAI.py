@@ -224,7 +224,7 @@ class QLAI(MaverickAI):
 
 def runAI(host=None, port=None):
     ai = QLAI(host=host, port=port)
-    ai.run()
+    ai.run(startFreshP=False)
 
 
 def main():

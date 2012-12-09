@@ -42,7 +42,7 @@ class RandomAI(MaverickAI):
 
 def runAI(host=None, port=None):
     ai = RandomAI(host=host, port=port)
-    ai.run()
+    ai.run(startFreshP=False)
 
 
 def main():

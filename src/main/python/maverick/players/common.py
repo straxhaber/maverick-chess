@@ -84,12 +84,12 @@ class MaverickPlayer(MaverickClient):
         print(board.__str__(whitePerspective=self.isWhite))
         print
 
-    def startPlaying(self):
+    def startPlaying(self, startFreshP):
         """Enters the player into an ongoing game (blocks until successful)
 
         @precondition: self.name must be set"""
         self.playerID = self._request_register(self.name)
-        self.gameID = self._request_joinGame(self.playerID)
+        self.gameID = self._request_joinGame(self.playerID, startFreshP)
 
         # Block until game has started
         gameStartWaitMessageDisplayedP = False
@@ -104,10 +104,10 @@ class MaverickPlayer(MaverickClient):
         self.isWhite = (self._request_getState()["youAreColor"] ==
                         ChessBoard.WHITE)
 
-    def run(self):
+    def run(self, startFreshP):
         """Registers user, connects to game, and starts gameplay loop"""
         self.name = self.getPlayerName()
-        self.startPlaying()
+        self.startPlaying(startFreshP)
         self._showPlayerWelcome()
 
         # While the game is in progress

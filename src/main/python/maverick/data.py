@@ -1204,13 +1204,14 @@ class ChessMatch(object):
     STATUS_DRAWN = "W_DRAWN"  # White won the game
     STATUS_CANCELLED = "CANCELD"  # Game was halted early
 
-    def __init__(self, firstPlayerID=None):
+    def __init__(self, firstPlayerID=None, p1ReqFreshStart=True):
         """Initialize a new chess match with initial state
 
         @param firstPlayerID: if set, randomly assigned to black or white"""
+        # TODO: ## TODO p1ReqFreshStart
 
-        # Initialize with a new chess board
-        self.board = ChessBoard()
+        # Initialize blankly (new chess board when both players have joined)
+        self.board = None
 
         # Initialize match without players (whose playerIDs can be added later)
         self.players = {ChessBoard.WHITE: None, ChessBoard.BLACK: None}
@@ -1223,6 +1224,9 @@ class ChessMatch(object):
 
         # Initialize ply history -- a list of (moveFrom, moveTo) plies
         self.history = []
+
+        # True if game should start with a blank board
+        self.freshStartP = p1ReqFreshStart
 
         # Log initialization
         ChessMatch._logger.debug("Initialized")
@@ -1280,7 +1284,7 @@ class ChessMatch(object):
         else:
             return "Game not in progress"
 
-    def join(self, playerID):
+    def join(self, playerID, p2ReqFreshStart=True):
         """Joins the match in an empty slot. If ready, game starts.
 
         @param playerID: ID of the player being added
@@ -1291,14 +1295,22 @@ class ChessMatch(object):
 
         elif playerID in self.players.itervalues():
             return  # Don't allow a player to play both sides
+
         else:
             for color in [ChessBoard.WHITE, ChessBoard.BLACK]:
                 if self.players[color] is None:
                     self.players[color] = playerID
                     if None not in self.players.itervalues():
                         self.status = ChessMatch.STATUS_ONGOING
-                    return color
+
+                        self.freshStartP = self.freshStartP or p2ReqFreshStart
+                        if self.freshStartP:
+                            self.board = ChessBoard()
+                        else:
+                            self.board = ChessBoardUtils.genRandomLegalBoard()
+                    retVal = color
             ChessMatch._logger.debug("Joined player %d to this game", playerID)
+            return retVal
 
 
 def _main():
