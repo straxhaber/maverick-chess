@@ -196,16 +196,6 @@ def canMoveTo(board, fromPosn):
                                 board[p].color != fromPiece.color),
                      toPosns)
 
-    # TODO (mattsh): JAMES THIS BLOWS UP IF RUN
-    #                We would delete this anyway, but it shouldn't blow up
-    #                for legal moves. Either I have a bug (don't think so)
-    #                or you do
-    #        # TODO delete this after this function is finished (just a stop-gap)
-    #        toPosns = filter(lambda p: board.isLegalMove(fromPiece.color,
-    #                                                     fromPosn,
-    #                                                     p),
-    #                         toPosns)
-
     # Filter out toPosns that would put player in check
     def selfKingNotInCheck(toPosn):
 

@@ -252,6 +252,8 @@ class ChessBoard(object):
         movedPiece = self[fromPosn]
         self[fromPosn] = None
 
+        otherColor = ChessBoard.getOtherColor(color)
+
         # Accumulator for return value
         movedList = [(movedPiece, fromPosn)]
 
@@ -284,9 +286,14 @@ class ChessBoard(object):
 
         # Move piece to destination, noting what was originally there
         movedList.append((self[toPosn], toPosn))
-        self[toPosn] = movedPiece
 
-        otherColor = ChessBoard.getOtherColor(color)
+        # Preemptively reset en passant flags, if necessary
+        if (self[toPosn] is not None and
+            self[toPosn].pieceType == ChessBoard.PAWN):
+            self.flag_enpassant[otherColor][toPosn.fileN] = False
+
+        # Actually move the piece
+        self[toPosn] = movedPiece
 
         # Handle rook movement if castling
 
@@ -1171,18 +1178,21 @@ class ChessBoardUtils(object):
                         # Choose a remaining empty posn and place this piece
                         emptyPosnIdx = random.randrange(0, len(emptyPosns))
                         placementPosn = emptyPosns[emptyPosnIdx]
+                        board[placementPosn] = ChessPiece(color, pieceType)
+
                         # If this is an illegal placement, try again
                         # But don't bother checking if we haven't placed kings
                         if ((numKingsPlaced == 2) and
                             board.isKingInCheck(otherColor)):
+                            # Undo placement and give up since we've already
+                            # got our kings
+                            board[placementPosn] = None
                             break
                         else:
                             if pieceType == ChessBoard.KING:
                                 numKingsPlaced += 1
 
-                            # Place the piece and note the posn is non-empty
-
-                            board[placementPosn] = ChessPiece(color, pieceType)
+                            # Note the posn is non-empty
                             del emptyPosns[emptyPosnIdx]
                     numPcsToPlace -= 1
 
