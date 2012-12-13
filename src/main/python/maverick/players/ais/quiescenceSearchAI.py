@@ -95,7 +95,6 @@ class QLAI(MaverickAI):
 
         Note: this was influenced by information here: http://bit.ly/VYlJVC """
 
-        QLAI.numNodesCovered += 1
         otherColor = ChessBoard.getOtherColor(color)
 
         # Note the appeal of this board, with no captures
@@ -197,7 +196,6 @@ class QLAI(MaverickAI):
 
         otherColor = ChessBoard.getOtherColor(color)
 
-        QLAI.nodesCoveredByDepth[depth][0] += 1
         # Check if we are at a leaf node
         if (depth == 0):
             return self._quiescentSearch(board, color, alpha, beta, isMaxNode)
@@ -210,7 +208,6 @@ class QLAI(MaverickAI):
 
         else:
             moveChoices = enumPossBoardMoves(board, color)
-            QLAI.nodesCoveredByDepth[depth - 1][1] += len(moveChoices)
             #logStrF = "Considering {0} poss. moves".format(len(moveChoices))
             #QLAI._logger.debug(logStrF)
 
