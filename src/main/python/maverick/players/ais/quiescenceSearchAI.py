@@ -311,7 +311,7 @@ class QLAI(MaverickAI):
 
 def runAI(host=None, port=None):
     ai = QLAI(host=host, port=port)
-    ai.run(startFreshP=False)
+    ai.run(startFreshP=True)
 
 
 def main():
@@ -324,5 +324,4 @@ def main():
     runAI(host=args.host, port=args.port)
 
 if __name__ == '__main__':
-    import cProfile
-    cProfile.run('runAI()', '/home/jimbo/aiprofilefile')
+    main()
