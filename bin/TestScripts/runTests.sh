@@ -13,7 +13,7 @@ PIECES_COVERED_WEIGHT=$[($RANDOM % 10)+1]
 NUM_TEST_GROUPS=6
 
 # Starts the server for the games
-./runServer | tee runTestResults.txt
+../runServer.sh | tee runTestResults.txt
 
 
 # Runs NUM_TEST_GROUPS tests to completion
@@ -22,9 +22,9 @@ do
 
 	for (( i=0 ; i<12 ; i+2 ))
 	do
-		./runAI.sh $PIECE_WEIGHT $CHECK_WEIGHT $UNDER_ATTACK_WEIGHT $SPACE_COVERAGE_WEIGHT $PIECES_COVERED_WEIGHT &
+		../runAI.sh --piecevalweight $PIECE_WEIGHT --incheckweight $CHECK_WEIGHT --piecesunderattackweight $UNDER_ATTACK_WEIGHT --emptyspacecoverageweight $SPACE_COVERAGE_WEIGHT --piecescoveredweight $PIECES_COVERED_WEIGHT &
 		pidArray[i]=$!
-		./runAI.sh $PIECE_WEIGHT $CHECK_WEIGHT $UNDER_ATTACK_WEIGHT $SPACE_COVERAGE_WEIGHT $PIECES_COVERED_WEIGHT &
+		../runAI.sh --piecevalweight $PIECE_WEIGHT --incheckweight $CHECK_WEIGHT --piecesunderattackweight $UNDER_ATTACK_WEIGHT --emptyspacecoverageweight $SPACE_COVERAGE_WEIGHT --piecescoveredweight $PIECES_COVERED_WEIGHT &
 		pidArray[i+1]=$!
 	done
 
