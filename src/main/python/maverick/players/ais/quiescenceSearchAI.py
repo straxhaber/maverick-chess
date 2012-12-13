@@ -35,12 +35,56 @@ class QLAI(MaverickAI):
     # Initialize if not already initialized
     logging.basicConfig(level=logging.DEBUG)
 
+    # Default heuristic weights for likability evaluation
+    defaultWeights = {'pieceValWeight': 8,
+                         'inCheckWeight': 10,
+                         'pcsUnderAttackWeight': 5,
+                         'emptySpaceCvgWeight': 3,
+                         'piecesCoveredWeight': 2}
+
+    def __init__(self, host=None, port=None, pieceValWgt=None,
+                 inCheckWgt=None, piecesUnderAttackWgt=None,
+                 emptySpaceCoverageWgt=None, piecesCoveredWgt=None):
+        """Initialize a QLAI
+
+        Notes the given heuristic weights, and calls superclass constructor"""
+
+        MaverickAI.__init__(self, host=host, port=port)
+
+        # Construct a dictionary of heuristic weight values
+        self.heuristicWgts = {}
+        if pieceValWgt is None:
+            self.heuristicWgts['pieceValWeight'] = \
+                QLAI.defaultWeights['pieceValWeight']
+        else:
+            self.heuristicWgts['pieceValWeight'] = pieceValWgt
+
+        if inCheckWgt is None:
+            self.heuristicWgts['inCheckWeight'] = \
+                QLAI.defaultWeights['inCheckWeight']
+        else:
+            self.heuristicWgts['inCheckWeight'] = inCheckWgt
+
+        if piecesUnderAttackWgt is None:
+            self.heuristicWgts['pcsUnderAttackWeight'] = \
+                QLAI.defaultWeights['pcsUnderAttackWeight']
+        else:
+            self.heuristicWgts['pcsUnderAttackWeight'] = piecesUnderAttackWgt
+
+        if emptySpaceCoverageWgt is None:
+            self.heuristicWgts['emptySpaceCvgWeight'] = \
+                QLAI.defaultWeights['emptySpaceCvgWeight']
+        else:
+            self.heuristicWgts['emptySpaceCvgWeight'] = emptySpaceCoverageWgt
+
+        if piecesCoveredWgt is None:
+            self.heuristicWgts['piecesCoveredWeight'] = \
+                QLAI.defaultWeights['piecesCoveredWeight']
+        else:
+            self.heuristicWgts['piecesCoveredWeight'] = piecesCoveredWgt
 
     def getNextMove(self, board):
         """TODO PyDoc"""
-
-        # TODO (James): Remove this - show us the board, just for development
-        self.printBoard()
 
         SEARCH_DEPTH = 3  # Search to a depth of 4
 
@@ -98,7 +142,8 @@ class QLAI(MaverickAI):
         otherColor = ChessBoard.getOtherColor(color)
 
         # Note the appeal of this board, with no captures
-        standPatVal = evaluateBoardLikability(color, board)
+        standPatVal = evaluateBoardLikability(color, board,
+                                              self.heuristicWgts)
 
         # Build up a list of capture moves
 
@@ -120,7 +165,8 @@ class QLAI(MaverickAI):
             for captureMove in captureMoves:
                 boardMoveUndoDict = board.getResultOfPly(captureMove[0],
                                                          captureMove[1])
-                moveResultScore = evaluateBoardLikability(otherColor, board)
+                moveResultScore = evaluateBoardLikability(otherColor, board,
+                                                          self.heuristicWgts)
                 board.unGetResultOfPly(boardMoveUndoDict)
 
                 # Don't bother searching outside of target range
@@ -144,7 +190,8 @@ class QLAI(MaverickAI):
             for captureMove in captureMoves:
                 boardMoveUndoDict = board.getResultOfPly(captureMove[0],
                                                          captureMove[1])
-                moveResultScore = evaluateBoardLikability(otherColor, board)
+                moveResultScore = evaluateBoardLikability(otherColor, board,
+                                                          self.heuristicWgts)
                 board.unGetResultOfPly(boardMoveUndoDict)
 
                 # Don't bother searching outside of target range
@@ -187,8 +234,7 @@ class QLAI(MaverickAI):
 
         Implementation based on information found here: http://bit.ly/t1dHKA"""
         ## TODO (James): Check timeout less than once per iteration
-        ## TODO (James): remove references to QLAI.numNodesCovered - it is only
-        #                here for testing purposes
+
         ## TODO (James): Make logging conditional - temporarily disabled
 
         #logStrF = "Performing minimax search to depth {0}.".format(depth)
@@ -204,7 +250,8 @@ class QLAI(MaverickAI):
         elif (time() > stopSrchTime or
               board.isKingCheckmated(color) or
               board.isKingCheckmated(otherColor)):
-            return (None, evaluateBoardLikability(color, board))
+            return (None, evaluateBoardLikability(color, board,
+                                                  self.heuristicWgts))
 
         else:
             moveChoices = enumPossBoardMoves(board, color)
@@ -283,8 +330,14 @@ class QLAI(MaverickAI):
         pass  # No printouts needed for AI
 
 
-def runAI(host=None, port=None):
-    ai = QLAI(host=host, port=port)
+def runAI(host=None, port=None, pieceValWeight=None, inCheckWeight=None,
+          piecesUnderAttackWeight=None, emptySpaceCoverageWeight=None,
+          piecesCoveredWeight=None):
+    ai = QLAI(host=host, port=port, pieceValWgt=pieceValWeight,
+              inCheckWgt=inCheckWeight,
+              piecesUnderAttackWgt=piecesUnderAttackWeight,
+              emptySpaceCoverageWgt=emptySpaceCoverageWeight,
+              piecesCoveredWgt=piecesCoveredWeight)
     ai.run(startFreshP=True)
 
 
@@ -294,8 +347,22 @@ def main():
                         help="specify hostname of Maverick server")
     parser.add_argument("--port", default=None, type=int,
                         help="specify port of Maverick server")
+    parser.add_argument("--piecevalweight", default=None, type=int,
+                        help="specify weight of pieceValue heuristic")
+    parser.add_argument("--incheckweight", default=None, type=int,
+                        help="specify weight of inCheck heuristic")
+    parser.add_argument("--piecesunderattackweight", default=None, type=int,
+                        help="specify weight of piecesUnderAttack heuristic")
+    parser.add_argument("--emptyspacecoverageweight", default=None, type=int,
+                        help="specify weight of emptySpaceCoverage heuristic")
+    parser.add_argument("--piecescoveredweight", default=None, type=int,
+                        help="specify weight of piecesCovered heuristic")
     args = parser.parse_args()
-    runAI(host=args.host, port=args.port)
+    runAI(host=args.host, port=args.port, pieceValWeight=args.piecevalweight,
+          inCheckWeight=args.incheckweight,
+          piecesUnderAttackWeight=args.piecesunderattackweight,
+          emptySpaceCoverageWeight=args.emptyspacecoverageweight,
+          piecesCoveredWeight=args.piecescoveredweight)
 
 if __name__ == '__main__':
     main()
