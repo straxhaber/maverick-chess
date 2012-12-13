@@ -67,7 +67,8 @@ class MaverickAI(MaverickPlayer):
         else:
             MaverickAI._logger.error("Unexpected status code: %d", status)
             result = "UNEXPECTED FINISH STATUS"
-        MaverickAI._logger.info("The result was: %s", result)
+        MaverickAI._logger.info("The result was: %s for game %d", result,
+                                self.gameID)
 
     def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Calculate the next move based on the provided board"""

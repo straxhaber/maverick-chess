@@ -383,7 +383,7 @@ class ChessBoard(object):
             toPiece = self[toPosn]
 
             # No progress to draw if a pawn was moved or a piece was captured
-            drawProgress = not(fromPiece.pieceType == ChessBoard.PAWN or 
+            drawProgress = not(fromPiece.pieceType == ChessBoard.PAWN or
                                toPiece is not None)
 
             self._executePly(color, fromPosn, toPosn)
@@ -1297,6 +1297,7 @@ class ChessMatch(object):
                     self.drawCounter -= 1
                     if self.drawCounter == 0:
                         self.status = ChessMatch.STATUS_DRAWN
+
                 else:
                     # Reset 50-move checkmate counter
                     self.drawCounter = 50
@@ -1314,7 +1315,7 @@ class ChessMatch(object):
                         logStrF = "Added %s -> %s to match history"
                         ChessMatch._logger.debug(logStrF,
                                                  fromPosn, toPosn)
-                    return "SUCCESS"
+                return "SUCCESS"
             else:
                 return "Illegal move"
         else:
