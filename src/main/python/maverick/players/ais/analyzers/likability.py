@@ -13,6 +13,7 @@ from maverick.data.structs import ChessPosn
 
 from maverick.data.utils import enumMoves
 
+## TODO (James): Fix the heuristics! They're so slow!
 
 # Standard piece values, from
 # http://en.wikipedia.org/wiki/Chess_piece_values
@@ -74,10 +75,7 @@ def heuristicInCheck(color, board):
     @return: -1 if the given color is in check on the given board, 1
             otherwise"""
 
-    if board.pieceCheckingKing(color) is not None:
-        return -1
-    else:
-        return 1
+    return 1 if board.pieceCheckingKing(color) is None else -1
 
 
 def heuristicPcsUnderAttack(color, board):
@@ -91,23 +89,16 @@ def heuristicPcsUnderAttack(color, board):
     @return: A number representing the value of the given color's
             pieces that are under attack, weighted by piece value"""
 
-    other = ChessBoard.getOtherColor(color)
+    otherColor = ChessBoard.getOtherColor(color)
 
-    # Record which enemy pieces are under attack
-    piecesUnderAttack = []
+    # Get posns the enemy can move to
+    enemyMoveDstPosns = [m[1] for m in enumMoves(board, otherColor)]
 
-    # For each enemyPiece, check whether any friendlyPiece can capture it
-    for attackedPiecePosn in board.getPiecesOfColor(color):
-
-        for attackingPiecePosn in board.getPiecesOfColor(other):
-
-            # Check if this piece can capture the enemy piece
-            if board.isLegalMove(other, attackingPiecePosn, attackedPiecePosn):
-
-                # Note that this enemyPiece is under attack
-                piecesUnderAttack.append(attackedPiecePosn)
-                # Each piece can only be attacked once, so break here
-                break
+    # Record which friendly pieces are under attack
+    # A piece is under attack if its posn (pcPsn) is in myPieces
+    # TODO: use filter and lambda
+    piecesUnderAttack = [pcPsn for pcPsn in board.getPiecesOfColor(color)
+                         if pcPsn in enemyMoveDstPosns]
 
     # Sum weighted values of under-attack pieces
     weightedTotal = 0
@@ -144,16 +135,14 @@ def heuristicEmptySpaceCvrg(color, board):
     pieceLocations = []
     otherColor = ChessBoard.getOtherColor(color)
 
-    # Find friendly piece locations and add to pieceLocations
-    friendPiecePosns = board.getPiecesOfColor(color)
+    # TODO (mattsh): Not sure, do we want to add both ours and theirs?
 
-    for piecePosn in friendPiecePosns:
+    # Find friendly piece locations and add to pieceLocations
+    for piecePosn in board.getPiecesOfColor(color):
         pieceLocations.append(piecePosn)
 
     # Find enemy piece locations and add to pieceLocations
-    enemyPiecePosns = board.getPiecesOfColor(otherColor)
-
-    for enemyPiecePosn in enemyPiecePosns:
+    for enemyPiecePosn in board.getPiecesOfColor(otherColor):
         pieceLocations.append(enemyPiecePosn)
 
     # Build list of empty squares
@@ -211,8 +200,7 @@ def heuristicPiecesCovered(color, board):
             whose positions could be immediately re-taken if captured,
             weighted by piece value"""
 
-    ## TODO (James): make this find all covered pieces for WHITE - not
-    #                currently considering non-pawn white pieces
+    ## TODO (James): speed this UP. It's a huge performance bottleneck
 
     # Construct list of friendly pieces
     friendPiecePosns = board.getPiecesOfColor(color)
@@ -228,14 +216,16 @@ def heuristicPiecesCovered(color, board):
         if board[lostPiecePosn].pieceType != ChessBoard.KING:
             # Build hypothetical board with the lost piece removed
 
-            ## TODO (James): consider a more efficient way of doing this,
-            #                rather than a deep copy
-            hypoBoard = copy.deepcopy(board)
+            # Store the supposedly lost piece for later replacement
+            # (this avoids having to make a slow deep copy)
+            lostPiece = board[lostPiecePosn]
+
             # Eliminate the supposedly lost piece
-            hypoBoard[lostPiecePosn] = None
+            board[lostPiecePosn] = None
 
             # Build list of possible friendly moves
-            friendlyMoves = enumMoves(hypoBoard, color)
+            # TODO (mattsh): board was hypoBoard. Did I break something?
+            friendlyMoves = enumMoves(board, color)
 
             lostPieceType = board[lostPiecePosn].pieceType
             lostPieceValue = PIECE_VALUES[lostPieceType]
@@ -244,10 +234,14 @@ def heuristicPiecesCovered(color, board):
             for move in friendlyMoves:
                 moveDstPosn = move[1]
                 if lostPiecePosn == moveDstPosn:
-                    # Add piece value, to accumulator
+                    # Add piece value to accumulator
                     weightedReturn += lostPieceValue
                     # Only add once per piece being covered
                     break
+
+            # VERY IMPORTANT - restore supposedly lost piece to original
+            # location
+            board[lostPiecePosn] = lostPiece
 
     # Sum the total possible piece value for all pieces of this color
 
@@ -270,12 +264,19 @@ def combineHeuristicValues(res1, res2):
     return ((res1 - res2) / 2)
 
 
-def evaluateBoardLikability(color, board):
+def evaluateBoardLikability(color, board, weightDict):
     """Return a number in [-1,1] based on board's likability to color
 
     @param color: One of maverick.data.ChessBoard.WHITE or
                    maverick.data.ChessBoard.BLACK
     @param board: A ChessBoard Object
+    @param weightDict: A dictionary describing the weights to use for the
+                        various heuristics, of form
+                        {'pieceValWeight': pieceValWeight,
+                        'inCheckWeight': inCheckWeight,
+                        'pcsUnderAttackWeight': pcsUnderAttackWeight,
+                        'emptySpaceCvgWeight': emptySpaceCoverageWeight,
+                        'piecesCoveredWeight': piecesCoveredWeight}
 
     @return: a number in [-1,1] indicating the likability of the given
     board state for the given color, where -1 is least likable and 1 is
@@ -289,12 +290,11 @@ def evaluateBoardLikability(color, board):
      - +1 means guaranteed win"""
 
     # Pairing of heuristics with their weights
-    ## TODO (James): research and tweak these
-    pieceValueWeight = 3
-    inCheckWeight = 4
-    piecesUnderAttackWeight = 3
-    emptySpaceCoverageWeight = 1
-    piecesCoveredWeight = 1
+    pieceValueWeight = weightDict['pieceValWeight']
+    inCheckWeight = weightDict['inCheckWeight']
+    piecesUnderAttackWeight = weightDict['pcsUnderAttackWeight']
+    emptySpaceCoverageWeight = weightDict['emptySpaceCvgWeight']
+    piecesCoveredWeight = weightDict['piecesCoveredWeight']  # TODO (mattsh)
 
     # Determine opposing player color
     otherColor = ChessBoard.getOtherColor(color)
@@ -314,10 +314,9 @@ def evaluateBoardLikability(color, board):
         #                a cleaner way to do this
 
         # Add piece value opinion
-        pieceValueFriend = heuristicPieceValue(color, board)
-        pieceValueFoe = heuristicPieceValue(otherColor, board)
-        pieceValueRes = combineHeuristicValues(pieceValueFriend,
-                                                    pieceValueFoe)
+        pieceValueFriend = heuristicPieceValue(otherColor, board)
+        pieceValueFoe = heuristicPieceValue(color, board)
+        pieceValueRes = combineHeuristicValues(pieceValueFriend, pieceValueFoe)
         opinions.append(("PieceValue", pieceValueWeight, pieceValueRes))
 
         # Add in check opinion
@@ -337,22 +336,22 @@ def evaluateBoardLikability(color, board):
                         pcsUnderAtkRes))
 
         # Add empty space coverage opinion
-        emptySpcsCvdFriend = heuristicEmptySpaceCvrg(color,
-                                                               board)
-        emptySpcsCvdFoe = heuristicEmptySpaceCvrg(otherColor,
-                                                            board)
+        emptySpcsCvdFriend = heuristicEmptySpaceCvrg(color, board)
+        emptySpcsCvdFoe = heuristicEmptySpaceCvrg(otherColor, board)
         emptySpcsCvdRes = combineHeuristicValues(emptySpcsCvdFriend,
                                                       emptySpcsCvdFoe)
         opinions.append(("EmptySpaceCoverage", emptySpaceCoverageWeight,
                         emptySpcsCvdRes))
 
+        ## TODO (James): Re-enable this when it is more efficient
+
         # Add pieces covered opinion
-        pcsCoveredFriend = heuristicPiecesCovered(color, board)
-        pcsCoveredFoe = heuristicPiecesCovered(otherColor, board)
-        pcsCoveredRes = combineHeuristicValues(pcsCoveredFriend,
-                                                    pcsCoveredFoe)
-        opinions.append(("PiecesCovered", piecesCoveredWeight,
-                        pcsCoveredRes))
+#        pcsCoveredFriend = heuristicPiecesCovered(color, board)
+#        pcsCoveredFoe = heuristicPiecesCovered(otherColor, board)
+#        pcsCoveredRes = combineHeuristicValues(pcsCoveredFriend,
+#                                                    pcsCoveredFoe)
+#        opinions.append(("PiecesCovered", piecesCoveredWeight,
+#                        pcsCoveredRes))
 
         # Return the weighted average
         return sum([weight * value for (_, weight, value) in opinions]) / \

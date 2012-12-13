@@ -1,0 +1,62 @@
+This is a write up of what Matt and I discussed in terms of scoping out the AI portion of the project:
+
+TODOs:
+-Factor out ChessBoard and ChessMatch code
+-Rewrite registration function to allow re-registration
+
+AI PIECES:
+1. Event Loop
+2. Board Likability Heuristic
+3. Quiescence Search (with min-max pruning)
+4. Move enumerator
+
+Event Loop:
+This will be similar to the loop that the client goes through, and it may be worth factoring some of that out into common.py
+
+Board Likability Heuristic:
+
+-Will accumulate opinions as a list of tuples, like this:  [("heuristic", weight, value)].  When returning a result, it multiplies values by weights and sums all heuristics.
+-The calculateLikability function will consume a board state and output a number between -1 and 1.  0 is neutral, 1 would be a checkmate of the enemy, and -1 would be a checkmate of our king.
+
+-There will be several heuristics:
+ Required:
+  -piece value
+  -in check
+  -pieces under attack (weighted by piece value)
+  -empty space coverage (# squares under attack with weight for center squares)
+  -pieces covered (not pawns)
+ Maybe:
+  -castle ability
+  -pawn structure
+
+The result for each of these is calculated by running for both colors, and doing the following: ((me - you)/((me + you) / 2))
+
+Keep in mind that there should be a roughly even distribution of return values along the possible range.
+
+
+Quiescence Search:
+
+Components:
+ -timeout
+ -iterative deepening
+ -depth/breath
+ -filtering
+
+Had considered enumerating the board states that result from the immediately possible moves, and then creating threads to do threading and pruning for the trees that emerge from those nodes.  Thread code might look like this:
+
+try:
+...
+except SIGNAL:
+collapseTree()
+return move
+
+We'll be keeping track of the time that passes, and killing all of these threads as the remaining time approaches some buffer time that we need for processing.  Then we choose the best move.  Each move's appeal of its resulting board state after n moves, as determined by the thread during its min/max pruning.
+
+Don't forget not to explore past a checkmate, even if you've specified that you want to go 4 levels deep.
+
+
+
+Move Enumerator:
+
+ -Given a board state and color, returns the possible moves for that color
+

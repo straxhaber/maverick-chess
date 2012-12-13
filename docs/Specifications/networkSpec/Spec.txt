@@ -1,0 +1,31 @@
+- Requests Example
+    - { "requestType" : "register"
+        "name" : "Spongebob Squarepants" }
+- Response Example
+    - { "respondingTo" : "register"
+        "requestStatus" : "completed"
+        "playerID" : "e59ff97941044f85df5297e1c302d260" }
+-
+- register(name)
+    - playerID
+- playGame(playerID)
+    - gameID
+- getStatus(playerID, gameID)
+    - statusCode: waitingForPlayers, inProgress, won, lost
+- getGameState(playerID, gameID)
+    - WhoYouAre
+        - Black or white
+    - Whose turn
+        - Black or white
+    - Board
+        - 8x8 grid: r,n,b,q,k,p
+    - Move history
+        - ListOf:
+            - PieceType MoveFrom MoveTo CapturingSomething? isInCheck?
+- makePly(playerID, gameID, MoveFrom, MoveTo)
+    - statusCode: moveMade, illegalMove, badlyFormattedRequest
+- RequestStatus:
+    - Completed
+    - Error (contains error message)
+- { "requestType": "register" }
+- { "requestType": "newGame" }

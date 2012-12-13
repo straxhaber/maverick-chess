@@ -103,7 +103,7 @@ class TournamentSystem(object):
                                           name, newID)
             return (True, {"playerID": newID})
 
-    def joinGame(self, playerID):
+    def joinGame(self, playerID, startFreshP):
         """Adds the player to a new or pending game.
 
         @param playerID: playerID of the player joining a game
@@ -113,22 +113,27 @@ class TournamentSystem(object):
         {"gameID": someInteger})"""
 
         # Log the join attempt
-        TournamentSystem._logger.debug("joinGame called with playerID %d",
-                                       playerID)
+        logStrF = "joinGame called w/ playerID %d (fresh game requested?: %s)"
+        TournamentSystem._logger.debug(logStrF, playerID, str(startFreshP))
 
         # Add the player to a pending game if one exists
         for gameID, game in self.games.iteritems():
             if game.status == ChessMatch.STATUS_PENDING:
-                color = game.join(playerID)
+                color = game.join(playerID, p2ReqFreshStart=startFreshP)
                 if color:
-                    logStrF = "Added player %d to existing game %d"
-                    TournamentSystem._logger.debug(logStrF, playerID, gameID)
-                    return (True, {"gameID": gameID})
+                    logStrF = "Added player %d to existing game %d (sfP=%s)"
+                    TournamentSystem._logger.debug(logStrF,
+                                                   playerID,
+                                                   gameID,
+                                                   str(startFreshP))
+                    return (True, {"gameID": gameID,
+                                   "startFreshP": startFreshP})
 
         # Add a player to a new game otherwise
-        newGame = ChessMatch(playerID)
+        newMatch = ChessMatch(firstPlayerID=playerID,
+                              p1ReqFreshStart=startFreshP)
         newID = _getUniqueInt(self.games.keys())
-        self.games[newID] = newGame
+        self.games[newID] = newMatch
         TournamentSystem._logger.debug("Added player %d to new game %d",
                                       playerID, newID)
         return (True, {"gameID": newID})
@@ -173,8 +178,12 @@ class TournamentSystem(object):
 
         @param board: The ChessBoard object to serialize
 
-        @return: A list of rows of piece information, each either None or a
-                tuple of form (pieceColor, pieceType)"""
+        @return: If game has started, a list of rows of piece information,
+                    each either None or a tuple of form (pieceColor, pieceType)
+                 Otherwise, the string \"GAME NOT STARTED\""""
+
+        if not board.layout:
+            return "BOARD NOT INITIALIZED"
 
         # Accumulator for return value
         rowsList = []
@@ -274,8 +283,7 @@ class TournamentSystem(object):
                      "canCastleFlags": g.board.flag_canCastle}
 
             return (True, {"youAreColor": youAreColor,
-                           "isWhitesTurn": (g.whoseTurn() ==
-                                            ChessBoard.WHITE),
+                           "isWhitesTurn": (g.whoseTurn() == ChessBoard.WHITE),
                            "board": board,
                            "history": serialHst})
         else:
@@ -360,7 +368,7 @@ class MaverickServerProtocol(basicProtocols.LineOnlyReceiver):
                                    set(["name"]),
                                    set(["playerID"])),
                       "JOIN_GAME": (TournamentSystem.joinGame,
-                                    set(["playerID"]),
+                                    set(["playerID", "startFreshP"]),
                                     set(["gameID"])),
                       "GET_STATUS": (TournamentSystem.getStatus,
                                      set(["gameID"]),

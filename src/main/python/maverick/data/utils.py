@@ -17,16 +17,18 @@ from maverick.data.structs import ChessPosn
 
 from maverick.players.ais.common import MaverickAIException
 
-__all__ = ["genRandomLegalBoard",
+__all__ = ["getMidGameBoard",
            "enumMoves",
            "enumPossPieceMoves"]
 
 
-def genRandomLegalBoard():
-    """Returns a random ChessBoard object  with neither king in check
+def getMidGameBoard():
+    """Returns a legal ChessBoard object with neither king in check
 
     @return: a ChessBoard object with a subset of the standard pieces
-            where neither king is in check"""
+            where neither king is in check
+
+    NOTE: Best-effort on getting a mid-game board. Property not guaranteed."""
 
     # # TODO (James): get this working for test board generation
 
@@ -231,7 +233,7 @@ def _enumMoves_king(board, color, fromPosn):
     if (canCastleKingSide and
         reduce(bool.__and__,
                [board[ChessPosn(kingRank, fN)] is None
-                for fN in [6, 7]])):
+                for fN in [5, 6]])):
         moves.append(fromPosn.getTranslatedBy(0, 2))
 
     return moves
@@ -282,10 +284,35 @@ def enumPossPieceMoves(board, fromPosn):
     #                                                     p),
     #                         toPosns)
 
-    # Filter out Filter out toPosns that would put player in check
+    # TODO (mattsh) inner-defined functions get re-defined on each run (slow)
+    # Filter out toPosns that would put player in check
+
     def selfKingNotInCheck(toPosn):
-        resultBoard = board.getPlyResult(fromPosn, toPosn)
-        return resultBoard.pieceCheckingKing(fromPiece.color) is None
+
+        # TODO (mattsh): THERE ARE A NUMBER OF COMMENTED LINES
+        #                The ones pertaining to debugging should be deleted
+        #                as they are not functional and would cause a debugger
+        #                to launch rather than raising an exception. Delete
+        #                those lines of code after you have read this message
+#        origiBoard = board.__str__();
+#        origiMove = "{0} -> {1}".format(fromPosn, toPosn)
+
+        ################# MUTATE THE BOARD STATE - MUST BE UNDONE: ############
+        # Rather than calling getPlyResult, use THIS board. Much faster.
+        boardMoveUndoDict = board.getPlyResult(fromPosn, toPosn)
+        retVal = board.pieceCheckingKing(fromPiece.color) is None
+
+        ################# RESTORE THE OLD BOARD STATE - VERY IMPORTANT: #######
+        board.undoPlyResult(boardMoveUndoDict)
+        #######################################################################
+
+#        newBoard = "{0}".format(board)
+#        if origiBoard != newBoard:
+#            import pdb
+#            pdb.set_trace()
+
+        return retVal
+
     toPosns = filter(selfKingNotInCheck, toPosns)
 
     return toPosns
@@ -314,4 +341,3 @@ def enumMoves(board, color):
                 pass  # can't move a non-existent piece or one we don't own
 
     return moves
-

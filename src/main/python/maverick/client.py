@@ -128,11 +128,13 @@ class MaverickClient(object):
         response = self._makeRequest("REGISTER", name=name)
         return response["playerID"]
 
-    def _request_joinGame(self, playerID):
+    def _request_joinGame(self, playerID, startFreshP):
         """Adds the player to a new or pending game.
 
         @param playerID: playerID of the player joining a game"""
-        response = self._makeRequest("JOIN_GAME", playerID=playerID)
+        response = self._makeRequest("JOIN_GAME",
+                                     playerID=playerID,
+                                     startFreshP=startFreshP)
         return response["gameID"]
 
     def _request_getStatus(self, gameID):
@@ -150,6 +152,9 @@ class MaverickClient(object):
 
         @return: A list of rows of pieces, each either None or a
                 ChessPiece object"""
+
+        if layoutRaw == "BOARD NOT INITIALIZED":
+            return None
 
         # Accumulator for return value
         rowsList = []

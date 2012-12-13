@@ -1,0 +1,52 @@
+- Data Structures
+    - HashMap : playerID -> PlayerName
+    - HashMap : gameID -> Game
+    - HashMap Games : gameID ->
+        - Board state
+            -  8x8 2D array of characters
+        - Ply history:
+            - List of plies
+                - Ply:
+                    - Piece, place moved from, place moved to
+        - WhitePlayer: playerID
+        - BlackPlayer: playerID
+    - HashMap Players : playerID ->
+        - Name String
+- Code outline
+    - StatusCode Constants
+        - illegalRequest
+        - TODO….
+    - TournamentSystem
+        - saveGames(fileName)
+            - Pickle game state to ~/.maverickChess_history
+        - loadGames(fileName)
+            - Loads in game state from ~/.maverickChess_history
+        - register(Name) => playerID
+            - player 'signs up' for an account
+        - joinGame(playerID) => gameID
+            - if there is a game waiting for players, join it
+            - if not, create a new game and join it
+        - _newGame() => gameID
+            - Adds a new game to the map (private)
+        - _cancelGame(gameID) => None
+            - Marks game cancelled
+    - Game
+        - Constants:
+            - MOVE_SUCCESS
+            - MOVE_ILLEGAL
+            - GAME_PENDING_AWAITING_PLAYERS
+            - GAME_ONGOING
+            - GAME_FINISHED_CANCELLED
+            - GAME_FINISHED_BLACK_WON
+            - GAME_FINISHED_WHITE_WON
+        - .getStatus()
+            - waitingForPlayers, inProgress, blackWon, whiteWon
+        - .getBlack()
+            - black playerID
+        - .getWhite()
+            - white playerID
+        - .getBoard()
+        - .getMoveHistory()
+        - .isWhiteTurn()
+            - true or false
+        - makeMove(moveFrom, moveTo)

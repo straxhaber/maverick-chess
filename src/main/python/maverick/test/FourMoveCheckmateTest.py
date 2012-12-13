@@ -10,7 +10,8 @@ __version__ = "pre-alpha"
 
 import unittest
 
-from maverick.data import ChessBoard, ChessMatch
+from maverick.data.structs import ChessBoard
+from maverick.data.structs import ChessMatch
 from maverick.server import TournamentSystem
 
 
@@ -21,8 +22,8 @@ class TestTournamentSystem(unittest.TestCase):
         ts = TournamentSystem()
         p1 = ts.register("a")[1]["playerID"]
         p2 = ts.register("b")[1]["playerID"]
-        gid = ts.joinGame(p1)[1]["gameID"]
-        ts.joinGame(p2)
+        gid = ts.joinGame(p1, True)[1]["gameID"]
+        ts.joinGame(p2, True)
         state = ts.getState(p2, gid)
 
         if state[1]['youAreColor'] == ChessBoard.WHITE:

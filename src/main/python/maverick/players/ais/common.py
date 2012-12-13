@@ -33,7 +33,7 @@ class MaverickAI(MaverickPlayer):
     # Initialize if not already initialized
     logging.basicConfig(level=logging.INFO)
 
-    CALCULATION_TIMEOUT = 5
+    CALCULATION_TIMEOUT = 2
     """Maximum amount of time for the AI to take to make its move"""
 
     def getNextMove(self, board):
@@ -67,7 +67,8 @@ class MaverickAI(MaverickPlayer):
         else:
             MaverickAI._logger.error("Unexpected status code: %d", status)
             result = "UNEXPECTED FINISH STATUS"
-        MaverickAI._logger.info("The result was: %s", result)
+        MaverickAI._logger.info("The result was: %s for game %d", result,
+                                self.gameID)
 
     def _handleBadMove(self, errMsg, board, fromPosn, toPosn):
         """Handle a bad move in some smart way"""
