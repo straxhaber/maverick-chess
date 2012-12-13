@@ -83,7 +83,7 @@ def heuristicInCheck(color, board):
     else:
         return 1
 
-## TODO (James): REPLACE CALL TO ISLEGALMOVE
+
 def heuristicPcsUnderAttack(color, board):
     """Return the value of the given color's pieces that are under attack
 
@@ -274,12 +274,19 @@ def combineHeuristicValues(res1, res2):
     return ((res1 - res2) / 2)
 
 
-def evaluateBoardLikability(color, board):
+def evaluateBoardLikability(color, board, weightDict):
     """Return a number in [-1,1] based on board's likability to color
 
     @param color: One of maverick.data.ChessBoard.WHITE or
                    maverick.data.ChessBoard.BLACK
     @param board: A ChessBoard Object
+    @param weightDict: A dictionary describing the weights to use for the
+                        various heuristics, of form
+                        {'pieceValWeight': pieceValWeight,
+                        'inCheckWeight': inCheckWeight,
+                        'pcsUnderAttackWeight': pcsUnderAttackWeight,
+                        'emptySpaceCvgWeight': emptySpaceCoverageWeight,
+                        'piecesCoveredWeight': piecesCoveredWeight}
 
     @return: a number in [-1,1] indicating the likability of the given
     board state for the given color, where -1 is least likable and 1 is
@@ -293,12 +300,11 @@ def evaluateBoardLikability(color, board):
      - +1 means guaranteed win"""
 
     # Pairing of heuristics with their weights
-    ## TODO (James): research and tweak these
-    pieceValueWeight = 8
-    inCheckWeight = 10
-    piecesUnderAttackWeight = 5
-    emptySpaceCoverageWeight = 3
-    piecesCoveredWeight = 2
+    pieceValueWeight = weightDict['pieceValWeight']
+    inCheckWeight = weightDict['inCheckWeight']
+    piecesUnderAttackWeight = weightDict['pcsUnderAttackWeight']
+    emptySpaceCoverageWeight = weightDict['emptySpaceCvgWeight']
+    piecesCoveredWeight = weightDict['piecesCoveredWeight']
 
     # Determine opposing player color
     otherColor = ChessBoard.getOtherColor(color)

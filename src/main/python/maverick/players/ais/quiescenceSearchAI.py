@@ -35,20 +35,58 @@ class QLAI(MaverickAI):
     # Initialize if not already initialized
     logging.basicConfig(level=logging.DEBUG)
 
-    numNodesCovered = 0
-    nodesCoveredByDepth = {0: [0, 0],
-                           1: [0, 0],
-                           2: [0, 0],
-                           #3: [0, 0],
-                           3: [0, 1]}
+    # Default heuristic weights for likability evaluation
+    defaultWeights = {'pieceValWeight': 8,
+                         'inCheckWeight': 10,
+                         'pcsUnderAttackWeight': 5,
+                         'emptySpaceCvgWeight': 3,
+                         'piecesCoveredWeight': 2}
+
+    def __init__(self, host=None, port=None, pieceValWgt=None,
+                 inCheckWgt=None, piecesUnderAttackWgt=None,
+                 emptySpaceCoverageWgt=None, piecesCoveredWgt=None):
+        """Initialize a QLAI
+
+        Notes the given heuristic weights, and calls superclass constructor"""
+
+        MaverickAI.__init__(self, host=host, port=port)
+
+        # Construct a dictionary of heuristic weight values
+        self.heuristicWgts = {}
+        if pieceValWgt is None:
+            self.heuristicWgts['pieceValWeight'] = \
+                QLAI.defaultWeights['pieceValWeight']
+        else:
+            self.heuristicWgts['pieceValWeight'] = pieceValWgt
+
+        if inCheckWgt is None:
+            self.heuristicWgts['inCheckWeight'] = \
+                QLAI.defaultWeights['inCheckWeight']
+        else:
+            self.heuristicWgts['inCheckWeight'] = inCheckWgt
+
+        if piecesUnderAttackWgt is None:
+            self.heuristicWgts['pcsUnderAttackWeight'] = \
+                QLAI.defaultWeights['pcsUnderAttackWeight']
+        else:
+            self.heuristicWgts['pcsUnderAttackWeight'] = piecesUnderAttackWgt
+
+        if emptySpaceCoverageWgt is None:
+            self.heuristicWgts['emptySpaceCvgWeight'] = \
+                QLAI.defaultWeights['emptySpaceCvgWeight']
+        else:
+            self.heuristicWgts['emptySpaceCvgWeight'] = emptySpaceCoverageWgt
+
+        if piecesCoveredWgt is None:
+            self.heuristicWgts['piecesCoveredWeight'] = \
+                QLAI.defaultWeights['piecesCoveredWeight']
+        else:
+            self.heuristicWgts['piecesCoveredWeight'] = piecesCoveredWgt
 
     def getNextMove(self, board):
         """TODO PyDoc"""
 
-        # TODO (James): Remove this - show us the board, just for development
-        self.printBoard()
-
-        SEARCH_DEPTH = 3
+        SEARCH_DEPTH = 3  # Search to a depth of 4
 
         # How long we want to allow the search to run before it starts
         # terminating - most tournaments allow 3 minutes per turn.
@@ -62,33 +100,16 @@ class QLAI(MaverickAI):
             color = ChessBoard.BLACK
 
         QLAI._logger.info("Calculating next move")
-        QLAI.numNodesCovered = 0
         (nextMove, _) = self._boardSearch(board, color, SEARCH_DEPTH, -1, 1,
                                           True, time() + SEARCH_TIME_SECONDS)
-        logStrF = "Best found move was {0} -> {1}".format(nextMove[0],
-                                                          nextMove[1])
-        QLAI._logger.info(logStrF)
-
-        print "Evaluated {0} nodes in quiescent search".format(QLAI.numNodesCovered)
-
-        nc = QLAI.nodesCoveredByDepth
-        print "Evaluated {0} of {1} level 0 nodes, \
-                {2} of {3} level 1 nodes,\
-                {4} of {5} level 2 nodes,\
-                {6} of {7} level 3 nodes".format(nc[0][0], nc[0][1],
-                                                  nc[1][0], nc[1][1],
-                                                  nc[2][0], nc[2][1],
-                                                  nc[3][0], nc[3][1])
-        for i in range(0, 4):
-            for j in range(0, 2):
-                QLAI.nodesCoveredByDepth[i][j] = 0
-        QLAI.nodesCoveredByDepth[3][1] = 1
 
         # Make sure we found a move
         if nextMove is None:
             possMoves = enumPossBoardMoves(board, color)
             nextMove = random.choice(possMoves)
 
+        logStrF = "Best found move was {0} -> {1}".format(nextMove[0],
+                                                          nextMove[1])
         (fromPosn, toPosn) = nextMove
 
         return (fromPosn, toPosn)
@@ -118,11 +139,11 @@ class QLAI(MaverickAI):
 
         Note: this was influenced by information here: http://bit.ly/VYlJVC """
 
-        QLAI.numNodesCovered += 1
         otherColor = ChessBoard.getOtherColor(color)
 
         # Note the appeal of this board, with no captures
-        standPatVal = evaluateBoardLikability(color, board)
+        standPatVal = evaluateBoardLikability(color, board,
+                                              self.heuristicWgts)
 
         # Build up a list of capture moves
 
@@ -144,7 +165,8 @@ class QLAI(MaverickAI):
             for captureMove in captureMoves:
                 boardMoveUndoDict = board.getResultOfPly(captureMove[0],
                                                          captureMove[1])
-                moveResultScore = evaluateBoardLikability(otherColor, board)
+                moveResultScore = evaluateBoardLikability(otherColor, board,
+                                                          self.heuristicWgts)
                 board.unGetResultOfPly(boardMoveUndoDict)
 
                 # Don't bother searching outside of target range
@@ -168,7 +190,8 @@ class QLAI(MaverickAI):
             for captureMove in captureMoves:
                 boardMoveUndoDict = board.getResultOfPly(captureMove[0],
                                                          captureMove[1])
-                moveResultScore = evaluateBoardLikability(otherColor, board)
+                moveResultScore = evaluateBoardLikability(otherColor, board,
+                                                          self.heuristicWgts)
                 board.unGetResultOfPly(boardMoveUndoDict)
 
                 # Don't bother searching outside of target range
@@ -211,8 +234,7 @@ class QLAI(MaverickAI):
 
         Implementation based on information found here: http://bit.ly/t1dHKA"""
         ## TODO (James): Check timeout less than once per iteration
-        ## TODO (James): remove references to QLAI.numNodesCovered - it is only
-        #                here for testing purposes
+
         ## TODO (James): Make logging conditional - temporarily disabled
 
         #logStrF = "Performing minimax search to depth {0}.".format(depth)
@@ -220,7 +242,6 @@ class QLAI(MaverickAI):
 
         otherColor = ChessBoard.getOtherColor(color)
 
-        QLAI.nodesCoveredByDepth[depth][0] += 1
         # Check if we are at a leaf node
         if (depth == 0):
             return self._quiescentSearch(board, color, alpha, beta, isMaxNode)
@@ -229,11 +250,11 @@ class QLAI(MaverickAI):
         elif (time() > stopSrchTime or
               board.isKingCheckmated(color) or
               board.isKingCheckmated(otherColor)):
-            return (None, evaluateBoardLikability(color, board))
+            return (None, evaluateBoardLikability(color, board,
+                                                  self.heuristicWgts))
 
         else:
             moveChoices = enumPossBoardMoves(board, color)
-            QLAI.nodesCoveredByDepth[depth - 1][1] += len(moveChoices)
             #logStrF = "Considering {0} poss. moves".format(len(moveChoices))
             #QLAI._logger.debug(logStrF)
 
@@ -309,8 +330,14 @@ class QLAI(MaverickAI):
         pass  # No printouts needed for AI
 
 
-def runAI(host=None, port=None):
-    ai = QLAI(host=host, port=port)
+def runAI(host=None, port=None, pieceValWeight=None, inCheckWeight=None,
+          piecesUnderAttackWeight=None, emptySpaceCoverageWeight=None,
+          piecesCoveredWeight=None):
+    ai = QLAI(host=host, port=port, pieceValWgt=pieceValWeight,
+              inCheckWgt=inCheckWeight,
+              piecesUnderAttackWgt=piecesUnderAttackWeight,
+              emptySpaceCoverageWgt=emptySpaceCoverageWeight,
+              piecesCoveredWgt=piecesCoveredWeight)
     ai.run(startFreshP=True)
 
 
@@ -320,8 +347,22 @@ def main():
                         help="specify hostname of Maverick server")
     parser.add_argument("--port", default=None, type=int,
                         help="specify port of Maverick server")
+    parser.add_argument("--piecevalweight", default=None, type=int,
+                        help="specify weight of pieceValue heuristic")
+    parser.add_argument("--incheckweight", default=None, type=int,
+                        help="specify weight of inCheck heuristic")
+    parser.add_argument("--piecesunderattackweight", default=None, type=int,
+                        help="specify weight of piecesUnderAttack heuristic")
+    parser.add_argument("--emptyspacecoverageweight", default=None, type=int,
+                        help="specify weight of emptySpaceCoverage heuristic")
+    parser.add_argument("--piecescoveredweight", default=None, type=int,
+                        help="specify weight of piecesCovered heuristic")
     args = parser.parse_args()
-    runAI(host=args.host, port=args.port)
+    runAI(host=args.host, port=args.port, pieceValWeight=args.piecevalweight,
+          inCheckWeight=args.incheckweight,
+          piecesUnderAttackWeight=args.piecesunderattackweight,
+          emptySpaceCoverageWeight=args.emptyspacecoverageweight,
+          piecesCoveredWeight=args.piecescoveredweight)
 
 if __name__ == '__main__':
     main()
