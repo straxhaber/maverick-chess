@@ -155,7 +155,7 @@ def _canMoveTo_king(board, color, fromPosn):
     if (canCastleKingSide and
         reduce(bool.__and__,
                [board[ChessPosn(kingRank, fN)] is None
-                for fN in [6, 7]])):
+                for fN in [5, 6]])):
         moves.append(fromPosn.getTranslatedBy(0, 2))
 
     return moves
@@ -196,20 +196,27 @@ def canMoveTo(board, fromPosn):
                                 board[p].color != fromPiece.color),
                      toPosns)
 
-    # TODO (mattsh): JAMES THIS BLOWS UP IF RUN
-    #                We would delete this anyway, but it shouldn't blow up
-    #                for legal moves. Either I have a bug (don't think so)
-    #                or you do
-    #        # TODO delete this after this function is finished (just a stop-gap)
-    #        toPosns = filter(lambda p: board.isLegalMove(fromPiece.color,
-    #                                                     fromPosn,
-    #                                                     p),
-    #                         toPosns)
-
-    # Filter out Filter out toPosns that would put player in check
+    # Filter out toPosns that would put player in check
     def selfKingNotInCheck(toPosn):
-        resultBoard = board.getResultOfPly(fromPosn, toPosn)
-        return not resultBoard.isKingInCheck(fromPiece.color)[0]
+
+        # Rather than calling getResultOfPly, use THIS board. Much
+        # faster. REMEMBER TO UNDO THIS HYPOTHETICAL MOVE
+        origiBoard = "{0}".format(board)
+        origiMove = "{0} -> {1}".format(fromPosn, toPosn)
+        boardMoveUndoDict = board.getResultOfPly(fromPosn, toPosn)
+        ret = not board.isKingInCheck(fromPiece.color)[0]
+
+    ################# RESTORE THE OLD BOARD STATE - VERY IMPORTANT:############
+
+        board.unGetResultOfPly(boardMoveUndoDict)
+        newBoard = "{0}".format(board)
+
+        if origiBoard != newBoard:
+            import pdb; pdb.set_trace()
+
+    ###########################################################################
+        return ret
+
     toPosns = filter(selfKingNotInCheck, toPosns)
 
     return toPosns
