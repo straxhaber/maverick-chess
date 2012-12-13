@@ -153,6 +153,9 @@ class MaverickClient(object):
         @return: A list of rows of pieces, each either None or a
                 ChessPiece object"""
 
+        if layoutRaw == "BOARD NOT INITIALIZED":
+            return None
+
         # Accumulator for return value
         rowsList = []
 
