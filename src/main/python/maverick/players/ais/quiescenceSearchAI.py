@@ -35,12 +35,6 @@ class QLAI(MaverickAI):
     # Initialize if not already initialized
     logging.basicConfig(level=logging.DEBUG)
 
-    numNodesCovered = 0
-    nodesCoveredByDepth = {0: [0, 0],
-                           1: [0, 0],
-                           2: [0, 0],
-                           #3: [0, 0],
-                           3: [0, 1]}
 
     def getNextMove(self, board):
         """TODO PyDoc"""
@@ -48,7 +42,7 @@ class QLAI(MaverickAI):
         # TODO (James): Remove this - show us the board, just for development
         self.printBoard()
 
-        SEARCH_DEPTH = 3
+        SEARCH_DEPTH = 3  # Search to a depth of 4
 
         # How long we want to allow the search to run before it starts
         # terminating - most tournaments allow 3 minutes per turn.
@@ -62,33 +56,16 @@ class QLAI(MaverickAI):
             color = ChessBoard.BLACK
 
         QLAI._logger.info("Calculating next move")
-        QLAI.numNodesCovered = 0
         (nextMove, _) = self._boardSearch(board, color, SEARCH_DEPTH, -1, 1,
                                           True, time() + SEARCH_TIME_SECONDS)
-        logStrF = "Best found move was {0} -> {1}".format(nextMove[0],
-                                                          nextMove[1])
-        QLAI._logger.info(logStrF)
-
-        print "Evaluated {0} nodes in quiescent search".format(QLAI.numNodesCovered)
-
-        nc = QLAI.nodesCoveredByDepth
-        print "Evaluated {0} of {1} level 0 nodes, \
-                {2} of {3} level 1 nodes,\
-                {4} of {5} level 2 nodes,\
-                {6} of {7} level 3 nodes".format(nc[0][0], nc[0][1],
-                                                  nc[1][0], nc[1][1],
-                                                  nc[2][0], nc[2][1],
-                                                  nc[3][0], nc[3][1])
-        for i in range(0, 4):
-            for j in range(0, 2):
-                QLAI.nodesCoveredByDepth[i][j] = 0
-        QLAI.nodesCoveredByDepth[3][1] = 1
 
         # Make sure we found a move
         if nextMove is None:
             possMoves = enumPossBoardMoves(board, color)
             nextMove = random.choice(possMoves)
 
+        logStrF = "Best found move was {0} -> {1}".format(nextMove[0],
+                                                          nextMove[1])
         (fromPosn, toPosn) = nextMove
 
         return (fromPosn, toPosn)
