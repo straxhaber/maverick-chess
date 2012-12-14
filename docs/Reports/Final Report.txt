@@ -15,16 +15,6 @@ learning experience and developed in each of us an appreciation for the great
 challenges in algorithms, artificial intelligence, and high performance
 computing.
 
-Our project is essentially the combination of three systems:
- - MaverickChess, a self-created platform for chess AIs to be pitted against
-   each other in an open arena either locally or across the internet.
-   Added benefit: this could be re-used for future courses.
- - ShallowBlue, a proficient mid-game AI based on quiescence-search, heuristic
-   board evaluation, alpha-beta pruning, move enumeration, and other analytics
- - Work to evolve the constant weights for ShallowBlue through a manual
-   genetic algorithm.
-
-
 
 ###############################################################################
 Related Work (Matt and James)
@@ -35,6 +25,54 @@ Related Work (Matt and James)
 ###############################################################################
 Approach (Matt and James)
 ###############################################################################
+
+Our project is essentially the combination of two systems:
+ - MaverickChess, a self-created platform for chess AIs to be pitted against
+   each other in an open arena either locally or across the internet. It
+   includes a REPL client to allow a human to play another human or AI, server
+   master that holds state and communicates with clients, client code to
+   enable rapid development of AIs and other players, 
+
+   ADDED BENEFIT: this could be re-used for future courses.
+
+ - ShallowBlue, a proficient mid-game AI based on quiescence-search, heuristic
+   board evaluation, alpha-beta pruning, move enumeration, and other analytics.
+   It intentionally does not include an opening database or end-game tablebases,
+   as these are mechanical components and not interesting AI components. With
+   these, however, the AI would perform substantially better.
+
+Each of these systems were a large undertaking, and together they form the
+chess system we developed for this course.
+
+There were a few side-tasks that required work as well:
+ - Writing the various reports
+ - Scripts that provided data to help choose the heuristic weight constants
+   in ShallowBlue
+ - Platform for 'genetic' evolution of constant weights (didn't make it into
+   the code)
+
+
+___ Overall Architecture ___
+
+
+___ MaverickChess Architecture ___
+
+
+___ ShallowBlue Architecture ___
+
+
+___ Primary Heuristics Considered ___
+
+
+___ Search and Move Choice ___
+
+
+___ Move Enumeration ___
+
+
+___ Possible Future Work ___
+
+
 
 
 
