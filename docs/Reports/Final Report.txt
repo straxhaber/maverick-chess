@@ -69,12 +69,8 @@ There were a few side-tasks that required work as well:
    the code)
 
 
-___ Overall Architecture ___
-See the JavaDocs
-
-
 ___ MaverickChess Architecture ___
-See the JavaDocs
+See the PyDocs for the code architecture and inheritance structures.
 
 
 The game itself has complicated rules and edge-cases
@@ -88,6 +84,7 @@ The game itself has complicated rules and edge-cases
 Existing systems are either:
  - Closed-source
  - Not extendable
+ - We couldn't find them
 
 
 Full network-ready server and client system with APIs
@@ -95,15 +92,19 @@ Full network-ready server and client system with APIs
  - Allows for multiple simultaneous matches between humans and AIs
  - Useful for genetic algorithms
 
+The code is designed to be readily extendable, well-documented, and modular. If
+you wish to re-use this in future semesters, please do let us know and we can
+re-factor it for such a use.
+
 
 ___ ShallowBlue Architecture ___
-See the JavaDocs
 
+From the final presentation:
  - Mini-max (also known as alpha/beta) pruning
  - Iterative quiescence search
- - Opening and end-game databases
+ - Opening and end-game databases (we didn't implement these)
  - Heuristics to evaluate board
- - Very thorough optimization in system-level languages
+ - Very thorough optimization (we didn't implement this)
 
 
 ___ Primary Heuristics Considered ___
@@ -179,14 +180,14 @@ To test our AI against the GNUchess AI, games had to played manually by playing 
 
 Sets of Tested Heuristic Weights
 Set #   pieceValue       inCheck        piecesUnderAttack       emptySpaceCoverage      piecesCovered
-1   8   10               5              3                       2
-2   8   10               7              2                       5
-3   8   8                7              1                       6
-4   7   10               10             2                       8
-5   7   10               9              1                       3
-6   2   10               7              3                       9
-7   1   10               8              2                       2
-8   2   10               8              2                       2
+1       8                10             5                       3                       2
+2       8                10             7                       2                       5
+3       8                8              7                       1                       6
+4       7                10             10                      2                       8
+5       7                10             9                       1                       3
+6       2                10             7                       3                       9
+7       1                10             8                       2                       2
+8       2                10             8                       2                       2
 
 The first set of heuristic weights was hand-picked by the members of the project team as a starting point based on guessing what would perform well. After running many games with Set 1, it was observed that though the AI was sufficient in staying out of check, it played too recklessly with other pieces. It would regularly choose to move other pieces into dangerous spaces with many safe moves available. As testing went on and tweaks were made, the AI started putting less pieces into dangerous positions, was giving itself better positioning across the board, and the games went much longer before our AI was put into checkmate. As you can see from the table, the AI started to perform better when the weight of the pieceValue heuristic was lowered and the weight of piecesUnderAttack heuristic was raised. I believe it performed better because the AI was putting more importance on the total number of pieces that were under attack as opposed to specific pieces based on the value of their type. The inCheck weight was left at 10 for the majority of the sets because when it was lowered, all test games ended very quickly with the AI putting more focus on other aspects of the game. Given more time for testing, it is hypothesized that putting more weight in the emptySpaceCovered heuristic would help to increase performance of the AI because if it put more weight in have board coverage, it is assumed to have overall better piece positioning.
 One limitation that is expected to have impacted the performance of our AI during testing  is the time restriction on our AI for searching the possible move tree. In order to increase the speed of testing, the a two minute limit was put on the quiescence search. Giving it a time limit meant that the AI would not be able to search as much of the move tree and could be missing better moves that were not found yet.
@@ -197,3 +198,4 @@ One limitation that is expected to have impacted the performance of our AI durin
 ###############################################################################
 References (Matt and James)
 ###############################################################################
+[1] Some text borrowed from mid-point report and presentation
