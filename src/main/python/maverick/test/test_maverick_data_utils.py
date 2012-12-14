@@ -125,7 +125,12 @@ class Test_maverick_data_utils(unittest.TestCase):
 
     def test_bCmplx_allLegalMoves_black(self):
         b = getBoardComplex()
-        self._allLegalMoves(b, _b, enumMoves(b, _b))
+        
+        print "considering a board"
+        print b
+        eMoves = enumMoves(b, _b)
+        import pdb; pdb.set_trace()
+        self._allLegalMoves(b, _b, eMoves)
 
     def test_b1_LegalWhiteKingMove(self):
         self.assertTrue(getBoard1().isLegalMove(_w, _Posn(1, 3), _Posn(2, 3)))

@@ -86,7 +86,6 @@ class ChessPiece(object):
 class ChessBoard(object):
     """Represents a chess game in Maverick"""
 
-    # TODO (mattsh): Represent 50-move draw rule
     # TODO (mattsh): Represent threefold repetition draw rule
 
     # TODO (mattsh): getPlyResult, unGetPlyResult should use with syntax
@@ -1085,6 +1084,32 @@ class ChessBoard(object):
 
         return pathPosns
 
+
+class ChessBoardUtils(object):
+    """Utilities for use with given ChessBoard objects"""
+
+    @staticmethod
+    def findPiecePosnsByColor(board, color):
+        """Return a list of positions where the given color has pieces
+
+        @param board: The board to use for this check.
+        @param color: The color of the pieces to find, ChessMatch.WHITE or
+        ChessMatch.BLACK
+
+        @return: a list of ChessPosns representing
+                the location of all pieces of the given color"""
+
+        pieceLocations = []
+
+        for r in range(ChessBoard.BOARD_LAYOUT_SIZE):
+            row = board.layout[r]
+            for f in range(ChessBoard.BOARD_LAYOUT_SIZE):
+                piece = row[f]
+                if piece is not None:
+                    if piece.color == color:
+                        # Build ChessPosn for piece location
+                        pieceLocations.append(ChessPosn(r, f))
+        return pieceLocations
 
 class ChessMatch(object):
     """Represents a chess game in Maverick"""
