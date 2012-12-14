@@ -28,14 +28,19 @@ of the code. However, the ./.git directory holds all of the branches and version
 of our code. Therefore, here are a few git commands that will give you more view
 into our system:
 
+# Change branches locally
 git checkout master             # Check out the development branch
 git checkout functional         # Check out the stable branch
+NOTE: The master branch has the latest code, but reports are in the functional branch.
 
 # View a log of all contributions to the project (James mostly at the end, Matt mostly at the beginning):
 git log --graph --all --abbrev-commit --pretty=format:'%C(yellow)%h %Creset%C(green)%cr %C(blue)%an%C(bold red)%d%Creset %s'
 
-Each of the branches and versions contains the same scripts, but only the
-functional branch contains the latest versions of the reports.
+# Pull down the latest code to a new directory:
+git clone git@github.com:straxhaber/maverick-chess.git
+
+# Update the code to the latest version:
+git pull
 
 
 
