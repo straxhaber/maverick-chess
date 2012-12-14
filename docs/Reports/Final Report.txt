@@ -114,7 +114,9 @@ ___ Move Enumeration ___
 
 ___ Possible Future Work ___
 
-Our AI has a lot of potential. When improving it, our first steps would be to knock out all remaining (mostly minor) TODO items and wishlist items. From there, we would construct a genetic algorithm to run a number of games with different heuristic values and evolve more optimal heuristic weights. From there, we would implement the three improvements mentioned in the "Search and Move Choice" section, namely multi-threading, background board evalutaion, transposition tables and iterative deepening, and bitboards. We would also likely refactor the older isLegalMove function to use the legal move enumerator, as they are currently based on entirely separate logic. Teyond this, there are a number of architectural changes in the pipeline.
+Our AI has a lot of potential. When improving it, our first steps would be to knock out all remaining (mostly minor) TODO items and wishlist items. From there, we would construct a genetic algorithm to run a number of games with different heuristic values and evolve more optimal heuristic weights. From there, we would implement the three improvements mentioned in the "Search and Move Choice" section, namely multi-threading, background board evalutaion, transposition tables and iterative deepening, and bitboards. We would also likely refactor the older isLegalMove function to use the legal move enumerator, as they are currently based on entirely separate logic. Beyond this, there are a number of architectural changes in the pipeline.
+
+We would also like to open-source our project, as we feel that its modularity and useful client/server framework could prove useful to others looking to implement a simple chess AI. Adding additional clients is not complicated, and it would be trivial for someone to extend our code with another AI that they had written themselves.
 
 
 
