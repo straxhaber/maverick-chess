@@ -41,12 +41,19 @@ functional branch contains the latest versions of the reports.
 
 ___ Reading the Reports ___
 There are a few reports (with some shared content):
- - ./docs/Presentations/Final Report:
+
+ - ./docs/Reports/Final Report:
    The primary write-up for this project
- - ./docs/Presentations/Midpoint Report:
+
+ - ./docs/Reports/Midpoint Report:
    The mid-point status report we submitted to you
+
  - ./docs/Specifications:
    Planning documents from early in the semester (some plans changed)
+
+ - ./docs/Presentations/Final Presentation.pdf:
+   Final presentation to the class
+   
  - README.md:
    This readme
 
