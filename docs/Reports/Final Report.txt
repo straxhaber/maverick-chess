@@ -36,6 +36,9 @@ Related Work (Matt and James)
 Approach (Matt and James)
 ###############################################################################
 
+Our AI constructs a tree of possible board moves, and conducts a breadth-first minimax search using alpha-beta pruning.  At each level, the possible moves are enumerated.  For each one, a recursive call is made to the search function, which terminates once the maximum depth is reached.  At the terminal depth, a quiescent search function is called that performs a limited additional search only considering captures.  This helps combat the horizon affect by making it less likely that search is terminated one move prior to a very unfavorable capture.
+
+Successive evaluations at the same level in our AI's minimax search can be pruned depending on the results of their predecessors.  For example, say that a node of depth 2 is being considered. If a possible friendly move (a child node of this level-2 node) is evaluated at level 3, and it is found we could achieve a board state that is more desirable than that of another child we've evaluated, we need not explore this new child node because we know the enemy will not pick it. To this end, each recursive call to the QLAI class's _boardSearch function includes new values for the maximum and minimum board likability values to be considered by that call.
 
 
 ###############################################################################
