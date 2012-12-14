@@ -1,0 +1,152 @@
+MaverickChess and ShallowBlue
+by Commander Spock and Mister Finney
+
+###############################################################################
+Introduction (Matt and James)
+###############################################################################
+We decided purposely to tackle the challenging task of creating a meaningful
+chess AI. Knowing that this problem is notoriously complex, and that far
+greater computer scientists have spent careers on this, we fully expected to
+come up with an interesting exploration that did not yield a competitive AI.
+However, whether by chance or persistence, we were able to develop a system
+that makes seemingly logical moves in a reasonable amount of time (5 minutes).
+While it would not beat an industrial-stregnth chess AI, it was an incredible
+learning experience and developed in each of us an appreciation for the great
+challenges in algorithms, artificial intelligence, and high performance
+computing.
+
+
+###############################################################################
+Related Work (Matt and James)
+###############################################################################
+
+
+
+###############################################################################
+Approach (Matt and James)
+###############################################################################
+
+Our project is essentially the combination of two systems:
+ - MaverickChess, a self-created platform for chess AIs to be pitted against
+   each other in an open arena either locally or across the internet. It
+   includes a REPL client to allow a human to play another human or AI, server
+   master that holds state and communicates with clients, client code to
+   enable rapid development of AIs and other players, 
+
+   ADDED BENEFIT: this could be re-used for future courses.
+
+ - ShallowBlue, a proficient mid-game AI based on quiescence-search, heuristic
+   board evaluation, alpha-beta pruning, move enumeration, and other analytics.
+   It intentionally does not include an opening database or end-game tablebases,
+   as these are mechanical components and not interesting AI components. With
+   these, however, the AI would perform substantially better.
+
+Each of these systems were a large undertaking, and together they form the
+chess system we developed for this course.
+
+There were a few side-tasks that required work as well:
+ - Writing the various reports
+ - Scripts that provided data to help choose the heuristic weight constants
+   in ShallowBlue
+ - Platform for 'genetic' evolution of constant weights (didn't make it into
+   the code)
+
+
+___ Overall Architecture ___
+
+
+___ MaverickChess Architecture ___
+
+
+___ ShallowBlue Architecture ___
+
+
+___ Primary Heuristics Considered ___
+
+Each of our heuristics weights the given player's score relative to the enemy's score, so the relative strengths of both sides are taken into account.
+
+We consider five heuristics in our evaluation, with each yielding a value from -1 (most unfavorable) to 1 (most favorable).
+
+Piece Value
+
+This is a summation of the weighted values of each of the given player's extant pieces. Each piece is given a value relative to the pawn's worth. They are as follows:
+	Pawn: 1
+	Knight: 3
+	Bishop: 3
+	Rook: 5
+	Queen: 9
+
+Note that the king is not valued here, as the undesirability of his capture is accounted for by a a checkmate check in the search. Such board states are given the most extreme possible likability values, either 1 or -1.
+
+In Check
+
+This is a simple evaluation of whether the given player is in check.
+
+Pieces Under Attack:
+
+This is a summation of the relative piece values of all enemy pieces which the given player has the power to capture in their next turn. Its effect is to make the AI more aggressive by noting more aggressive positions as more favorable. This uses the same piece weights as the Piece Value heuristic above.
+
+Empty Space Coverage
+
+This is a summation of the weighted values of all empty squares to which the given player could move in their next turn. The center four squares are worth twice what non-center squares are worth, as they are strategically important. This heuristic forces the AI to value freedom of movement and control of the center. This results in the AI doing things like moving their bishop out to exert more control over the board.
+
+Pieces Covered
+
+This is a summation of the weighted piece values of all friendly pieces which, if captured, could have their space immediately retaken by a friendly piece. Relative piece values are the same as in the Piece Value heuristic described above. This has been disabled for submission due to slowness of operation, but would have had the effect of making the AI prefer defensive positions where its pieces were well covered.
+
+
+___ Search and Move Choice ___
+
+Our AI constructs a tree of possible board moves, and conducts a breadth-first minimax search using alpha-beta pruning. At each level, the possible moves are enumerated. For each one, a recursive call is made to the search function, which terminates once the maximum depth is reached.  At the terminal depth, a quiescent search function is called that performs a limited additional search only considering captures. This helps combat the horizon affect by making it less likely that search is terminated one move prior to a very unfavorable capture.
+
+Successive evaluations at the same level in our AI's minimax search can be pruned depending on the results of their predecessors. For example, say that a node of depth 2 is being considered. If a possible friendly move (a child node of this level-2 node) is evaluated at level 3, and it is found we could achieve a board state that is more desirable than that of another child we've evaluated, we need not explore this new child node because we know the enemy will not pick it. To this end, each recursive call to the QLAI class's _boardSearch function includes new values for the maximum and minimum board likability values to be considered by that call.
+
+Execution is bounded by a timeout. In the case that a timeout is reached, or a base node is discovered in the quiescent search, the search returns the heuristic-based likability evaluation of the given board state rather than building a tree. 
+
+Currently, our search is not able to compete with commercial solutions in terms of the size of the tree it is able to traverse. This is due to avenues of improvement that we have not been able to explore, of which three could easily be pursued with more time: 
+
+1. Currently, our program is single-threaded for simplicity's sake, but it could do much more if multi-threaded. For example, we could evaluate the tree in the background.
+2. We do not have transposition tables for board evaluation caching. This would allow us to do iterative deepening, tree caching, and constant board evaluation (see 1.)
+3. Our current board representation relies on a two-dimensional array of objects. If we were to move to a bitboard-based representation, we could dramatically improve access time.
+
+___ Move Enumeration ___
+
+
+___ Possible Future Work ___
+
+Our AI has a lot of potential. When improving it, our first steps would be to knock out all remaining (mostly minor) TODO items and wishlist items. From there, we would construct a genetic algorithm to run a number of games with different heuristic values and evolve more optimal heuristic weights. From there, we would implement the three improvements mentioned in the "Search and Move Choice" section, namely multi-threading, background board evalutaion, transposition tables and iterative deepening, and bitboards. We would also likely refactor the older isLegalMove function to use the legal move enumerator, as they are currently based on entirely separate logic. Beyond this, there are a number of architectural changes in the pipeline.
+
+We would also like to open-source our project, as we feel that its modularity and useful client/server framework could prove useful to others looking to implement a simple chess AI. Adding additional clients is not complicated, and it would be trivial for someone to extend our code with another AI that they had written themselves.
+
+
+
+
+###############################################################################
+Results and Discussion (Brad)
+###############################################################################
+Analysis
+
+Unfortunately, due to time constraints, only a small sample of test data was able to be recorded. Data was collected for 20 games of our chess AI playing against a popular open source chess program, GNUchess, on normal difficulty. For the trials, our AI was run using varying weights for heuristics the AI used to calculate the best move based on the likability of possible boards. There are five heuristics the AI uses to make decisions: pieceValue (Total value of all a player’s pieces on the board), InCheck (If a player’s King is in check), piecesUnderAttack (Total value of all a player’s pieces that are under attack), emptySpaceCoverage (Value of empty squares a player can attack, importance on  center squares), piecesCovered (Value of a player’s pieces whose positions could be immediately retaken if captured).
+
+To test our AI against the GNUchess AI, games had to played manually by playing a human against two computers simultaneously, and feeding in the AI moves against each other. Of the 20 games that were recorded, the GNUchess AI won all 20. Though those results are discouraging, the benefit of testing with the human mediator is that every move that the AI makes is observable, as opposed to just seeing the end result of the game with automated testing. Through this method, a substantial increase in performance was noticed after observation and tweaking of heuristic weights. Below is the table showing the progression of weights as they were tweaked based on performance. Each set of weights was tested multiple times, the table shows each set of weights.
+
+Sets of Tested Heuristic Weights
+Set #   pieceValue       inCheck        piecesUnderAttack       emptySpaceCoverage      piecesCovered
+1   8   10               5              3                       2
+2   8   10               7              2                       5
+3   8   8                7              1                       6
+4   7   10               10             2                       8
+5   7   10               9              1                       3
+6   2   10               7              3                       9
+7   1   10               8              2                       2
+8   2   10               8              2                       2
+
+The first set of heuristic weights was hand-picked by the members of the project team as a starting point based on guessing what would perform well. After running many games with Set 1, it was observed that though the AI was sufficient in staying out of check, it played too recklessly with other pieces. It would regularly choose to move other pieces into dangerous spaces with many safe moves available. As testing went on and tweaks were made, the AI started putting less pieces into dangerous positions, was giving itself better positioning across the board, and the games went much longer before our AI was put into checkmate. As you can see from the table, the AI started to perform better when the weight of the pieceValue heuristic was lowered and the weight of piecesUnderAttack heuristic was raised. I believe it performed better because the AI was putting more importance on the total number of pieces that were under attack as opposed to specific pieces based on the value of their type. The inCheck weight was left at 10 for the majority of the sets because when it was lowered, all test games ended very quickly with the AI putting more focus on other aspects of the game. Given more time for testing, it is hypothesized that putting more weight in the emptySpaceCovered heuristic would help to increase performance of the AI because if it put more weight in have board coverage, it is assumed to have overall better piece positioning.
+One limitation that is expected to have impacted the performance of our AI during testing  is the time restriction on our AI for searching the possible move tree. In order to increase the speed of testing, the a two minute limit was put on the quiescence search. Giving it a time limit meant that the AI would not be able to search as much of the move tree and could be missing better moves that were not found yet.
+
+
+
+
+###############################################################################
+References (Matt and James)
+###############################################################################
