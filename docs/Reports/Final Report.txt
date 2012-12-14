@@ -63,12 +63,51 @@ ___ ShallowBlue Architecture ___
 
 ___ Primary Heuristics Considered ___
 
+Each of our heuristics weights the given player's score relative to the enemy's score, so the relative strengths of both sides are taken into account.
+
+We consider five heuristics in our evaluation, with each yielding a value from -1 (most unfavorable) to 1 (most favorable).
+
+Piece Value
+
+This is a summation of the weighted values of each of the given player's extant pieces. Each piece is given a value relative to the pawn's worth. They are as follows:
+	Pawn: 1
+	Knight: 3
+	Bishop: 3
+	Rook: 5
+	Queen: 9
+
+Note that the king is not valued here, as the undesirability of his capture is accounted for by a a checkmate check in the search. Such board states are given the most extreme possible likability values, either 1 or -1.
+
+In Check
+
+This is a simple evaluation of whether the given player is in check.
+
+Pieces Under Attack:
+
+This is a summation of the relative piece values of all enemy pieces which the given player has the power to capture in their next turn. Its effect is to make the AI more aggressive by noting more aggressive positions as more favorable. This uses the same piece weights as the Piece Value heuristic above.
+
+Empty Space Coverage
+
+This is a summation of the weighted values of all empty squares to which the given player could move in their next turn. The center four squares are worth twice what non-center squares are worth, as they are strategically important. This heuristic forces the AI to value freedom of movement and control of the center. This results in the AI doing things like moving their bishop out to exert more control over the board.
+
+Pieces Covered
+
+This is a summation of the weighted piece values of all friendly pieces which, if captured, could have their space immediately retaken by a friendly piece. Relative piece values are the same as in the Piece Value heuristic described above. This has been disabled for submission due to slowness of operation, but would have had the effect of making the AI prefer defensive positions where its pieces were well covered.
+
 
 ___ Search and Move Choice ___
 
-Our AI constructs a tree of possible board moves, and conducts a breadth-first minimax search using alpha-beta pruning.  At each level, the possible moves are enumerated.  For each one, a recursive call is made to the search function, which terminates once the maximum depth is reached.  At the terminal depth, a quiescent search function is called that performs a limited additional search only considering captures.  This helps combat the horizon affect by making it less likely that search is terminated one move prior to a very unfavorable capture.
+Our AI constructs a tree of possible board moves, and conducts a breadth-first minimax search using alpha-beta pruning. At each level, the possible moves are enumerated. For each one, a recursive call is made to the search function, which terminates once the maximum depth is reached.  At the terminal depth, a quiescent search function is called that performs a limited additional search only considering captures. This helps combat the horizon affect by making it less likely that search is terminated one move prior to a very unfavorable capture.
 
-Successive evaluations at the same level in our AI's minimax search can be pruned depending on the results of their predecessors.  For example, say that a node of depth 2 is being considered. If a possible friendly move (a child node of this level-2 node) is evaluated at level 3, and it is found we could achieve a board state that is more desirable than that of another child we've evaluated, we need not explore this new child node because we know the enemy will not pick it. To this end, each recursive call to the QLAI class's _boardSearch function includes new values for the maximum and minimum board likability values to be considered by that call.
+Successive evaluations at the same level in our AI's minimax search can be pruned depending on the results of their predecessors. For example, say that a node of depth 2 is being considered. If a possible friendly move (a child node of this level-2 node) is evaluated at level 3, and it is found we could achieve a board state that is more desirable than that of another child we've evaluated, we need not explore this new child node because we know the enemy will not pick it. To this end, each recursive call to the QLAI class's _boardSearch function includes new values for the maximum and minimum board likability values to be considered by that call.
+
+Execution is bounded by a timeout. In the case that a timeout is reached, or a base node is discovered in the quiescent search, the search returns the heuristic-based likability evaluation of the given board state rather than building a tree. 
+
+Currently, our search is not able to compete with commercial solutions in terms of the size of the tree it is able to traverse. This is due to avenues of improvement that we have not been able to explore, of which three could easily be pursued with more time: 
+
+1. Currently, our program is single-threaded for simplicity's sake, but it could do much more if multi-threaded. For example, we could evaluate the tree in the background.
+2. We do not have transposition tables for board evaluation caching. This would allow us to do iterative deepening, tree caching, and constant board evaluation (see 1.)
+3. Our current board representation relies on a two-dimensional array of objects. If we were to move to a bitboard-based representation, we could dramatically improve access time.
 
 ___ Move Enumeration ___
 
