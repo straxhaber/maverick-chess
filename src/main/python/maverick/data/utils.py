@@ -30,61 +30,19 @@ def getMidGameBoard():
 
     NOTE: Best-effort on getting a mid-game board. Property not guaranteed."""
 
-    # # TODO (James): get this working for test board generation
+    boardNum = random.randint(0, 4)
 
-    # Mapping of piece types to tuples of form (max number,
-    #                    probability that one is placed at each iteration)
-    boardPieces = {ChessBoard.KING: (1, 1),
-                   ChessBoard.PAWN: (8, 0.5),
-                   ChessBoard.ROOK: (2, 0.3),
-                   ChessBoard.KNGT: (2, 0.4),
-                   ChessBoard.BISH: (2, 0.3),
-                   ChessBoard.QUEN: (1, 0.7)}
-
-    emptyStartLayout = [[None] * 8] * 8
-    # The board to be built up
-    board = ChessBoard(startLayout=emptyStartLayout)
-
-    # Keep track of the remaining empty posns
-    emptyPosns = []
-    for r in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
-        for f in xrange(ChessBoard.BOARD_LAYOUT_SIZE):
-            emptyPosns.append(ChessPosn(r, f))
-
-    # Note the number of kings on the board.  Cannot check for check until
-    # kings are placed
-    numKingsPlaced = 0
-
-    for color in [ChessBoard.WHITE, ChessBoard.BLACK]:
-        otherColor = ChessBoard.getOtherColor(color)
-        for pieceType, placementTuple in boardPieces.iteritems():
-            numPcsToPlace = placementTuple[0]
-
-            # Try to place the specified number of pieces
-            while numPcsToPlace > 0:
-                randNum = random.random()
-                placementChance = placementTuple[1]
-                if randNum <= placementChance:
-                    # Choose a remaining empty posn and place this piece
-                    emptyPosnIdx = random.randrange(0, len(emptyPosns))
-                    placementPosn = emptyPosns[emptyPosnIdx]
-                    # If this is an illegal placement, try again
-                    # But don't bother checking if we haven't placed kings
-                    if ((numKingsPlaced == 2) and
-                        ## TODO: should this check is None or is not None?
-                        board.pieceCheckingKing(otherColor) is None):
-                        break
-                    else:
-                        if pieceType == ChessBoard.KING:
-                            numKingsPlaced += 1
-
-                        # Place the piece and note the posn is non-empty
-
-                        board[placementPosn] = ChessPiece(color, pieceType)
-                        del emptyPosns[emptyPosnIdx]
-                numPcsToPlace -= 1
-
-    return board
+    # return the appropriate board
+    if boardNum == 0:
+        return _getBoard0()
+    elif boardNum == 1:
+        return _getBoard1()
+    elif boardNum == 2:
+        return _getBoard2()
+    elif boardNum == 3:
+        return _getBoard3()
+    elif boardNum == 4:
+        return _getBoard4()
 
 
 def __enumMoves_isOnBoard(posn):
@@ -341,3 +299,370 @@ def enumMoves(board, color):
                 pass  # can't move a non-existent piece or one we don't own
 
     return moves
+
+def _getBoard0():
+    _w = ChessBoard.WHITE
+    _b = ChessBoard.BLACK
+    return ChessBoard(startLayout=[[ChessPiece(_w, ChessBoard.ROOK),
+                                    ChessPiece(_w, "N"),
+                                    ChessPiece(_w, "B"),
+                                    ChessPiece(_b, "R"),
+                                    None,
+                                    ChessPiece(_w, "B"),
+                                    None,
+                                    None],
+                                   [ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P"),
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "K"),
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P")],
+                                   [None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    None,
+                                    None,
+                                    None,
+                                    None],
+                                   [None,
+                                    None,
+                                    ChessPiece(_w, "Q"),
+                                    ChessPiece(_w, "R"),
+                                    None,
+                                    None,
+                                    ChessPiece(_b, "N"),
+                                    None],
+                                   [None,
+                                    ChessPiece(_w, "P"),
+                                    None,
+                                    ChessPiece(_w, "N"),
+                                    None,
+                                    None,
+                                    None,
+                                    None],
+                                   [None,
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    None],
+                                   [ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    None,
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P")],
+                                   [ChessPiece(_b, "R"),
+                                    ChessPiece(_b, "N"),
+                                    None,
+                                    ChessPiece(_b, "Q"),
+                                    ChessPiece(_b, "K"),
+                                    ChessPiece(_b, "B"),
+                                    None,
+                                    None]],
+                      startEnpassantFlags={_b: [False] * 8,
+                                           _w: [False] * 8},
+                      startCanCastleFlags={_b: (True, True),
+                                           _w: (True, False)})
+
+
+def _getBoard1():
+    _w = ChessBoard.WHITE
+    _b = ChessBoard.BLACK
+    return ChessBoard(startLayout=[[ChessPiece(_w, ChessBoard.ROOK),
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "K"),
+                                    ChessPiece(_w, "B"),
+                                    None,
+                                    ChessPiece(_w, "R")],
+                                   [ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P"),
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P")],
+                                   [None,
+                                    None,
+                                    ChessPiece(_w, "N"),
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "N"),
+                                    None,
+                                    None],
+                                   [None,
+                                    None,
+                                    ChessPiece(_w, "Q"),
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "B"),
+                                    None,
+                                    None],
+                                   [None,
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                    None],
+                                   [None,
+                                    None,
+                                    ChessPiece(_b, "P"),
+                                    None,
+                                    None,
+                                    ChessPiece(_b, "N"),
+                                    ChessPiece(_b, "P"),
+                                    None],
+                                   [ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    None,
+                                    None,
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "B"),
+                                    ChessPiece(_b, "P")],
+                                   [ChessPiece(_b, "R"),
+                                    ChessPiece(_b, "N"),
+                                    ChessPiece(_b, "B"),
+                                    ChessPiece(_b, "Q"),
+                                    None,
+                                    ChessPiece(_b, "R"),
+                                    ChessPiece(_b, "K"),
+                                    None]],
+                      startEnpassantFlags={_b: [False] * 8,
+                                           _w: [False] * 8},
+                      startCanCastleFlags={_b: (False, False),
+                                           _w: (True, False)})
+
+
+def _getBoard2():
+    _w = ChessBoard.WHITE
+    _b = ChessBoard.BLACK
+    return ChessBoard(startLayout=[[ChessPiece(_w, ChessBoard.ROOK),
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "K"),
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "R")],
+                                   [ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P"),
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P")],
+                                   [None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "B"),
+                                    None,
+                                    None,
+                                    None,
+                                    None],
+                                   [None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "N"),
+                                    None,
+                                    None,
+                                    None],
+                                   [None,
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "N"),
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "Q")],
+                                   [None,
+                                    ChessPiece(_b, "P"),
+                                    None,
+                                    None,
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "B"),
+                                    None,
+                                    None],
+                                   [ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "B"),
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "Q"),
+                                    None,
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P")],
+                                   [ChessPiece(_b, "R"),
+                                    ChessPiece(_b, "N"),
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_b, "R"),
+                                    ChessPiece(_b, "K"),
+                                    None]],
+                      startEnpassantFlags={_b: [False] * 8,
+                                           _w: [False] * 8},
+                      startCanCastleFlags={_b: (False, False),
+                                           _w: (True, False)})
+
+
+def _getBoard3():
+    _w = ChessBoard.WHITE
+    _b = ChessBoard.BLACK
+    return ChessBoard(startLayout=[[ChessPiece(_w, ChessBoard.ROOK),
+                                    ChessPiece(_w, "N"),
+                                    ChessPiece(_w, "B"),
+                                    None,
+                                    ChessPiece(_w, "R"),
+                                    None,
+                                    ChessPiece(_w, "K"),
+                                    None],
+                                   [ChessPiece(_w, "P"),
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P")],
+                                   [None,
+                                    ChessPiece(_w, "Q"),
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_b, "P"),
+                                    None,
+                                    ChessPiece(_w, "N"),
+                                    None,
+                                    None],
+                                   [None,
+                                    None,
+                                    ChessPiece(_w, "B"),
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                    None],
+                                   [ChessPiece(_b, "B"),
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    None,
+                                    None,
+                                    None],
+                                   [None,
+                                    None,
+                                    ChessPiece(_b, "N"),
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_b, "Q"),
+                                    None],
+                                   [ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    None,
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P")],
+                                   [ChessPiece(_b, "R"),
+                                    None,
+                                    ChessPiece(_b, "B"),
+                                    None,
+                                    ChessPiece(_b, "K"),
+                                    None,
+                                    ChessPiece(_b, "N"),
+                                    ChessPiece(_b, "R")]],
+                      startEnpassantFlags={_b: [False] * 8,
+                                           _w: [False] * 8},
+                      startCanCastleFlags={_b: (False, False),
+                                           _w: (True, False)})
+
+
+def _getBoard4():
+    _w = ChessBoard.WHITE
+    _b = ChessBoard.BLACK
+    return ChessBoard(startLayout=[[ChessPiece(_w, ChessBoard.ROOK),
+                                    ChessPiece(_w, "N"),
+                                    ChessPiece(_w, "B"),
+                                    ChessPiece(_b, "Q"),
+                                    None,
+                                    ChessPiece(_w, "K"),
+                                    None,
+                                    ChessPiece(_w, "R")],
+                                   [ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P"),
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_w, "P")],
+                                   [None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    None,
+                                    None,
+                                    None,
+                                    None],
+                                   [None,
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_w, "P"),
+                                    ChessPiece(_b, "P"),
+                                    None,
+                                    ChessPiece(_w, "N")],
+                                   [None,
+                                    ChessPiece(_w, "B"),
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_b, "N")],
+                                   [None,
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                    ChessPiece(_b, "Q")],
+                                   [ChessPiece(_b, "P"),
+                                    None,
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    None,
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P"),
+                                    ChessPiece(_b, "P")],
+                                   [ChessPiece(_b, "R"),
+                                    ChessPiece(_b, "N"),
+                                    ChessPiece(_b, "B"),
+                                    None,
+                                    ChessPiece(_b, "K"),
+                                    ChessPiece(_b, "B"),
+                                    None,
+                                    ChessPiece(_b, "R")]],
+                      startEnpassantFlags={_b: [False] * 8,
+                                           _w: [False] * 8},
+                      startCanCastleFlags={_b: (True, True),
+                                           _w: (True, False)})
+
+
+
