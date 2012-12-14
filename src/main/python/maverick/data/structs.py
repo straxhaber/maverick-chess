@@ -183,9 +183,11 @@ class ChessBoard(object):
                         KING: "K"}
     """Mapping of piece constants to their visual represenataion"""
 
-    def __init__(self, startLayout=None,
+    def __init__(self,
+                 startLayout=None,
                  startEnpassantFlags=None,
-                 startCanCastleFlags=None):
+                 startCanCastleFlags=None,
+                 drawCounter=0):
         """Initialize a new Chess game according to normal Chess rules
 
         There are special states that must be kept track of:
@@ -220,6 +222,9 @@ class ChessBoard(object):
                 ChessBoard.BLACK: (True, True)}
         else:
             self.flag_canCastle = copy.deepcopy(startCanCastleFlags)
+
+        # Assign draw counter
+        self.drawCounter = drawCounter
 
     def __getitem__(self, posn):
         """x.__getitem__(y) <==> x[y]
@@ -267,6 +272,11 @@ class ChessBoard(object):
                 self.flag_canCastle[color] = (False, prevCastleFlag[1])
             elif fromPosn.fileN == 7:  # King-side rook was moved
                 self.flag_canCastle[color] = (prevCastleFlag[0], False)
+
+        # Update 50-move counter
+        if movedPiece == ChessBoard.PAWN or self[toPosn] is not None:
+            self.drawCounter = 0
+        self.drawCounter += 1
 
         # Change in rank from origin to destination
         rankDeltaAbs = abs(toPosn.rankN - fromPosn.rankN)
@@ -369,25 +379,14 @@ class ChessBoard(object):
         - Deletes pawns in en passant state if relevant
         - Moves the rook as well if the king is castling"""
 
-        # Have we moved one more ply toward the 50-move draw?
-        drawProgress = True
-
         # Check if the move is legal
         isLegal = self.isLegalMove(color, fromPosn, toPosn)
 
         # Move iff the move is legal
         if isLegal:
-            # Determine whether a piece was captured, or moved piece was a pawn
-            fromPiece = self[fromPosn]
-            toPiece = self[toPosn]
-
-            # No progress to draw if a pawn was moved or a piece was captured
-            drawProgress = not(fromPiece.pieceType == ChessBoard.PAWN or
-                               toPiece is not None)
-
             self._executePly(color, fromPosn, toPosn)
 
-        return (isLegal, drawProgress)
+        return isLegal
 
     @staticmethod
     def __str_getPieceChar(piece):
@@ -825,7 +824,7 @@ class ChessBoard(object):
         """Returns the board object resulting from the given ply
 
         WARNING: Modifies the state of the board - be sure to call
-                undoPlyResult to restore board state
+                 undoPlyResult to restore board state
 
         NOTE: Does not check legality of move
 
@@ -1163,38 +1162,39 @@ class ChessMatch(object):
             if color != self.whoseTurn():
                 return "It is not your turn"
 
-            plyStatus = self.board.makePly(color, fromPosn, toPosn)
+            moveLegal = self.board.makePly(color, fromPosn, toPosn)
 
             # Check if move was made
-            if plyStatus[0]:
-                # Deal with 50-move draw move
-                if plyStatus[1]:
-                    self.drawCounter -= 1
-                    if self.drawCounter == 0:
-                        self.status = ChessMatch.STATUS_DRAWN
+            if moveLegal:
+                # Log this ply
+                self.history.append((fromPosn, toPosn))
+                logStrF = "Added %s -> %s to match history"
+                ChessMatch._logger.debug(logStrF, fromPosn, toPosn)
 
-                else:
-                    # Reset 50-move checkmate counter
-                    self.drawCounter = 50
+                # Check for check-mates, draws, etc
+                ChessMatch._logger.debug("Checking for end of game")
+                if self.board.isKingCheckmated(ChessBoard.WHITE):
+                    self.status = ChessMatch.STATUS_BLACK_WON
+                elif self.board.isKingCheckmated(ChessBoard.BLACK):
+                    self.status = ChessMatch.STATUS_WHITE_WON
+                elif self.__makePly_forcedDrawP():
+                    self.status = ChessMatch.STATUS_DRAWN
 
-                    # Check for checkmates
-                    ChessMatch._logger.debug("Checking for end of game")
-                    if self.board.isKingCheckmated(ChessBoard.WHITE):
-                        self.status = ChessMatch.STATUS_BLACK_WON
-                    elif self.board.isKingCheckmated(ChessBoard.BLACK):
-                        self.status = ChessMatch.STATUS_WHITE_WON
-                    else:
-                        self.history.append((fromPosn, toPosn))
-
-                        # Log this ply
-                        logStrF = "Added %s -> %s to match history"
-                        ChessMatch._logger.debug(logStrF,
-                                                 fromPosn, toPosn)
                 return "SUCCESS"
             else:
                 return "Illegal move"
         else:
             return "Game not in progress"
+
+    def __makePly_forcedDrawP(self):
+        # 51 rather than 50 to allow for the player to check-mate on 50th move
+        # After that, a smart player would have asked for a draw if beneficial
+        fiftyMovesDraw = self.board.drawCounter >= 51
+
+        # TODO (mattsh): also check for three-fold repetition
+        threeFoldRepetition = False
+
+        return fiftyMovesDraw or threeFoldRepetition
 
     def join(self, playerID, p2ReqFreshStart=True):
         """Joins the match in an empty slot. If ready, game starts.
