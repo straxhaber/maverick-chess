@@ -15,16 +15,6 @@ learning experience and developed in each of us an appreciation for the great
 challenges in algorithms, artificial intelligence, and high performance
 computing.
 
-Our project is essentially the combination of three systems:
- - MaverickChess, a self-created platform for chess AIs to be pitted against
-   each other in an open arena either locally or across the internet.
-   Added benefit: this could be re-used for future courses.
- - ShallowBlue, a proficient mid-game AI based on quiescence-search, heuristic
-   board evaluation, alpha-beta pruning, move enumeration, and other analytics
- - Work to evolve the constant weights for ShallowBlue through a manual
-   genetic algorithm.
-
-
 
 ###############################################################################
 Related Work (Matt and James)
@@ -36,9 +26,56 @@ Related Work (Matt and James)
 Approach (Matt and James)
 ###############################################################################
 
+Our project is essentially the combination of two systems:
+ - MaverickChess, a self-created platform for chess AIs to be pitted against
+   each other in an open arena either locally or across the internet. It
+   includes a REPL client to allow a human to play another human or AI, server
+   master that holds state and communicates with clients, client code to
+   enable rapid development of AIs and other players, 
+
+   ADDED BENEFIT: this could be re-used for future courses.
+
+ - ShallowBlue, a proficient mid-game AI based on quiescence-search, heuristic
+   board evaluation, alpha-beta pruning, move enumeration, and other analytics.
+   It intentionally does not include an opening database or end-game tablebases,
+   as these are mechanical components and not interesting AI components. With
+   these, however, the AI would perform substantially better.
+
+Each of these systems were a large undertaking, and together they form the
+chess system we developed for this course.
+
+There were a few side-tasks that required work as well:
+ - Writing the various reports
+ - Scripts that provided data to help choose the heuristic weight constants
+   in ShallowBlue
+ - Platform for 'genetic' evolution of constant weights (didn't make it into
+   the code)
+
+
+___ Overall Architecture ___
+
+
+___ MaverickChess Architecture ___
+
+
+___ ShallowBlue Architecture ___
+
+
+___ Primary Heuristics Considered ___
+
+
+___ Search and Move Choice ___
+
 Our AI constructs a tree of possible board moves, and conducts a breadth-first minimax search using alpha-beta pruning.  At each level, the possible moves are enumerated.  For each one, a recursive call is made to the search function, which terminates once the maximum depth is reached.  At the terminal depth, a quiescent search function is called that performs a limited additional search only considering captures.  This helps combat the horizon affect by making it less likely that search is terminated one move prior to a very unfavorable capture.
 
 Successive evaluations at the same level in our AI's minimax search can be pruned depending on the results of their predecessors.  For example, say that a node of depth 2 is being considered. If a possible friendly move (a child node of this level-2 node) is evaluated at level 3, and it is found we could achieve a board state that is more desirable than that of another child we've evaluated, we need not explore this new child node because we know the enemy will not pick it. To this end, each recursive call to the QLAI class's _boardSearch function includes new values for the maximum and minimum board likability values to be considered by that call.
+
+___ Move Enumeration ___
+
+
+___ Possible Future Work ___
+
+
 
 
 ###############################################################################
