@@ -16,10 +16,27 @@ challenges in algorithms, artificial intelligence, and high performance
 computing.
 
 
+The game itself has complicated rules and edge-cases Problem space grows exponentially (really bad)
+ - 10^120 game variations, 1043 board positions
+ - It is computationally intractable to “solve” chess
+ - Developing good heuristics is challenging Performance
+ - Accuracy and weighting is non-trivial
+
+
+
 ###############################################################################
 Related Work (Matt and James)
 ###############################################################################
 
+Deep Blue (retroactively named after Shallow Blue) Developed in 1993 at IBM
+ - Used search and evaluation function
+ - 200 Million positions for second, 12 ply search
+
+Crafty Chess Engine
+ - One of the first to support multiple processors Uses Alpha-Beta Pruning and quiescence search
+
+Fruit Engine
+ - Uses Negascout search Principal Variation Search
 
 
 ###############################################################################
@@ -53,12 +70,40 @@ There were a few side-tasks that required work as well:
 
 
 ___ Overall Architecture ___
+See the JavaDocs
 
 
 ___ MaverickChess Architecture ___
+See the JavaDocs
+
+
+The game itself has complicated rules and edge-cases
+ - Moving rules of chess
+ - En-passant
+ - 50-move-rule
+ - Castling
+ - Stalemates
+ - etc.
+
+Existing systems are either:
+ - Closed-source
+ - Not extendable
+
+
+Full network-ready server and client system with APIs
+ - Controls boards and game state
+ - Allows for multiple simultaneous matches between humans and AIs
+ - Useful for genetic algorithms
 
 
 ___ ShallowBlue Architecture ___
+See the JavaDocs
+
+ - Mini-max (also known as alpha/beta) pruning
+ - Iterative quiescence search
+ - Opening and end-game databases
+ - Heuristics to evaluate board
+ - Very thorough optimization in system-level languages
 
 
 ___ Primary Heuristics Considered ___
@@ -110,6 +155,8 @@ Currently, our search is not able to compete with commercial solutions in terms 
 3. Our current board representation relies on a two-dimensional array of objects. If we were to move to a bitboard-based representation, we could dramatically improve access time.
 
 ___ Move Enumeration ___
+
+This was a rather challenging piece of the assigment due to the complexities of the game of chess. However, we implemented an optimized iterative algorithm for generating all legal moves for a given board.
 
 
 ___ Possible Future Work ___
